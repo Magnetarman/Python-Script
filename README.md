@@ -1,6 +1,6 @@
 # Python-Script
 
-Script Python Utili.
+Script Python Utili. Gli script sono testati personalmente ed utilizzati giornalmente. Se incontrate errori o problemi aprite una issue.
 
 **Attenzione !!!**
 Prima di eseguire gli script assicurati di aver installato Python.
@@ -99,3 +99,46 @@ Estensioni dei file trovate:
 - get_file_extensions(folder_path): Questa funzione cerca tutte le estensioni dei file all'interno della directory specificata e le raccoglie in un set per evitare duplicati.
 - print_extensions(extensions): Questa funzione stampa l'elenco delle estensioni dei file trovate, ordinate alfabeticamente.
 - main(): La funzione principale che gestisce l'input dell'utente e coordina l'esecuzione delle altre funzioni.
+
+---
+
+## Revome.py
+
+_Questo script Python permette di eliminare tutti i file non musicali e le cartelle vuote all'interno di una directory specificata dall'utente. Mantiene solo i file con estensioni musicali specificate (.flac, .opus, .mp3, .m4a, .aac)._
+
+### Funzionalità
+
+- Elimina tutti i file che non hanno un'estensione musicale specificata.
+- Elimina tutte le cartelle vuote dopo la rimozione dei file.
+
+### Utilizzo
+
+- Clona questo repository o scarica lo script Remove.py.
+- Esegui lo script utilizzando Python:
+
+```sh
+python Remove.py
+
+```
+
+- Inserisci il percorso della cartella che desideri pulire quando richiesto.
+- Lo script eliminerà tutti i file non musicali e le cartelle vuote all'interno della directory specificata.
+
+### Esempio di Esecuzione
+
+```sh
+$ python Remove.py
+Inserisci il percorso della cartella: /path/to/your/folder
+Deleting file: /path/to/your/folder/document.txt
+Deleting file: /path/to/your/folder/image.jpg
+Deleting empty directory: /path/to/your/folder/empty_folder
+Pulizia completata.
+```
+
+### Struttura del Codice
+
+- musical_extensions: Una regex che definisce le estensioni dei file musicali da preservare.
+- delete_non_music_files(folder_path): Questa funzione elimina tutti i file non musicali e le cartelle vuote all'interno della directory specificata.
+- main(): La funzione principale che gestisce l'input dell'utente e coordina l'esecuzione della funzione di pulizia.
+
+---
