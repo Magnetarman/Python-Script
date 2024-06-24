@@ -5,7 +5,7 @@ Script Python Utili. Gli script sono testati personalmente ed utilizzati giornal
 **Attenzione !!!**
 Prima di eseguire gli script assicurati di aver installato Python.
 
-[Windows](https://www.python.org/downloads/)
+[Download Python For Windows](https://www.python.org/downloads/)
 
 ---
 
@@ -18,7 +18,7 @@ _Questo script Python permette di trovare e cancellare cartelle vuote all'intern
 - Cerca ricorsivamente tutte le cartelle vuote all'interno della directory specificata.
 - Stampa l'elenco delle cartelle vuote trovate.
 - Chiede all'utente se desidera procedere con la cancellazione delle cartelle vuote trovate.
-  Cancella le cartelle vuote se l'utente conferma.
+- Cancella le cartelle vuote se l'utente conferma.
 
 ### Utilizzo
 
@@ -34,7 +34,7 @@ python Efolder.py
 - Inserisci il percorso della cartella che desideri esaminare quando richiesto.
 - Lo script mostrerà un elenco delle cartelle vuote trovate e chiederà se desideri cancellarle.
 
-```
+```sh
 $ python EFolder.py
 Inserisci il percorso della cartella: /path/to/your/folder
 Cartelle vuote trovate:
@@ -55,8 +55,8 @@ Cancellato: /path/to/your/folder/empty_folder2
 
 ### Note
 
-Assicurati di avere i permessi necessari per cancellare le cartelle all'interno della directory specificata.
-Usa questo script con cautela per evitare di cancellare cartelle per errore.
+- **Assicurati di avere i permessi necessari per cancellare le cartelle all'interno della directory specificata.**
+- **Usa questo script con cautela per evitare di cancellare cartelle per errore.**
 
 ---
 
@@ -118,7 +118,6 @@ _Questo script Python permette di eliminare tutti i file non musicali e le carte
 
 ```sh
 python Remove.py
-
 ```
 
 - Inserisci il percorso della cartella che desideri pulire quando richiesto.
@@ -141,4 +140,59 @@ Pulizia completata.
 - delete_non_music_files(folder_path): Questa funzione elimina tutti i file non musicali e le cartelle vuote all'interno della directory specificata.
 - main(): La funzione principale che gestisce l'input dell'utente e coordina l'esecuzione della funzione di pulizia.
 
+### Note
+
+- **Assicurati di avere i permessi necessari per cancellare le cartelle all'interno della directory specificata.**
+- **Usa questo script con cautela per evitare di cancellare cartelle/File per errore.**
+
 ---
+
+## Sposta_File.py
+
+_Questo script Python permette di spostare tutti i file presenti nelle sottocartelle di una directory specificata dall'utente alla directory principale stessa. Una volta spostati i file, lo script elimina le sottocartelle vuote._
+
+### Funzionalità
+
+- Sposta tutti i file dalle sottocartelle alla directory principale.
+- Elimina le sottocartelle vuote dopo aver spostato i file.
+- Ignora i file che già esistono nella directory principale.
+
+### Utilizzo
+
+- Clona questo repository o scarica lo script Sposta_File.py.
+- Esegui lo script utilizzando Python:
+
+```sh
+python Sposta_File.py
+Inserisci il percorso della directory principale che desideri pulire quando richiesto.
+```
+
+- Lo script sposterà tutti i file dalle sottocartelle alla directory principale e rimuoverà le sottocartelle vuote.
+
+### Esempio di Esecuzione
+
+```sh
+$ python Sposta_File.py
+Inserisci il percorso della directory principale: /path/to/your/main_directory
+Directory principale: /path/to/your/main_directory
+Trovati 10 file da spostare.
+Spostando '/path/to/your/main_directory/subfolder1/file1.txt' a '/path/to/your/main_directory/file1.txt'
+Spostando '/path/to/your/main_directory/subfolder2/file2.txt' a '/path/to/your/main_directory/file2.txt'
+...
+10 file sono stati spostati alla directory principale.
+Rimuovendo directory vuota '/path/to/your/main_directory/subfolder1'
+Rimuovendo directory vuota '/path/to/your/main_directory/subfolder2'
+...
+5 sottocartelle vuote sono state rimosse.
+Operazione completata.
+```
+
+### Struttura del Codice
+
+- move_files_to_main_directory(main_directory): Questa funzione sposta tutti i file dalle sottocartelle alla directory principale e rimuove le sottocartelle vuote.
+- Il percorso della directory principale viene richiesto all'utente e passato alla funzione move_files_to_main_directory.
+
+### Note
+
+- **Assicurati di avere i permessi necessari per cancellare le cartelle all'interno della directory specificata.**
+- **Usa questo script con cautela per evitare di cancellare cartelle/File per errore.**
