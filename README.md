@@ -196,3 +196,95 @@ Operazione completata.
 
 - **Assicurati di avere i permessi necessari per cancellare le cartelle all'interno della directory specificata.**
 - **Usa questo script con cautela per evitare di cancellare cartelle/File per errore.**
+
+---
+
+## Transcribe_wav.py
+
+_Questo script Python utilizza il modello Whisper di OpenAI per trascrivere file audio di podcast in testo. I file di trascrizione vengono salvati nella stessa directory dei file audio originali._
+
+### Funzionalità
+
+- Trascrive file audio .wav presenti in una directory specificata.
+- Salva le trascrizioni in file di testo con lo stesso nome dei file audio.
+- Verifica se una trascrizione esiste già per evitare di ripetere il processo.
+- Utilizza il modello Whisper di OpenAI per la trascrizione.
+
+### Utilizzo
+
+- Clona questo repository o scarica lo script Transcribe_wav.py.
+- Installiamo e configuriamo FFmpeg:
+
+#### Installazione e Configurazione di FFmpeg su Windows
+
+- **Scarica FFmpeg**:
+  - Vai su [ffmpeg.org](https://ffmpeg.org/download.html).
+  - Clicca su "Download" sotto "More downloading options".
+  - Seleziona il link "Windows builds from gyan.dev".
+  - Scarica la versione statica (ad esempio, "ffmpeg-release-essentials.zip").
+- - **Estrai FFmpeg**:
+
+    - Estrarre il file `ffmpeg-release-essentials.zip` in una directory come `C:\ffmpeg`.
+
+- **Aggiungi FFmpeg al PATH**:
+  - Apri "Impostazioni" dal menu Start.
+  - Cerca "Environment Variables" e seleziona "Modifica le variabili d'ambiente di sistema".
+  - Clicca su "Variabili d'ambiente" nella finestra "Proprietà del sistema".
+  - Seleziona `Path` sotto "Variabili di sistema" e clicca su "Modifica...".
+  - Clicca su "Nuovo" e inserisci `C:\ffmpeg\bin`.
+- **Verifica l'installazione di FFmpeg**:
+
+  - Apri il Prompt dei comandi.
+  - Esegui `ffmpeg -version`.
+
+- Assicurati di avere il modello Whisper di OpenAI installato. Puoi installarlo utilizzando:
+
+```sh
+pip install openai-whisper pydub
+pip --version
+
+# Crea l'ambiente virtuale
+python -m venv myenv
+
+# Attiva L'ambiente Virtuale
+myenv\Scripts\activate
+
+# Check Attivazione Ambiente Virtuale
+pip install openai-whisper pydub
+
+# Verifica l'installazione di FFmpeg
+ffmpeg -version
+```
+
+- Esegui lo script utilizzando Python:
+
+```sh
+python Transcribe_wav.py
+
+Inserisci il percorso della cartella contenente i file audio dei podcast quando richiesto.
+```
+
+- Lo script trascriverà i file audio .wav e salverà le trascrizioni nella stessa directory.
+
+### Esempio di Esecuzione
+
+```sh
+$ python Transcribe_wav.py
+Inserisci il percorso della cartella contenente i podcast: /path/to/your/podcast_directory
+Trascrizione in corso per podcast1.wav...
+Trascrizione completata per podcast1.wav, salvata in /path/to/your/podcast_directory/podcast1.txt
+Trascrizione in corso per podcast2.wav...
+Trascrizione completata per podcast2.wav, salvata in /path/to/your/podcast_directory/podcast2.txt
+...
+Trascrizione completata.
+```
+
+### Struttura del Codice
+
+- Transcribe_wav(file_path, model_name='medium', language='it'): Questa funzione carica il modello Whisper e trascrive l'audio del file specificato.
+  save_transcription(transcription, output_path): Questa funzione salva la trascrizione in un file di testo.
+- main(podcast_dir): La funzione principale che gestisce la scansione della directory dei podcast, la trascrizione dei file audio e il salvataggio delle trascrizioni.
+
+### Note
+
+- Se hai dei comuni file ".mp3" vanno convertiti in wav prima di eseguire lo script [QUI](https://www.mediahuman.com/it/audio-converter/) un software che uso spesso free e di facile utilizzo per la conversione dei file audio
