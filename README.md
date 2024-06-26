@@ -102,7 +102,7 @@ Estensioni dei file trovate:
 
 ---
 
-## Revome.py
+## Remove.py
 
 _Questo script Python permette di eliminare tutti i file non musicali e le cartelle vuote all'interno di una directory specificata dall'utente. Mantiene solo i file con estensioni musicali specificate (.flac, .opus, .mp3, .m4a, .aac)._
 
