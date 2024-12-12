@@ -4,8 +4,9 @@ from sklearn.cluster import KMeans
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import colors as mcolors
+import os
 
-def extract_colors(image_path, num_colors=4, output_file="color_palette.pdf"):
+def extract_colors(image_path, num_colors=4):
     try:
         # Load the image
         image = Image.open(image_path)
@@ -40,6 +41,10 @@ def extract_colors(image_path, num_colors=4, output_file="color_palette.pdf"):
         ax.set_xlim(0, len(dominant_colors_hex))
         ax.set_ylim(0, 1)
         ax.axis('off')
+
+        # Determine output file path
+        output_dir = os.path.dirname(image_path)
+        output_file = os.path.join(output_dir, "color_palette.pdf")
 
         # Save the palette to a PDF file
         plt.savefig(output_file, bbox_inches='tight')
