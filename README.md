@@ -63,8 +63,7 @@ pip install pillow scikit-learn matplotlib numpy
 1. Clona questa repository:
 
 ```bash
-git clone https://github.com/tuo-username/Estrattore-Colori.git
-cd Estrattore-Colori
+git clone https://github.com/Magnetarman/Python-Script/
 ```
 
 2. Installa le dipendenze:
@@ -187,8 +186,7 @@ Lo script utilizza solo moduli della libreria standard di Python, quindi non è 
 1. Clona questa repository:
 
 ```bash
-git clone https://github.com/tuo-username/Trova-Cartelle-Vuote.git
-cd Trova-Cartelle-Vuote
+git clone https://github.com/Magnetarman/Python-Script/
 ```
 
 2. Esegui lo script direttamente:
@@ -303,8 +301,7 @@ Lo script utilizza solo moduli della libreria standard di Python, quindi non è 
 1. Clona questa repository:
 
 ```bash
-git clone https://github.com/tuo-username/Elenco-Cartelle-Primo-Livello.git
-cd Elenco-Cartelle-Primo-Livello
+git clone https://github.com/Magnetarman/Python-Script/
 ```
 
 2. Esegui lo script direttamente:
@@ -411,8 +408,7 @@ Lo script utilizza solo moduli della libreria standard di Python, quindi non è 
 1. Clona questa repository:
 
 ```bash
-git clone https://github.com/tuo-username/Estensioni-File.git
-cd Estensioni-File
+git clone https://github.com/Magnetarman/Python-Script/
 ```
 
 2. Esegui lo script direttamente:
@@ -516,8 +512,7 @@ Lo script utilizza solo moduli della libreria standard di Python, quindi non è 
 1. Clona questa repository:
 
 ```bash
-git clone https://github.com/tuo-username/Pulizia-File-Musicali.git
-cd Pulizia-File-Musicali
+git clone https://github.com/Magnetarman/Python-Script/
 ```
 
 2. Esegui lo script direttamente:
@@ -574,5 +569,387 @@ Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo
 - **Formati supportati**: Lo script conserva solo file con estensioni `.flac`, `.opus`, `.mp3`, `.m4a`, `.aac`.
 - **Percorsi validi**: Verifica che il percorso inserito sia corretto e accessibile.
 - **Rimozione sicura**: Le cartelle vuote vengono eliminate solo se completamente prive di contenuti.
+
+---
+
+## _Spostamento File nelle Directory Principali_ - **sposta_file.py** 🚚
+
+Uno script Python che sposta tutti i file dalle sottocartelle alla **directory principale** specificata, eliminando le cartelle vuote una volta completata l'operazione.
+
+---
+
+### Descrizione 📄
+
+L'**Utility di Spostamento File** esplora una directory e le sue sottocartelle, spostando **tutti i file** trovati direttamente nella cartella principale. Dopo aver spostato i file, lo script elimina automaticamente le cartelle vuote.
+
+Utile per:
+
+- **Organizzare** i file sparsi in sottocartelle.
+- **Centralizzare i contenuti** in una cartella principale.
+- **Pulire cartelle vuote** per ottimizzare la struttura dei file.
+
+---
+
+### Funzionalità 🌟
+
+- **Spostamento ricorsivo**: Trova e sposta i file da tutte le sottocartelle.
+- **Gestione conflitti**: Evita sovrascritture saltando i file con lo stesso nome.
+- **Rimozione automatica**: Elimina le sottocartelle vuote dopo lo spostamento.
+- **Output dettagliato**: Mostra i file spostati e le cartelle eliminate.
+
+---
+
+### Requisiti 📦
+
+Assicurati di avere installato:
+
+- **Python 3.6+**
+
+Lo script utilizza solo moduli della libreria standard di Python, quindi non è necessaria alcuna installazione aggiuntiva.
+
+---
+
+### Installazione 🔧
+
+1. Clona questa repository:
+
+```bash
+git clone https://github.com/Magnetarman/Python-Script/
+```
+
+2. Esegui lo script direttamente:
+
+```bash
+python sposta_file.py
+```
+
+---
+
+### Utilizzo 🚀
+
+Esegui lo script dal terminale o da un IDE Python:
+
+```bash
+python sposta_file.py
+```
+
+Segui le istruzioni per inserire il percorso della cartella principale.
+
+#### Esempio Input
+
+```plaintext
+Inserisci il percorso della directory principale: /percorso/cartella
+```
+
+Lo script analizzerà la cartella e sposterà tutti i file dalle sottocartelle alla directory principale.
+
+---
+
+### Output 📊
+
+#### Output Terminale
+
+```plaintext
+Trovati 5 file da spostare.
+Spostando '/percorso/cartella/subfolder/file1.txt' a '/percorso/cartella/file1.txt'
+Spostando '/percorso/cartella/subfolder/file2.docx' a '/percorso/cartella/file2.docx'
+Rimuovendo directory vuota '/percorso/cartella/subfolder'
+3 file sono stati spostati alla directory principale.
+1 sottocartelle vuote sono state rimosse.
+Operazione completata.
+```
+
+---
+
+### Licenza 📜
+
+Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
+
+---
+
+### Note 📝
+
+- **Conflitti di nomi**: Se un file con lo stesso nome esiste già nella directory principale, lo script salta quel file.
+- **Percorsi validi**: Assicurati che il percorso inserito esista e sia accessibile.
+- **Rimozione sicura**: Le cartelle vuote vengono eliminate solo se completamente prive di contenuti.
+
+---
+
+## _Trascrizione Automatica di Podcast_ - _transcribe_wav.py_ 🎙️
+
+Uno script Python che converte file audio in formato `.wav`, li trascrive utilizzando **Whisper** di OpenAI e salva il testo risultante in un file `.txt`.
+
+---
+
+### Descrizione 📄
+
+L'**Utility di Trascrizione Podcast** esplora una cartella contenente file audio in vari formati supportati (come `.mp3`, `.flac`, `.ogg`) e:
+
+1. **Converte i file audio** in formato `.wav` (se necessario).
+2. **Trascrive il contenuto audio** utilizzando il modello di machine learning Whisper.
+3. **Salva la trascrizione** in un file di testo `.txt` nella stessa cartella.
+
+Utile per:
+
+- **Podcaster** che vogliono generare trascrizioni automatiche dei loro contenuti.
+- **Trascrizione rapida** di interviste o registrazioni audio.
+- **Accessibilità** e archiviazione del contenuto audio in formato testuale.
+
+---
+
+### Funzionalità 🌟
+
+- **Conversione formato**: Supporta `.mp3`, `.flac`, `.ogg` e li converte automaticamente in `.wav`.
+- **Trascrizione automatica**: Utilizza il modello Whisper per trascrivere l'audio.
+- **Output organizzato**: Salva le trascrizioni come file `.txt` nella stessa directory.
+- **Evitare duplicati**: Salta i file già trascritti.
+
+---
+
+### Requisiti 📦
+
+Assicurati di avere installato:
+
+- **Python 3.8+**
+- **Whisper** di OpenAI
+- **pydub**: Per la conversione dei file audio
+
+Installa le dipendenze con:
+
+```bash
+pip install openai-whisper pydub
+```
+
+Assicurati di avere **FFmpeg** installato sul tuo sistema, necessario per pydub:
+
+- **Windows**: Scarica FFmpeg da [ffmpeg.org](https://ffmpeg.org/)
+- **Linux/Mac**: Installa con il package manager appropriato:
+
+```bash
+sudo apt install ffmpeg    # Linux
+brew install ffmpeg        # MacOS
+```
+
+#### Installazione e Configurazione di FFmpeg su Windows
+
+- **Scarica FFmpeg**:
+  - Vai su [ffmpeg.org](https://ffmpeg.org/download.html).
+  - Clicca su "Download" sotto "More downloading options".
+  - Seleziona il link "Windows builds from gyan.dev".
+  - Scarica la versione statica (ad esempio, "ffmpeg-release-essentials.zip").
+- - **Estrai FFmpeg**:
+
+    - Estrarre il file `ffmpeg-release-essentials.zip` in una directory come `C:\ffmpeg`.
+
+- **Aggiungi FFmpeg al PATH**:
+  - Apri "Impostazioni" dal menu Start.
+  - Cerca "Environment Variables" e seleziona "Modifica le variabili d'ambiente di sistema".
+  - Clicca su "Variabili d'ambiente" nella finestra "Proprietà del sistema".
+  - Seleziona `Path` sotto "Variabili di sistema" e clicca su "Modifica...".
+  - Clicca su "Nuovo" e inserisci `C:\ffmpeg\bin`.
+- **Verifica l'installazione di FFmpeg**:
+
+  - Apri il Prompt dei comandi.
+  - Esegui `ffmpeg -version`.
+
+- Assicurati di avere il modello Whisper di OpenAI installato. Puoi installarlo utilizzando:
+
+```sh
+pip install openai-whisper pydub
+pip --version
+
+# Crea l'ambiente virtuale
+python -m venv myenv
+
+# Attiva L'ambiente Virtuale
+myenv\Scripts\activate
+
+# Check Attivazione Ambiente Virtuale
+pip install openai-whisper pydub
+
+# Verifica l'installazione di FFmpeg
+ffmpeg -version
+```
+
+---
+
+## Installazione 🔧
+
+1. Clona questa repository:
+
+```bash
+git clone https://github.com/Magnetarman/Python-Script/
+```
+
+2. Esegui lo script direttamente:
+
+```bash
+python transcribe_wav.py
+```
+
+---
+
+## Utilizzo 🚀
+
+Esegui lo script dal terminale o da un IDE Python:
+
+```bash
+python transcribe_wav.py
+```
+
+Segui le istruzioni per inserire il percorso della cartella contenente i file audio.
+
+### Esempio Input
+
+```plaintext
+Inserisci il percorso della cartella contenente i podcast: /percorso/podcast
+```
+
+Lo script analizzerà la cartella, convertirà i file non `.wav` e trascriverà il contenuto audio.
+
+---
+
+## Output 📊
+
+### Output Terminale
+
+```plaintext
+Conversione di /percorso/podcast/episodio1.mp3 in formato .wav...
+File convertito: /percorso/podcast/episodio1.wav
+Trascrizione in corso per episodio1.wav...
+Trascrizione completata per episodio1.wav, salvata in /percorso/podcast/episodio1.txt
+Saltato episodio2.wav, il file di trascrizione esiste già.
+```
+
+### File di Output
+
+Per ogni file audio, viene generato un file `.txt` con la trascrizione:
+
+```plaintext
+/percorso/podcast/episodio1.txt
+/percorso/podcast/episodio2.txt
+```
+
+---
+
+## Licenza 📜
+
+Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
+
+---
+
+## Note 📝
+
+- **Formati supportati**: `.mp3`, `.flac`, `.ogg`, `.wav`
+- **Requisiti hardware**: La trascrizione Whisper potrebbe richiedere una GPU per performance ottimali.
+- **Prevenzione duplicati**: Se un file `.txt` esiste già, lo script lo salta.
+
+---
+
+## _Spostamento File con Criteri di Ricerca_ - **trash.py** 🔍
+
+Uno script Python che sposta file con nomi che terminano con uno specifico set di caratteri in una cartella dedicata chiamata **duplicati**, all'interno della stessa directory principale.
+
+---
+
+## Descrizione 📄
+
+L'**Utility di Spostamento File con Criteri** esplora una cartella specificata dall'utente, cerca file i cui nomi terminano con un set di caratteri scelto dall'utente, e li sposta in una cartella **duplicati**.
+
+Utile per:
+
+- **Organizzare** file duplicati o con nomi specifici.
+- **Raggruppare contenuti simili** in una cartella dedicata.
+- **Pulizia rapida** e archiviazione automatica dei file.
+
+---
+
+## Funzionalità 🌟
+
+- **Selezione dinamica**: Permette di scegliere il set di caratteri da cercare nei nomi dei file.
+- **Spostamento automatico**: I file vengono spostati nella cartella **duplicati**.
+- **Interfaccia interattiva**: Permette di selezionare la cartella con una finestra di dialogo.
+- **Sicuro e organizzato**: Non sovrascrive i file, mantenendo un output ordinato.
+
+---
+
+## Requisiti 📦
+
+Assicurati di avere installato:
+
+- **Python 3.6+**
+
+Lo script utilizza solo moduli della libreria standard di Python.
+
+---
+
+## Installazione 🔧
+
+1. Clona questa repository:
+
+```bash
+git clone https://github.com/Magnetarman/Python-Script/
+```
+
+2. Esegui lo script direttamente:
+
+```bash
+python trash.py
+```
+
+---
+
+## Utilizzo 🚀
+
+Esegui lo script dal terminale o da un IDE Python:
+
+```bash
+python trash.py
+```
+
+1. Inserisci il **set di caratteri** che vuoi cercare nei nomi dei file.
+2. Seleziona la **cartella principale** utilizzando la finestra di dialogo.
+
+### Esempio Input
+
+```plaintext
+Inserisci il set di caratteri che vuoi cercare alla fine dei nomi dei file: copia
+```
+
+Una volta selezionata la cartella principale, lo script analizzerà i file e sposterà quelli con nomi terminanti in "copia" nella cartella **duplicati**.
+
+---
+
+## Output 📊
+
+### Output Terminale
+
+```plaintext
+File spostato in 'duplicati': /percorso/cartella/file_copia.txt
+File spostato in 'duplicati': /percorso/cartella/subfolder/documento_copia.pdf
+Operazione completata!
+```
+
+### Cartella di Output
+
+I file spostati saranno salvati nella cartella:
+
+```plaintext
+/percorso/cartella/duplicati/
+```
+
+---
+
+## Licenza 📜
+
+Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
+
+---
+
+## Note 📝
+
+- **Criterio di ricerca**: Cerca solo file i cui nomi terminano con il set di caratteri specificato.
+- **Percorsi validi**: Assicurati di selezionare una cartella esistente.
+- **Output pulito**: I file vengono spostati senza duplicare o sovrascrivere altri contenuti.
 
 ---
