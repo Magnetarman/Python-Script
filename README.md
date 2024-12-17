@@ -50,12 +50,6 @@ Assicurati di avere installato:
 - **Matplotlib**: Per la generazione grafica delle palette.
 - **NumPy**: Per la gestione e l'elaborazione delle immagini.
 
-Installa le dipendenze con:
-
-```bash
-pip install pillow scikit-learn matplotlib numpy
-```
-
 ---
 
 ### Installazione 🔧
@@ -66,10 +60,10 @@ pip install pillow scikit-learn matplotlib numpy
 git clone https://github.com/Magnetarman/Python-Script/
 ```
 
-2. Installa le dipendenze:
+2. Installa le dipendenze con:
 
 ```bash
-pip install -r requirements.txt
+pip install pillow scikit-learn matplotlib numpy
 ```
 
 ---
