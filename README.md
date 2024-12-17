@@ -7,6 +7,10 @@ Prima di eseguire gli script assicurati di aver installato Python.
 
 [Download Python For Windows](https://www.python.org/downloads/)
 
+# Autore 📈
+
+Creato con ❤️ da [Magnetarman](magnetarman.com), potenziato da ChatGPT e grazie ad [Antonio Porcelli](https://progressify.dev/) per avermi inizializzato allo scrivere e capire Python.
+
 ---
 
 ## _Estrattore di Colori Dominanti_ - **color_palette.py** 🎨
@@ -76,7 +80,7 @@ pip install -r requirements.txt
 Esegui lo script dal terminale o da un IDE Python:
 
 ```bash
-python extract_colors.py
+python color_palette.py
 ```
 
 Segui le istruzioni a schermo per inserire il percorso dell'immagine.
@@ -190,7 +194,7 @@ cd Trova-Cartelle-Vuote
 2. Esegui lo script direttamente:
 
 ```bash
-python find_empty_dirs.py
+python EFolder.py
 ```
 
 ---
@@ -200,7 +204,7 @@ python find_empty_dirs.py
 Esegui lo script dal terminale o da un IDE Python:
 
 ```bash
-python find_empty_dirs.py
+python EFolder.py
 ```
 
 Segui le istruzioni per inserire il percorso della cartella da analizzare.
@@ -257,6 +261,318 @@ Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo
 
 ---
 
-# Autore 📈
+## _Elenco Cartelle di Primo Livello_ - **elenco_cartelle.py** 🗂️
 
-Creato con ❤️ da [Magnetarman](magnetarman.com), potenziato da ChatGPT
+Uno script Python che elenca tutte le **cartelle di primo livello** in una directory specificata dall'utente e salva i risultati in un file di testo.
+
+---
+
+### Descrizione 📄
+
+L'**Elenco Cartelle di Primo Livello** esplora una directory fornita dall'utente e rileva tutte le cartelle contenute al suo interno (escludendo i file). I risultati vengono salvati automaticamente in un file **cartelle_primo_livello.txt** nella stessa directory analizzata.
+
+Utile per:
+
+- **Organizzare file e cartelle** in sistemi complessi.
+- **Raccogliere un elenco delle sottocartelle** per analisi o report.
+- **Verificare rapidamente la struttura** di una directory.
+
+---
+
+### Funzionalità 🌟
+
+- **Scansione mirata**: Elenca solo le cartelle di primo livello.
+- **Output organizzato**: Salva l'elenco delle cartelle in un file di testo.
+- **Semplice e veloce**: Input interattivo con percorsi verificati.
+- **Output sicuro**: Non modifica o elimina alcun file o cartella.
+
+---
+
+### Requisiti 📦
+
+Assicurati di avere installato:
+
+- **Python 3.6+**
+
+Lo script utilizza solo moduli della libreria standard di Python, quindi non è necessaria alcuna installazione aggiuntiva.
+
+---
+
+### Installazione 🔧
+
+1. Clona questa repository:
+
+```bash
+git clone https://github.com/tuo-username/Elenco-Cartelle-Primo-Livello.git
+cd Elenco-Cartelle-Primo-Livello
+```
+
+2. Esegui lo script direttamente:
+
+```bash
+python elenco_cartelle.py
+```
+
+---
+
+### Utilizzo 🚀
+
+Esegui lo script dal terminale o da un IDE Python:
+
+```bash
+python elenco_cartelle.py
+```
+
+Segui le istruzioni per inserire il percorso della cartella da analizzare.
+
+#### Esempio Input
+
+```plaintext
+Inserisci il percorso: /percorso/cartella
+```
+
+Lo script analizzerà il percorso inserito e salverà l'elenco delle cartelle di primo livello in un file **cartelle_primo_livello.txt**.
+
+---
+
+### Output 📊
+
+#### Output Terminale
+
+```plaintext
+Risultati salvati in: /percorso/cartella/cartelle_primo_livello.txt
+```
+
+#### Contenuto del File di Output
+
+```plaintext
+Cartelle di primo livello:
+/percorso/cartella1
+/percorso/cartella2
+/percorso/cartella3
+```
+
+Il file **cartelle_primo_livello.txt** verrà generato nella stessa cartella specificata come input.
+
+---
+
+### Licenza 📜
+
+Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
+
+---
+
+### Note 📝
+
+- **Percorsi validi**: Verifica che il percorso inserito esista e sia una directory valida.
+- **Output non distruttivo**: Lo script non modifica i contenuti della directory.
+
+---
+
+## _Estensioni dei File in una Cartella_ - **Estensioni.py** 🗂️
+
+Uno script Python che analizza una directory specificata dall'utente ed elenca tutte le **estensioni dei file** presenti, escludendo duplicati e organizzandole in ordine alfabetico.
+
+---
+
+### Descrizione 📄
+
+L'**Estensione dei File in una Cartella** esplora una directory fornita dall'utente e rileva tutte le estensioni dei file (es. `.txt`, `.jpg`, `.pdf`). Questo strumento è utile per:
+
+- **Organizzare** e analizzare rapidamente i tipi di file in una cartella.
+- **Identificare formati presenti** per pulizie o analisi dei dati.
+- **Controllare tipi di file** in sistemi di archiviazione complessi.
+
+Lo script stampa le estensioni trovate direttamente nel terminale.
+
+---
+
+### Funzionalità 🌟
+
+- **Scansione ricorsiva**: Esplora tutti i file nella cartella e sottocartelle.
+- **Filtraggio intelligente**: Elimina duplicati e considera solo estensioni valide.
+- **Ordinamento alfabetico**: Organizza le estensioni per una lettura chiara.
+- **Semplicità d'uso**: Input interattivo e output pulito.
+
+---
+
+### Requisiti 📦
+
+Assicurati di avere installato:
+
+- **Python 3.6+**
+
+Lo script utilizza solo moduli della libreria standard di Python, quindi non è necessaria alcuna installazione aggiuntiva.
+
+---
+
+### Installazione 🔧
+
+1. Clona questa repository:
+
+```bash
+git clone https://github.com/tuo-username/Estensioni-File.git
+cd Estensioni-File
+```
+
+2. Esegui lo script direttamente:
+
+```bash
+python Estensioni.py
+```
+
+---
+
+### Utilizzo 🚀
+
+Esegui lo script dal terminale o da un IDE Python:
+
+```bash
+python Estensioni.py
+```
+
+Segui le istruzioni per inserire il percorso della cartella da analizzare.
+
+#### Esempio Input
+
+```plaintext
+Inserisci il percorso della cartella: /percorso/cartella
+```
+
+Lo script analizzerà la cartella e stamperà le estensioni dei file trovate.
+
+---
+
+### Output 📊
+
+#### Output Terminale
+
+```plaintext
+Estensioni dei file trovate:
+.csv
+.jpg
+.pdf
+.png
+.txt
+```
+
+Le estensioni vengono visualizzate in ordine alfabetico per una lettura chiara e organizzata.
+
+---
+
+### Licenza 📜
+
+Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
+
+---
+
+### Note 📝
+
+- **Percorsi validi**: Verifica che il percorso inserito esista e sia una directory valida.
+- **Senza duplicati**: Ogni estensione viene mostrata una sola volta.
+- **Ricorsivo**: Esplora anche le sottocartelle.
+
+---
+
+## _Pulizia File Non Musicali_ - **Remove.py** 🗑️
+
+Uno script Python che elimina tutti i file non musicali in una directory specificata dall'utente e rimuove eventuali cartelle vuote.
+
+---
+
+### Descrizione 📄
+
+L'**Utility di Pulizia File Non Musicali** esplora una cartella e le sue sottocartelle, identificando e **rimuovendo i file non musicali** (basandosi sulle estensioni dei file). Inoltre, lo script elimina automaticamente le cartelle vuote trovate durante la scansione.
+
+Utile per:
+
+- **Organizzare librerie musicali** rimuovendo file indesiderati.
+- **Pulire sistemi di archiviazione** mantenendo solo i file musicali.
+- **Risparmiare spazio** eliminando file non necessari.
+
+---
+
+### Funzionalità 🌟
+
+- **Scansione ricorsiva**: Analizza tutte le cartelle e sottocartelle.
+- **Criterio intelligente**: Mantiene solo file con estensioni musicali (flac, opus, mp3, m4a, aac).
+- **Rimozione sicura**: Elimina solo file non conformi e cartelle vuote.
+- **Output dettagliato**: Mostra i file e le cartelle eliminate.
+
+---
+
+### Requisiti 📦
+
+Assicurati di avere installato:
+
+- **Python 3.6+**
+
+Lo script utilizza solo moduli della libreria standard di Python, quindi non è necessaria alcuna installazione aggiuntiva.
+
+---
+
+### Installazione 🔧
+
+1. Clona questa repository:
+
+```bash
+git clone https://github.com/tuo-username/Pulizia-File-Musicali.git
+cd Pulizia-File-Musicali
+```
+
+2. Esegui lo script direttamente:
+
+```bash
+python Remove.py
+```
+
+---
+
+### Utilizzo 🚀
+
+Esegui lo script dal terminale o da un IDE Python:
+
+```bash
+python Remove.py
+```
+
+Segui le istruzioni per inserire il percorso della cartella da analizzare.
+
+#### Esempio Input
+
+```plaintext
+Inserisci il percorso della cartella: /percorso/cartella
+```
+
+Lo script analizzerà la cartella e rimuoverà tutti i file non musicali e le cartelle vuote.
+
+---
+
+### Output 📊
+
+#### Output Terminale
+
+```plaintext
+Deleting file: /percorso/cartella/file1.txt
+Deleting file: /percorso/cartella/subfolder/file2.docx
+Deleting empty directory: /percorso/cartella/subfolder
+Pulizia completata.
+```
+
+Tutti i file non conformi vengono eliminati e il percorso è mostrato chiaramente nel terminale.
+
+---
+
+### Licenza 📜
+
+Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
+
+---
+
+### Note 📝
+
+- **Formati supportati**: Lo script conserva solo file con estensioni `.flac`, `.opus`, `.mp3`, `.m4a`, `.aac`.
+- **Percorsi validi**: Verifica che il percorso inserito sia corretto e accessibile.
+- **Rimozione sicura**: Le cartelle vuote vengono eliminate solo se completamente prive di contenuti.
+
+---
