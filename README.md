@@ -11,6 +11,12 @@ Prima di eseguire gli script assicurati di aver installato Python.
 
 Creato con ❤️ da [Magnetarman](magnetarman.com), potenziato da ChatGPT e grazie ad [Antonio Porcelli](https://progressify.dev/) per avermi inizializzato allo scrivere e capire Python.
 
+## Licenza 📜
+
+Tutto il progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
+
+---
+
 ---
 
 ## _Estrattore di Colori Dominanti_ - **color_palette.py** 🎨
@@ -124,12 +130,6 @@ Ogni colore è etichettato con il relativo codice **HEX** per una facile consult
 
 ---
 
-### Licenza 📜
-
-Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
-
----
-
 ### Note 📝
 
 - **Formati supportati**: .jpg, .png, .bmp e altri formati compatibili con Pillow.
@@ -240,12 +240,6 @@ Operazione annullata.
 
 ---
 
-### Licenza 📜
-
-Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
-
----
-
 ### Note 📝
 
 - **Uso responsabile**: Verifica sempre il percorso inserito per evitare eliminazioni involontarie.
@@ -347,12 +341,6 @@ Il file **cartelle_primo_livello.txt** verrà generato nella stessa cartella spe
 
 ---
 
-### Licenza 📜
-
-Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
-
----
-
 ### Note 📝
 
 - **Percorsi validi**: Verifica che il percorso inserito esista e sia una directory valida.
@@ -447,12 +435,6 @@ Estensioni dei file trovate:
 ```
 
 Le estensioni vengono visualizzate in ordine alfabetico per una lettura chiara e organizzata.
-
----
-
-### Licenza 📜
-
-Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
 
 ---
 
@@ -552,12 +534,6 @@ Tutti i file non conformi vengono eliminati e il percorso è mostrato chiarament
 
 ---
 
-### Licenza 📜
-
-Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
-
----
-
 ### Note 📝
 
 - **Formati supportati**: Lo script conserva solo file con estensioni `.flac`, `.opus`, `.mp3`, `.m4a`, `.aac`.
@@ -652,12 +628,6 @@ Rimuovendo directory vuota '/percorso/cartella/subfolder'
 1 sottocartelle vuote sono state rimosse.
 Operazione completata.
 ```
-
----
-
-### Licenza 📜
-
-Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
 
 ---
 
@@ -826,12 +796,6 @@ Per ogni file audio, viene generato un file `.txt` con la trascrizione:
 
 ---
 
-## Licenza 📜
-
-Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
-
----
-
 ## Note 📝
 
 - **Formati supportati**: `.mp3`, `.flac`, `.ogg`, `.wav`
@@ -931,12 +895,6 @@ I file spostati saranno salvati nella cartella:
 ```plaintext
 /percorso/cartella/duplicati/
 ```
-
----
-
-## Licenza 📜
-
-Questo progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
 
 ---
 
