@@ -138,7 +138,7 @@ Ogni colore è etichettato con il relativo codice **HEX** per una facile consult
 
 ---
 
-## _Trova e Cancella Cartelle Vuote_ - **EFolder.py** 🗂️
+## _Trova e Cancella Cartelle Vuote_ - **efolder.py** 🗂️
 
 Uno script Python per individuare e cancellare **cartelle vuote** all'interno di una directory specificata. Lo script esplora ricorsivamente tutte le sottocartelle e fornisce un elenco di quelle vuote, con l'opzione di eliminarle in modo sicuro.
 
@@ -186,7 +186,7 @@ git clone https://github.com/Magnetarman/Python-Script/
 2. Esegui lo script direttamente:
 
 ```bash
-python EFolder.py
+python efolder.py
 ```
 
 ---
@@ -196,7 +196,7 @@ python EFolder.py
 Esegui lo script dal terminale o da un IDE Python:
 
 ```bash
-python EFolder.py
+python efolder.py
 ```
 
 Segui le istruzioni per inserire il percorso della cartella da analizzare.
@@ -348,7 +348,7 @@ Il file **cartelle_primo_livello.txt** verrà generato nella stessa cartella spe
 
 ---
 
-## _Estensioni dei File in una Cartella_ - **Estensioni.py** 🗂️
+## _Estensioni dei File in una Cartella_ - **estensioni.py** 🗂️
 
 Uno script Python che analizza una directory specificata dall'utente ed elenca tutte le **estensioni dei file** presenti, escludendo duplicati e organizzandole in ordine alfabetico.
 
@@ -396,7 +396,7 @@ git clone https://github.com/Magnetarman/Python-Script/
 2. Esegui lo script direttamente:
 
 ```bash
-python Estensioni.py
+python estensioni.py
 ```
 
 ---
@@ -406,7 +406,7 @@ python Estensioni.py
 Esegui lo script dal terminale o da un IDE Python:
 
 ```bash
-python Estensioni.py
+python estensioni.py
 ```
 
 Segui le istruzioni per inserire il percorso della cartella da analizzare.
@@ -446,7 +446,7 @@ Le estensioni vengono visualizzate in ordine alfabetico per una lettura chiara e
 
 ---
 
-## _Pulizia File Non Musicali_ - **Remove.py** 🗑️
+## _Pulizia File Non Musicali_ - **remove.py** 🗑️
 
 Uno script Python che elimina tutti i file non musicali in una directory specificata dall'utente e rimuove eventuali cartelle vuote.
 
@@ -494,7 +494,7 @@ git clone https://github.com/Magnetarman/Python-Script/
 2. Esegui lo script direttamente:
 
 ```bash
-python Remove.py
+python remove.py
 ```
 
 ---
@@ -504,7 +504,7 @@ python Remove.py
 Esegui lo script dal terminale o da un IDE Python:
 
 ```bash
-python Remove.py
+python remove.py
 ```
 
 Segui le istruzioni per inserire il percorso della cartella da analizzare.
@@ -639,7 +639,7 @@ Operazione completata.
 
 ---
 
-## _Trascrizione Automatica di Podcast_ - _transcribe_wav.py_ 🎙️
+## _Trascrizione Automatica di Podcast_ - **transcribe_wav.py** 🎙️
 
 Uno script Python che converte file audio in formato `.wav`, li trascrive utilizzando **Whisper** di OpenAI e salva il testo risultante in un file `.txt`.
 
