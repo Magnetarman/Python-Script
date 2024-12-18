@@ -17,8 +17,6 @@ Tutto il progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzar
 
 ---
 
----
-
 ## _Estrattore di Colori Dominanti_ - **color_palette.py** 🎨
 
 Uno script Python che estrae i **colori dominanti** da un'immagine utilizzando il **clustering KMeans** e li visualizza come una palette. Lo script semplifica immagini complesse nei colori più rappresentativi e salva il risultato come una palette PDF.
