@@ -7,13 +7,27 @@ Prima di eseguire gli script assicurati di aver installato Python.
 
 [Download Python For Windows](https://www.python.org/downloads/)
 
-# Autore 📈
+### Requisiti 📦
 
-Creato con ❤️ da [Magnetarman](magnetarman.com), potenziato da ChatGPT e grazie ad [Antonio Porcelli](https://progressify.dev/) per avermi inizializzato allo scrivere e capire Python.
+Il file requirements.txt incluso in questa repository è progettato per garantire la piena compatibilità con tutti gli script presenti nel pacchetto. Si tratta di una lista generale delle dipendenze necessarie per il corretto funzionamento degli script Python, costantemente aggiornata ogni volta che vengono aggiunti nuovi script o funzionalità.
+
+In questo modo, assicuriamo che tutti gli utenti possano eseguire il progetto senza problemi, mantenendo un ambiente di lavoro completo e affidabile.
+
+Per installare tutte le dipendenze, è sufficiente utilizzare il comando:
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Licenza 📜
 
 Tutto il progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
+
+## Autore 📈
+
+Creato con ❤️ da [Magnetarman](magnetarman.com), potenziato da ChatGPT e grazie ad [Antonio Porcelli](https://progressify.dev/) per avermi inizializzato allo scrivere e capire Python.
+
+---
 
 ---
 
@@ -44,30 +58,12 @@ Utile per:
 
 ---
 
-### Requisiti 📦
-
-Assicurati di avere installato:
-
-- **Python 3.6+**
-- **Pillow**: Per l'elaborazione delle immagini.
-- **scikit-learn**: Per il clustering KMeans.
-- **Matplotlib**: Per la generazione grafica delle palette.
-- **NumPy**: Per la gestione e l'elaborazione delle immagini.
-
----
-
 ### Installazione 🔧
 
 1. Clona questa repository:
 
 ```bash
 git clone https://github.com/Magnetarman/Python-Script/
-```
-
-2. Installa le dipendenze con:
-
-```bash
-pip install pillow scikit-learn matplotlib numpy
 ```
 
 ---
@@ -160,16 +156,6 @@ Lo script è interattivo e consente di **confermare l'eliminazione** delle carte
 - **Identificazione cartelle vuote**: Elenco chiaro delle directory senza file.
 - **Interattivo**: Chiede conferma prima di procedere con la cancellazione.
 - **Output dettagliato**: Mostra le cartelle vuote trovate e quelle eliminate.
-
----
-
-### Requisiti 📦
-
-Assicurati di avere installato:
-
-- **Python 3.6+**
-
-Lo script utilizza solo moduli della libreria standard di Python, quindi non è necessaria alcuna installazione aggiuntiva.
 
 ---
 
@@ -272,16 +258,6 @@ Utile per:
 
 ---
 
-### Requisiti 📦
-
-Assicurati di avere installato:
-
-- **Python 3.6+**
-
-Lo script utilizza solo moduli della libreria standard di Python, quindi non è necessaria alcuna installazione aggiuntiva.
-
----
-
 ### Installazione 🔧
 
 1. Clona questa repository:
@@ -373,16 +349,6 @@ Lo script stampa le estensioni trovate direttamente nel terminale.
 
 ---
 
-### Requisiti 📦
-
-Assicurati di avere installato:
-
-- **Python 3.6+**
-
-Lo script utilizza solo moduli della libreria standard di Python, quindi non è necessaria alcuna installazione aggiuntiva.
-
----
-
 ### Installazione 🔧
 
 1. Clona questa repository:
@@ -471,16 +437,6 @@ Utile per:
 
 ---
 
-### Requisiti 📦
-
-Assicurati di avere installato:
-
-- **Python 3.6+**
-
-Lo script utilizza solo moduli della libreria standard di Python, quindi non è necessaria alcuna installazione aggiuntiva.
-
----
-
 ### Installazione 🔧
 
 1. Clona questa repository:
@@ -564,16 +520,6 @@ Utile per:
 - **Gestione conflitti**: Evita sovrascritture saltando i file con lo stesso nome.
 - **Rimozione automatica**: Elimina le sottocartelle vuote dopo lo spostamento.
 - **Output dettagliato**: Mostra i file spostati e le cartelle eliminate.
-
----
-
-### Requisiti 📦
-
-Assicurati di avere installato:
-
-- **Python 3.6+**
-
-Lo script utilizza solo moduli della libreria standard di Python, quindi non è necessaria alcuna installazione aggiuntiva.
 
 ---
 
@@ -668,20 +614,6 @@ Utile per:
 
 ---
 
-### Requisiti 📦
-
-Assicurati di avere installato:
-
-- **Python 3.8+**
-- **Whisper** di OpenAI
-- **pydub**: Per la conversione dei file audio
-
-Installa le dipendenze con:
-
-```bash
-pip install openai-whisper pydub
-```
-
 Assicurati di avere **FFmpeg** installato sul tuo sistema, necessario per pydub:
 
 - **Windows**: Scarica FFmpeg da [ffmpeg.org](https://ffmpeg.org/)
@@ -714,12 +646,7 @@ brew install ffmpeg        # MacOS
   - Apri il Prompt dei comandi.
   - Esegui `ffmpeg -version`.
 
-- Assicurati di avere il modello Whisper di OpenAI installato. Puoi installarlo utilizzando:
-
 ```sh
-pip install openai-whisper pydub
-pip --version
-
 # Crea l'ambiente virtuale
 python -m venv myenv
 
@@ -829,16 +756,6 @@ Utile per:
 
 ---
 
-## Requisiti 📦
-
-Assicurati di avere installato:
-
-- **Python 3.6+**
-
-Lo script utilizza solo moduli della libreria standard di Python.
-
----
-
 ## Installazione 🔧
 
 1. Clona questa repository:
@@ -901,5 +818,84 @@ I file spostati saranno salvati nella cartella:
 - **Criterio di ricerca**: Cerca solo file i cui nomi terminano con il set di caratteri specificato.
 - **Percorsi validi**: Assicurati di selezionare una cartella esistente.
 - **Output pulito**: I file vengono spostati senza duplicare o sovrascrivere altri contenuti.
+
+---
+
+## _Convertitore di Email in PDF 📧➡️📄_ - **eml_converter.py** 🗂️
+
+Uno script Python per convertire file **.eml** (email salvate) in file **PDF**, mantenendo i dettagli importanti del messaggio come oggetto, mittente, destinatario e contenuto del corpo.
+
+---
+
+## Descrizione 📄
+
+Questo **Convertitore di Email in PDF** esplora una cartella specificata dall'utente, trasforma i file **.eml** in HTML leggibile e poi li converte in file **PDF** salvati in una directory dedicata.
+
+Utile per:
+
+- **Archiviazione email** in un formato facilmente consultabile.
+- **Creazione di report** PDF di comunicazioni importanti.
+- **Automatizzare** il processo di conversione email in PDF.
+
+---
+
+## Funzionalità 🌟
+
+- **Conversione automatica**: Legge file **.eml**, genera un HTML e lo salva come PDF.
+- **Output organizzato**: Salva tutti i PDF in una cartella dedicata chiamata **converted_pdfs**.
+- **Dettagli inclusi**: Oggetto, mittente, destinatario e corpo del messaggio preservati nel PDF.
+
+---
+
+## Requisiti 📦
+
+- **wkhtmltopdf**: Strumento esterno necessario per generare PDF. Scaricalo e installalo dal sito ufficiale: [wkhtmltopdf.org](https://wkhtmltopdf.org/).
+
+---
+
+## Installazione 🔧
+
+1. Clona questa repository:
+
+   ```bash
+   git clone https://github.com/Magnetarman/Python-Script/
+   ```
+
+2. Esegui lo script direttamente:
+
+   ```bash
+   python eml_converter.py.py
+   ```
+
+---
+
+## Utilizzo 🚀
+
+1. Esegui lo script dal terminale o da un IDE Python:
+
+   ```bash
+   python eml_converter.py.py
+   ```
+
+2. Inserisci il **percorso della cartella** contenente i file **.eml** quando richiesto.
+
+3. Lo script convertirà automaticamente i file e li salverà in una sottocartella chiamata **converted_pdfs**.
+
+### Esempio Output
+
+```plaintext
+Inserisci il percorso della cartella contenente i file .eml: /percorso/della/cartella
+Converted: email1.eml -> /percorso/della/cartella/converted_pdfs/email1.pdf
+Converted: email2.eml -> /percorso/della/cartella/converted_pdfs/email2.pdf
+Tutti i file .eml sono stati convertiti in PDF nella cartella 'converted_pdfs'.
+```
+
+---
+
+## Note 📝
+
+- **Formati supportati**: Lo script funziona con file **.eml** standard.
+- **Percorsi validi**: Assicurati di fornire un percorso esistente e accessibile.
+- **Output pulito**: Ogni PDF include i dettagli dell'email in un formato leggibile.
 
 ---
