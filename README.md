@@ -7,6 +7,14 @@ Prima di eseguire gli script assicurati di aver installato Python.
 
 [Download Python For Windows](https://www.python.org/downloads/)
 
+### Installazione Generale 🔧
+
+1. Clona questa repository:
+
+```bash
+git clone https://github.com/Magnetarman/Python-Script/
+```
+
 ### Requisiti 📦
 
 Il file requirements.txt incluso in questa repository è progettato per garantire la piena compatibilità con tutti gli script presenti nel pacchetto. Si tratta di una lista generale delle dipendenze necessarie per il corretto funzionamento degli script Python, costantemente aggiornata ogni volta che vengono aggiunti nuovi script o funzionalità.
@@ -55,16 +63,6 @@ Utile per:
 - **Supporto immagini versatile**: Gestisce formati RGB, RGBA e scala di grigi.
 - **Visualizzazione intuitiva**: Crea una palette con codici **HEX** chiari e leggibili.
 - **Output in PDF**: Salva la palette cromatica come file **color_palette.pdf**.
-
----
-
-### Installazione 🔧
-
-1. Clona questa repository:
-
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
-```
 
 ---
 
@@ -161,13 +159,7 @@ Lo script è interattivo e consente di **confermare l'eliminazione** delle carte
 
 ### Installazione 🔧
 
-1. Clona questa repository:
-
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
-```
-
-2. Esegui lo script direttamente:
+1. Esegui lo script direttamente:
 
 ```bash
 python efolder.py
@@ -260,13 +252,7 @@ Utile per:
 
 ### Installazione 🔧
 
-1. Clona questa repository:
-
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
-```
-
-2. Esegui lo script direttamente:
+1. Esegui lo script direttamente:
 
 ```bash
 python elenco_cartelle.py
@@ -351,13 +337,7 @@ Lo script stampa le estensioni trovate direttamente nel terminale.
 
 ### Installazione 🔧
 
-1. Clona questa repository:
-
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
-```
-
-2. Esegui lo script direttamente:
+1. Esegui lo script direttamente:
 
 ```bash
 python estensioni.py
@@ -439,13 +419,7 @@ Utile per:
 
 ### Installazione 🔧
 
-1. Clona questa repository:
-
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
-```
-
-2. Esegui lo script direttamente:
+1. Esegui lo script direttamente:
 
 ```bash
 python remove.py
@@ -525,13 +499,7 @@ Utile per:
 
 ### Installazione 🔧
 
-1. Clona questa repository:
-
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
-```
-
-2. Esegui lo script direttamente:
+1. Esegui lo script direttamente:
 
 ```bash
 python sposta_file.py
@@ -664,13 +632,7 @@ ffmpeg -version
 
 ## Installazione 🔧
 
-1. Clona questa repository:
-
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
-```
-
-2. Esegui lo script direttamente:
+1. Esegui lo script direttamente:
 
 ```bash
 python transcribe_wav.py
@@ -758,13 +720,7 @@ Utile per:
 
 ## Installazione 🔧
 
-1. Clona questa repository:
-
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
-```
-
-2. Esegui lo script direttamente:
+1. Esegui lo script direttamente:
 
 ```bash
 python trash.py
@@ -855,13 +811,7 @@ Utile per:
 
 ## Installazione 🔧
 
-1. Clona questa repository:
-
-   ```bash
-   git clone https://github.com/Magnetarman/Python-Script/
-   ```
-
-2. Esegui lo script direttamente:
+1. Esegui lo script direttamente:
 
    ```bash
    python eml_converter.py.py
