@@ -40,7 +40,7 @@ def list_scripts(directory):
 
 def main():
     # Controlla la versione di Python richiesta (modifica '3.8' se necessario)
-    if not check_python_version('3.10'):
+    if not check_python_version('3.8'):
         sys.exit(1)
 
     # Controlla se Python è installato
@@ -53,25 +53,32 @@ def main():
     # Specifica la directory contenente gli script
     scripts_dir = './scripts'  # Cambia il percorso se necessario
 
-    # Elenca gli script disponibili
-    scripts = list_scripts(scripts_dir)
-    if not scripts:
-        print("Nessuno script trovato nella directory.")
-        return
+    while True:  # Ciclo per mantenere il wrapper attivo finché l'utente non digita 'exit'
+        # Elenca gli script disponibili
+        scripts = list_scripts(scripts_dir)
+        if not scripts:
+            print("Nessuno script trovato nella directory.")
+            break
 
-    print("Seleziona uno script da eseguire:")
-    for i, script in enumerate(scripts, start=1):
-        print(f"{i}. {script}")
+        print("\nSeleziona uno script da eseguire (digita 'exit' per uscire):")
+        for i, script in enumerate(scripts, start=1):
+            print(f"{i}. {script}")
 
-    try:
-        choice = int(input("Inserisci il numero dello script: "))
-        if 1 <= choice <= len(scripts):
-            selected_script = scripts[choice - 1]
-            subprocess.run(['python', os.path.join(scripts_dir, selected_script)])
-        else:
-            print("Scelta non valida.")
-    except ValueError:
-        print("Inserisci un numero valido.")
+        user_input = input("\nInserisci il numero dello script o 'exit': ").strip()
+
+        if user_input.lower() == 'exit':
+            print("Uscita dal wrapper...")
+            sys.exit(0)  # Termina il programma e chiude il terminale
+
+        try:
+            choice = int(user_input)
+            if 1 <= choice <= len(scripts):
+                selected_script = scripts[choice - 1]
+                subprocess.run(['python', os.path.join(scripts_dir, selected_script)])
+            else:
+                print("Scelta non valida.")
+        except ValueError:
+            print("Inserisci un numero valido o 'exit'.")
 
 if __name__ == '__main__':
     main()
