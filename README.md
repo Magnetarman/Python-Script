@@ -27,6 +27,10 @@ Per installare tutte le dipendenze, è sufficiente utilizzare il comando:
 pip install -r requirements.txt
 ```
 
+#### Aggiornamento Automatico _requirements.txt_
+
+![Update requirements.txt](https://github.com/Magnetarman/Python-Script/actions/workflows/update-reqs.yml/badge.svg)
+
 ## Licenza 📜
 
 Tutto il progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
