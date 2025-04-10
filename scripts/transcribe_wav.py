@@ -2,8 +2,39 @@
 import os
 import subprocess
 import sys
-from pydub import AudioSegment
-import whisper
+import importlib
+
+def upgrade_pip_and_install_whisper():
+    """
+    Aggiorna pip e installa o reinstalla correttamente whisper.
+    """
+    user_name = os.getlogin()
+    python_path = os.path.join(f"C:\\Users\\{user_name}\\AppData\\Local\\Programs\\Python\\Python310", "python.exe")
+    
+    if not os.path.exists(python_path):
+        print(f"Errore: Python 3.10 non trovato in {python_path}.")
+        sys.exit(1)
+    
+    print("Aggiornamento di pip in corso...")
+    try:
+        subprocess.check_call([python_path, "-m", "pip", "install", "--upgrade", "pip"])
+    except subprocess.CalledProcessError as e:
+        print(f"Errore durante l'aggiornamento di pip: {e}")
+        sys.exit(1)
+    
+    print("Disinstallazione di vecchie versioni di whisper...")
+    try:
+        subprocess.check_call([python_path, "-m", "pip", "uninstall", "whisper", "-y"])
+    except subprocess.CalledProcessError:
+        # Ignora errori se whisper non è installato
+        pass
+    
+    print("Installazione di openai-whisper...")
+    try:
+        subprocess.check_call([python_path, "-m", "pip", "install", "-U", "openai-whisper"])
+    except subprocess.CalledProcessError as e:
+        print(f"Errore durante l'installazione di openai-whisper: {e}")
+        sys.exit(1)
 
 def ensure_python_3_10():
     """
@@ -33,37 +64,29 @@ def ensure_python_3_10():
         subprocess.check_call([python_path, os.path.abspath(__file__)] + sys.argv[1:])
         sys.exit()  # Termina il processo attuale, in modo che non venga eseguito altro codice
 
-def convert_to_wav(input_file, output_dir):
+def import_whisper():
     """
-    Converte un file audio in formato .wav usando pydub.
+    Importa il modulo whisper in modo sicuro.
     """
-    file_name, ext = os.path.splitext(os.path.basename(input_file))
-    output_file = os.path.join(output_dir, file_name + '.wav')
-    
     try:
-        print(f"Conversione di {input_file} in formato .wav...")
-        if ext == ".mp3":
-            audio = AudioSegment.from_mp3(input_file)
-        elif ext == ".flac":
-            audio = AudioSegment.from_file(input_file, format="flac")
-        elif ext == ".aac":
-            audio = AudioSegment.from_file(input_file, format="aac")
-        elif ext == ".ogg":
-            audio = AudioSegment.from_ogg(input_file)
-        else:
-            raise ValueError(f"Formato {ext} non supportato.")
-        
-        audio.export(output_file, format="wav")
-        print(f"File convertito: {output_file}")
-        return output_file
-    except Exception as e:
-        print(f"Errore durante la conversione di {input_file}: {e}")
-        return None
+        import whisper
+        return whisper
+    except ImportError:
+        print("Modulo whisper non trovato. Installazione in corso...")
+        upgrade_pip_and_install_whisper()
+        # Riprova ad importare dopo l'installazione
+        try:
+            import whisper
+            return whisper
+        except ImportError as e:
+            print(f"Impossibile importare whisper anche dopo l'installazione: {e}")
+            sys.exit(1)
 
 def transcribe_podcast(file_path, model_name='medium', language='it'):
     """
-    Trascrive un file audio utilizzando il modello Whisper.
+    Trascrive un file audio in formato .wav utilizzando il modello Whisper.
     """
+    whisper = import_whisper()
     model = whisper.load_model(model_name)
     result = model.transcribe(file_path, language=language)
     return result['text']
@@ -81,16 +104,8 @@ def main(podcast_dir):
             file_path = os.path.join(root, file_name)
             base_name, ext = os.path.splitext(file_name)
 
-            # Supportati formati audio
-            supported_formats = ['.wav', '.mp3', '.flac', '.aac', '.ogg']
-            
-            if ext.lower() in supported_formats:
-                # Se non è un file .wav, convertilo
-                if ext.lower() != '.wav':
-                    file_path = convert_to_wav(file_path, root)
-                    if file_path is None:
-                        continue  # Salta se la conversione fallisce
-                
+            # Supportati formati audio (solo .wav ora)
+            if ext.lower() == '.wav':
                 output_file_name = base_name + '.txt'
                 output_path = os.path.join(root, output_file_name)
 
@@ -110,6 +125,9 @@ def main(podcast_dir):
 if __name__ == "__main__":
     # Verifica che Python 3.10 sia utilizzato
     ensure_python_3_10()
+    
+    # Aggiorna pip e installa correttamente whisper
+    upgrade_pip_and_install_whisper()
 
     podcast_dir = input("Inserisci il percorso della cartella contenente i podcast: ").strip()
     if os.path.isdir(podcast_dir):
