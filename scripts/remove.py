@@ -1,3 +1,4 @@
+# Rimozione file non musicali e pulizia cartelle vuote in una directory.
 import os
 import re
 

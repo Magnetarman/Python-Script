@@ -1,3 +1,4 @@
+# Conversione audio .wav in testo con Whisper di OpenAI e salvataggio in .txt.
 import os
 import whisper
 from pydub import AudioSegment

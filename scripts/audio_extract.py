@@ -1,3 +1,4 @@
+# Estrazione tracce audio .flac da file .mkv (anche ricorsiva).
 import os
 import subprocess
 

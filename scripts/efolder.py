@@ -1,3 +1,4 @@
+# Individuazione e rimozione sicura di cartelle vuote in una directory.
 import os
 
 def find_empty_directories(folder_path):

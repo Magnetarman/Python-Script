@@ -1,84 +1,94 @@
+#!/usr/bin/env python3
 import os
-import subprocess
 import sys
+import subprocess
 
-def check_python_installed():
-    """Verifica se Python è installato."""
+def get_scripts(directory):
+    """
+    Restituisce una lista di file .py presenti in 'directory', 
+    escludendo questo script principale (main.py).
+    La lista viene ordinata alfabeticamente.
+    """
+    scripts = []
+    for file in os.listdir(directory):
+        if file.endswith('.py') and file != 'main.py':
+            scripts.append(file)
+    return sorted(scripts)
+
+def get_description(filepath):
+    """
+    Estrae una breve descrizione dallo script in 'filepath'.
+    La funzione cerca il primo commento (linea che inizia con "#") o docstring che non sia uno shebang.
+    Se non viene trovata una descrizione, restituisce un messaggio generico.
+    """
     try:
-        subprocess.run(['python', '--version'], check=True, stdout=subprocess.DEVNULL)
-        return True
-    except FileNotFoundError:
-        print("Python non è installato. Installalo prima di procedere.")
-        return False
-
-def check_python_version(min_version):
-    """Verifica se la versione di Python è compatibile."""
-    current_version = sys.version_info
-    min_required = tuple(map(int, min_version.split('.')))
-    
-    if current_version >= min_required:
-        return True
-    else:
-        print(f"Richiesta versione Python {min_version} o superiore. Versione attuale: {sys.version}")
-        return False
-
-def sync_libraries():
-    """Sincronizza le librerie con requirements.txt."""
-    requirements_file = 'requirements.txt'
-    if os.path.exists(requirements_file):
-        try:
-            subprocess.run(['pip', 'install', '-r', requirements_file], check=True)
-            print("Librerie sincronizzate con successo.")
-        except subprocess.CalledProcessError as e:
-            print(f"Errore durante l'installazione delle librerie: {e}")
-    else:
-        print("File requirements.txt non trovato.")
-
-def list_scripts(directory):
-    """Elenca tutti gli script Python nella directory specificata."""
-    return [f for f in os.listdir(directory) if f.endswith('.py') and f != 'main.py']
+        with open(filepath, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                # Ignora shebang e linee vuote
+                if line.startswith("#!") or not line:
+                    continue
+                # Se è un commento, lo considera descrizione
+                if line.startswith("#"):
+                    return line.lstrip("#").strip()
+                # Se è l'inizio di una docstring in formato triple quotes
+                if line.startswith('"""') or line.startswith("'''"):
+                    # Rimuove i delimitatori se presenti sulla stessa linea
+                    desc = line.strip('"""').strip("'''").strip()
+                    if desc:  # Se contiene del testo, lo restituisce
+                        return desc
+                    # Altrimenti, continua a leggere le righe successive fino a chiudere la docstring
+                    description_lines = []
+                    for next_line in f:
+                        next_line = next_line.strip()
+                        if next_line.endswith('"""') or next_line.endswith("'''"):
+                            description_lines.append(next_line.rstrip('"""').rstrip("'''").strip())
+                            break
+                        description_lines.append(next_line)
+                    return " ".join(description_lines).strip()
+        return "Nessuna descrizione disponibile."
+    except Exception:
+        return "Nessuna descrizione disponibile."
 
 def main():
-    # Controlla la versione di Python richiesta (modifica '3.8' se necessario)
-    if not check_python_version('3.8'):
-        sys.exit(1)
+    # Se esiste una cartella "scripts", usiamola, altrimenti la directory corrente
+    base_dir = os.getcwd()
+    scripts_dir = os.path.join(base_dir, "scripts")
+    if os.path.isdir(scripts_dir):
+        directory = scripts_dir
+    else:
+        directory = base_dir
 
-    # Controlla se Python è installato
-    if not check_python_installed():
-        sys.exit(1)
+    scripts = get_scripts(directory)
+    if not scripts:
+        print("Nessuno script disponibile da eseguire.")
+        return
 
-    # Sincronizza le librerie con requirements.txt
-    sync_libraries()
+    # Stampa il menu di selezione in ordine alfabetico
+    print("Seleziona lo script da eseguire:\n")
+    for idx, script in enumerate(scripts, start=1):
+        desc = get_description(os.path.join(directory, script))
+        print(f"{idx}. {script} - {desc}")
 
-    # Specifica la directory contenente gli script
-    scripts_dir = './scripts'  # Cambia il percorso se necessario
+    print("\n0. Esci")
 
-    while True:  # Ciclo per mantenere il wrapper attivo finché l'utente non digita 'exit'
-        # Elenca gli script disponibili
-        scripts = list_scripts(scripts_dir)
-        if not scripts:
-            print("Nessuno script trovato nella directory.")
-            break
+    try:
+        choice = int(input("\nInserisci il numero corrispondente alla tua scelta: "))
+    except ValueError:
+        print("Scelta non valida. Inserire un numero.")
+        return
 
-        print("\nSeleziona uno script da eseguire (digita 'exit' per uscire):")
-        for i, script in enumerate(scripts, start=1):
-            print(f"{i}. {script}")
+    if choice == 0:
+        print("Uscita.")
+        return
 
-        user_input = input("\nInserisci il numero dello script o 'exit': ").strip()
-
-        if user_input.lower() == 'exit':
-            print("Uscita dal wrapper...")
-            sys.exit(0)  # Termina il programma e chiude il terminale
-
-        try:
-            choice = int(user_input)
-            if 1 <= choice <= len(scripts):
-                selected_script = scripts[choice - 1]
-                subprocess.run(['python', os.path.join(scripts_dir, selected_script)])
-            else:
-                print("Scelta non valida.")
-        except ValueError:
-            print("Inserisci un numero valido o 'exit'.")
+    if 1 <= choice <= len(scripts):
+        selected_script = os.path.join(directory, scripts[choice - 1])
+        print(f"Esecuzione di {scripts[choice - 1]}...\n")
+        # Avvia lo script selezionato usando l'interprete Python
+        subprocess.run([sys.executable, selected_script])
+    else:
+        print("Scelta non valida.")
 
 if __name__ == '__main__':
     main()

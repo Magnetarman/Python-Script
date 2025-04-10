@@ -31,6 +31,46 @@ pip install -r requirements.txt
 
 ![Update requirements.txt](https://github.com/Magnetarman/Python-Script/actions/workflows/update-reqs.yml/badge.svg)
 
+## **Versione 3.0**
+
+Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
+
+---
+
+### Novità della Versione 3.0
+
+- **Punto d’ingresso unificato:**  
+  È stato introdotto il file `main.py`, il quale gestisce in modo automatico:
+
+  - L'installazione automatica delle dipendenze necessarie, lette dal file `requirements.txt`.
+  - La presentazione di un menu interattivo in terminale che permette di scegliere quale script eseguire.
+  - Organizzazione degli script automaticamente in ordine alfabetico per maggiore praticità.
+  - Inserimento affianco dello script di una brevissima descrizione per aumentare facilmente la comprensione.
+
+- **Riorganizzazione della repository:**  
+  La nuova struttura semplifica l'organizzazione e l'esecuzione degli script, rendendo più chiara la gestione degli strumenti messi a disposizione.
+
+---
+
+### Requisiti 📦
+
+- **Python 3.x** (consigliata la versione 3.10 o superiore)
+- **Pip** per l'installazione delle dipendenze
+
+---
+
+### Installazione ed Esecuzione 🔧
+
+1. **Clonare la repository e passare al ramo di sviluppo 3.0:**
+
+   ```bash
+   git clone https://github.com/Magnetarman/Python-Script.git
+   cd Python-Script
+   git checkout v-3.0
+   ```
+
+---
+
 ## Licenza 📜
 
 Tutto il progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!

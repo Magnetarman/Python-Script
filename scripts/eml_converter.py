@@ -1,3 +1,4 @@
+# Conversione di email .eml in PDF con dettagli del messaggio.
 import os
 import sys
 import pdfkit

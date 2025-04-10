@@ -1,3 +1,4 @@
+# Elenco cartelle di primo livello e salvataggio su file di testo.
 import os
 
 def list_folders_in_path():
