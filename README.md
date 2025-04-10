@@ -2,6 +2,8 @@
 
 Script Python Utili. Gli script sono testati personalmente ed utilizzati giornalmente. Se incontrate errori o problemi aprite una issue.
 
+**Versione 3.0** - Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
+
 **Attenzione !!!**
 Prima di eseguire gli script assicurati di aver installato Python.
 
@@ -15,31 +17,35 @@ Prima di eseguire gli script assicurati di aver installato Python.
 git clone https://github.com/Magnetarman/Python-Script/
 ```
 
-### Requisiti 📦
-
-Il file requirements.txt incluso in questa repository è progettato per garantire la piena compatibilità con tutti gli script presenti nel pacchetto. Si tratta di una lista generale delle dipendenze necessarie per il corretto funzionamento degli script Python, costantemente aggiornata ogni volta che vengono aggiunti nuovi script o funzionalità.
-
-In questo modo, assicuriamo che tutti gli utenti possano eseguire il progetto senza problemi, mantenendo un ambiente di lavoro completo e affidabile.
-
-Per installare tutte le dipendenze, è sufficiente utilizzare il comando:
+2. Lancia il Wrapper:
 
 ```bash
-pip install -r requirements.txt
+py main.py
 ```
 
-#### Aggiornamento Automatico _requirements.txt_
+3. Segui le istruzioni a schermo per la scelta e l'utilizzo dei vari script
+
+### Installazione ed Esecuzione v3.0 **Beta** 🔧
+
+1. **Clonare la repository e passare al ramo di sviluppo 3.0:**
+
+   ```bash
+   git clone https://github.com/Magnetarman/Python-Script.git
+   cd Python-Script
+   git checkout v-3.0
+   ```
+
+---
+
+### Aggiornamento Automatico _requirements.txt_
 
 ![Update requirements.txt](https://github.com/Magnetarman/Python-Script/actions/workflows/update-reqs.yml/badge.svg)
-
-## **Versione 3.0**
-
-Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
 
 ---
 
 ### Novità della Versione 3.0
 
-- **Punto d’ingresso unificato:**  
+- **Punto unificato:**  
   È stato introdotto il file `main.py`, il quale gestisce in modo automatico:
 
   - L'installazione automatica delle dipendenze necessarie, lette dal file `requirements.txt`.
@@ -49,25 +55,6 @@ Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramit
 
 - **Riorganizzazione della repository:**  
   La nuova struttura semplifica l'organizzazione e l'esecuzione degli script, rendendo più chiara la gestione degli strumenti messi a disposizione.
-
----
-
-### Requisiti 📦
-
-- **Python 3.x** (consigliata la versione 3.10 o superiore)
-- **Pip** per l'installazione delle dipendenze
-
----
-
-### Installazione ed Esecuzione 🔧
-
-1. **Clonare la repository e passare al ramo di sviluppo 3.0:**
-
-   ```bash
-   git clone https://github.com/Magnetarman/Python-Script.git
-   cd Python-Script
-   git checkout v-3.0
-   ```
 
 ---
 
@@ -109,16 +96,6 @@ Utile per:
 - **Output in PDF**: Salva la palette cromatica come file **color_palette.pdf**.
 
 ---
-
-### Utilizzo 🚀
-
-Esegui lo script dal terminale o da un IDE Python:
-
-```bash
-python color_palette.py
-```
-
-Segui le istruzioni a schermo per inserire il percorso dell'immagine.
 
 #### Esempio Input
 
@@ -201,26 +178,6 @@ Lo script è interattivo e consente di **confermare l'eliminazione** delle carte
 
 ---
 
-### Installazione 🔧
-
-1. Esegui lo script direttamente:
-
-```bash
-python efolder.py
-```
-
----
-
-### Utilizzo 🚀
-
-Esegui lo script dal terminale o da un IDE Python:
-
-```bash
-python efolder.py
-```
-
-Segui le istruzioni per inserire il percorso della cartella da analizzare.
-
 #### Esempio Input
 
 ```plaintext
@@ -294,26 +251,6 @@ Utile per:
 
 ---
 
-### Installazione 🔧
-
-1. Esegui lo script direttamente:
-
-```bash
-python elenco_cartelle.py
-```
-
----
-
-### Utilizzo 🚀
-
-Esegui lo script dal terminale o da un IDE Python:
-
-```bash
-python elenco_cartelle.py
-```
-
-Segui le istruzioni per inserire il percorso della cartella da analizzare.
-
 #### Esempio Input
 
 ```plaintext
@@ -379,26 +316,6 @@ Lo script stampa le estensioni trovate direttamente nel terminale.
 
 ---
 
-### Installazione 🔧
-
-1. Esegui lo script direttamente:
-
-```bash
-python estensioni.py
-```
-
----
-
-### Utilizzo 🚀
-
-Esegui lo script dal terminale o da un IDE Python:
-
-```bash
-python estensioni.py
-```
-
-Segui le istruzioni per inserire il percorso della cartella da analizzare.
-
 #### Esempio Input
 
 ```plaintext
@@ -461,26 +378,6 @@ Utile per:
 
 ---
 
-### Installazione 🔧
-
-1. Esegui lo script direttamente:
-
-```bash
-python remove.py
-```
-
----
-
-### Utilizzo 🚀
-
-Esegui lo script dal terminale o da un IDE Python:
-
-```bash
-python remove.py
-```
-
-Segui le istruzioni per inserire il percorso della cartella da analizzare.
-
 #### Esempio Input
 
 ```plaintext
@@ -540,26 +437,6 @@ Utile per:
 - **Output dettagliato**: Mostra i file spostati e le cartelle eliminate.
 
 ---
-
-### Installazione 🔧
-
-1. Esegui lo script direttamente:
-
-```bash
-python sposta_file.py
-```
-
----
-
-### Utilizzo 🚀
-
-Esegui lo script dal terminale o da un IDE Python:
-
-```bash
-python sposta_file.py
-```
-
-Segui le istruzioni per inserire il percorso della cartella principale.
 
 #### Esempio Input
 
@@ -674,26 +551,6 @@ ffmpeg -version
 
 ---
 
-## Installazione 🔧
-
-1. Esegui lo script direttamente:
-
-```bash
-python transcribe_wav.py
-```
-
----
-
-## Utilizzo 🚀
-
-Esegui lo script dal terminale o da un IDE Python:
-
-```bash
-python transcribe_wav.py
-```
-
-Segui le istruzioni per inserire il percorso della cartella contenente i file audio.
-
 ### Esempio Input
 
 ```plaintext
@@ -761,27 +618,6 @@ Utile per:
 - **Sicuro e organizzato**: Non sovrascrive i file, mantenendo un output ordinato.
 
 ---
-
-## Installazione 🔧
-
-1. Esegui lo script direttamente:
-
-```bash
-python trash.py
-```
-
----
-
-## Utilizzo 🚀
-
-Esegui lo script dal terminale o da un IDE Python:
-
-```bash
-python trash.py
-```
-
-1. Inserisci il **set di caratteri** che vuoi cercare nei nomi dei file.
-2. Seleziona la **cartella principale** utilizzando la finestra di dialogo.
 
 ### Esempio Input
 
@@ -853,28 +689,6 @@ Utile per:
 
 ---
 
-## Installazione 🔧
-
-1. Esegui lo script direttamente:
-
-   ```bash
-   python eml_converter.py.py
-   ```
-
----
-
-## Utilizzo 🚀
-
-1. Esegui lo script dal terminale o da un IDE Python:
-
-   ```bash
-   python eml_converter.py
-   ```
-
-2. Inserisci il **percorso della cartella** contenente i file **.eml** quando richiesto.
-
-3. Lo script convertirà automaticamente i file e li salverà in una sottocartella chiamata **converted_pdfs**.
-
 ### Esempio Output
 
 ```plaintext
@@ -926,16 +740,6 @@ Utile per:
 - **ffmpeg** (incluso anche `ffprobe`)
 
 > Assicurati che `ffmpeg` e `ffprobe` siano installati e accessibili tramite il terminale (PATH di sistema).
-
----
-
-## Installazione 🔧
-
-1. Esegui lo script direttamente:
-
-   ```bash
-   python audio_extract.py
-   ```
 
 ---
 
@@ -1025,21 +829,6 @@ Utile per:
 - 🧽 Pulisce gli URL rimuovendo parametri inutili (`?`).
 
 ---
-
-## Installazione 🔧
-
-1. Esegui:
-
-```bash
-python download_images.py
-```
-
----
-
-## Utilizzo 🚀
-
-1. Inserisci l'**URL della pagina web** da cui vuoi scaricare le immagini.
-2. Le immagini verranno salvate nella cartella `export`.
 
 ### Esempio Output
 
