@@ -3,26 +3,6 @@ import os
 import sys
 import subprocess
 
-def install_python_3_10():
-    """
-    Verifica se Python 3.10 è installato e, se non lo è, lo installa tramite winget.
-    """
-    try:
-        # Verifica se Python 3.10 è già installato
-        result = subprocess.run(["python3.10", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if result.returncode != 0:
-            print("Python 3.10 non trovato. Installazione in corso...")
-            subprocess.run(["winget", "install", "Python.Python.3.10"], check=True)
-            print("Python 3.10 installato con successo.")
-        else:
-            print("Python 3.10 già installato.")
-    except FileNotFoundError:
-        print("Python 3.10 non trovato. Installazione in corso...")
-        subprocess.run(["winget", "install", "Python.Python.3.10"], check=True)
-        print("Python 3.10 installato con successo.")
-    except subprocess.CalledProcessError as e:
-        print(f"Errore durante l'installazione di Python 3.10: {e}")
-
 def install_requirements():
     """
     Installa le dipendenze presenti nel file requirements.txt.
@@ -88,8 +68,6 @@ def get_description(filepath):
         return "Nessuna descrizione disponibile."
 
 def main():
-    # Installa Python 3.10 se non è già installato
-    install_python_3_10()
 
     # Installa le dipendenze da requirements.txt (se presente)
     install_requirements()
