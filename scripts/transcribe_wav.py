@@ -1,7 +1,32 @@
 # Conversione audio .wav in testo con Whisper di OpenAI e salvataggio in .txt.
+#!/usr/bin/env python3
 import os
-import whisper
-from pydub import AudioSegment
+import subprocess
+import sys
+
+def ensure_python_3_10():
+    """
+    Verifica se Python 3.10 è in uso, altrimenti forza l'esecuzione con Python 3.10.
+    """
+    if sys.version_info[0] != 3 or sys.version_info[1] != 10:
+        print("Forzando l'esecuzione con Python 3.10...")
+
+        # Aggiungi temporaneamente il percorso di Python 3.10 alla variabile d'ambiente PATH
+        python_path = r"C:\Users\utente\AppData\Local\Programs\Python\Python310"
+        if python_path not in os.environ["PATH"]:
+            os.environ["PATH"] += os.pathsep + python_path
+            print(f"Percorso di Python 3.10 aggiunto a PATH: {python_path}")
+
+        # Verifica se python3.10 è disponibile dopo aver aggiornato PATH
+        try:
+            subprocess.check_call([python_path + r"\python.exe", "--version"])
+        except subprocess.CalledProcessError:
+            print("Errore: Python 3.10 non trovato o non configurato correttamente.")
+            sys.exit(1)
+        
+        # Esegui lo script con Python 3.10
+        subprocess.check_call([python_path + r"\python.exe", os.path.abspath(__file__)] + sys.argv[1:])
+        sys.exit()  # Termina il processo attuale, in modo che non venga eseguito altro codice
 
 def convert_to_wav(input_file, output_dir):
     """
@@ -76,6 +101,9 @@ def main(podcast_dir):
                     print(f'Errore durante la trascrizione di {file_name}: {e}')
 
 if __name__ == "__main__":
+    # Verifica che Python 3.10 sia utilizzato
+    ensure_python_3_10()
+
     podcast_dir = input("Inserisci il percorso della cartella contenente i podcast: ").strip()
     if os.path.isdir(podcast_dir):
         main(podcast_dir)
