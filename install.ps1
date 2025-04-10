@@ -31,22 +31,13 @@ function Install-Python {
     
     Write-Host "Installando Python $version tramite winget..."
     switch ($version) {
-        "3.11" { winget install --id Python.Python.3.11 -e --source winget }
-        "3.12" { winget install --id Python.Python.3.12 -e --source winget }
+        "3.10" { winget install --id Python.Python.3.10 -e --source winget }
         default { Write-Host "Versione Python non supportata. Procedo con Python.Launcher." }
     }
 }
 
-# Controllo e installazione per Python 3.11
-$pythonVersion = "3.11"
-if (-not (Check-PythonVersion -version $pythonVersion)) {
-    Install-Python -version $pythonVersion
-} else {
-    Write-Host "Python $pythonVersion è già installato."
-}
-
-# Controllo e installazione per Python 3.12.9
-$pythonVersion = "3.12"
+# Controllo e installazione per Python 3.10
+$pythonVersion = "3.10"
 if (-not (Check-PythonVersion -version $pythonVersion)) {
     Install-Python -version $pythonVersion
 } else {
