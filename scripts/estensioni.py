@@ -1,3 +1,4 @@
+# Analisi e elenco ordinato delle estensioni file in una directory.
 import os
 
 def get_file_extensions(folder_path):

@@ -1,3 +1,4 @@
+# Estrazione e salvataggio dei colori in formato PDF dominanti da un'immagine.
 import sys
 from PIL import Image
 from sklearn.cluster import KMeans

@@ -1,3 +1,4 @@
+# Spostamento file in directory principale e rimozione cartelle vuote.
 import os
 import shutil
 

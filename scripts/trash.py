@@ -1,3 +1,4 @@
+# Spostamento file con nomi specifici in una cartella "duplicati".
 import os
 import shutil
 from tkinter import Tk, filedialog

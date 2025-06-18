@@ -1,3 +1,4 @@
+# Download immagini da una pagina web, inclusi contenuti Base64.
 import os
 import requests
 import base64
