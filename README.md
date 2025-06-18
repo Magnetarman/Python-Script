@@ -4,12 +4,30 @@ Script Python Utili. Gli script sono testati personalmente ed utilizzati giornal
 
 **Versione 3.0** - Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
 
-**Attenzione !!!**
-Prima di eseguire gli script assicurati di aver installato Python.
+> [!Note] > Attenzione !!!
+> Prima di eseguire gli script assicurati di aver installato Python.
 
 [Download Python For Windows](https://www.python.org/downloads/)
 
-### Installazione Generale 🔧
+Oppure:
+
+1. Clona questa repository:
+
+```bash
+git clone https://github.com/Magnetarman/Python-Script/
+```
+
+2. Lancia lo script di installazione:
+
+```powershell
+./install.ps1
+```
+
+---
+
+## Avvio Wrapper 🔧
+
+**Se hai già python installato e configurato:**
 
 1. Clona questa repository:
 
@@ -25,48 +43,191 @@ py main.py
 
 3. Segui le istruzioni a schermo per la scelta e l'utilizzo dei vari script
 
-### Installazione ed Esecuzione v3.0 **Beta** 🔧
-
-1. **Clonare la repository e passare al ramo di sviluppo 3.0:**
-
-   ```bash
-   git clone https://github.com/Magnetarman/Python-Script.git
-   cd Python-Script
-   git checkout v-3.0
-   ```
-
 ---
 
-### Aggiornamento Automatico _requirements.txt_
+## Aggiornamento Automatico _requirements.txt_
 
 ![Update requirements.txt](https://github.com/Magnetarman/Python-Script/actions/workflows/update-reqs.yml/badge.svg)
 
 ---
 
-### Novità della Versione 3.0
+## Novità della Versione 3.0
 
-- **Punto unificato:**  
-  È stato introdotto il file `main.py`, il quale gestisce in modo automatico:
+- **Punto unificato:**\
+  Introdotto il file `main.py` che gestisce:
 
-  - L'installazione automatica delle dipendenze necessarie, lette dal file `requirements.txt`.
-  - La presentazione di un menu interattivo in terminale che permette di scegliere quale script eseguire.
-  - Organizzazione degli script automaticamente in ordine alfabetico per maggiore praticità.
-  - Inserimento affianco dello script di una brevissima descrizione per aumentare facilmente la comprensione.
+  - L'installazione automatica delle dipendenze dal file `requirements.txt`.
+  - Un menu interattivo per scegliere quale script eseguire.
+  - Organizzazione automatica degli script in ordine alfabetico.
+  - Breve descrizione affiancata a ciascuno script.
 
-- **Riorganizzazione della repository:**  
-  La nuova struttura semplifica l'organizzazione e l'esecuzione degli script, rendendo più chiara la gestione degli strumenti messi a disposizione.
+- **Riorganizzazione della repository:**\
+  Migliore gestione e chiarezza degli strumenti disponibili.
+
+---
 
 ---
 
-## Licenza 📜
+## _Script Disponibili_
 
-Tutto il progetto è concesso sotto licenza **MIT**. Sentiti libero di utilizzarlo, modificarlo e condividerlo!
+## _Estrattore Tracce Audio da MKV 🎥🎵_ - **audio_extract.py** 🗂️
 
-## Autore 📈
-
-Creato con ❤️ da [Magnetarman](magnetarman.com), potenziato da ChatGPT e grazie ad [Antonio Porcelli](https://progressify.dev/) per avermi inizializzato allo scrivere e capire Python.
+Uno script Python per **identificare** e **estrarre tracce audio** da file `.mkv`, singolarmente o in modo ricorsivo da una cartella. Utilizza `ffprobe` per analizzare le tracce e `ffmpeg` per estrarle nel formato `.flac`.
 
 ---
+
+## Descrizione 📄
+
+Questo **Estrattore Audio da MKV** consente di selezionare e salvare una traccia audio specifica da un file `.mkv`, mantenendo la qualità del flusso originale grazie alla conversione in `.flac`.
+
+Utile per:
+
+- **Recuperare tracce audio multilingua** da film e serie.
+- **Creare archivi audio** da video in alta qualità.
+- **Automatizzare l'estrazione** da intere directory video.
+
+---
+
+## Funzionalità 🌟
+
+- **Analisi automatica**: mostra tutte le tracce audio disponibili con la lingua (se presente).
+- **Conversione diretta**: estrae la traccia scelta e la salva come file `.flac`.
+- **Supporto directory**: può elaborare cartelle con più file `.mkv`, anche in modo ricorsivo.
+- **Interfaccia interattiva**: guida passo dopo passo tramite input da terminale.
+
+---
+
+## Requisiti 📦
+
+- **ffmpeg** (incluso anche `ffprobe`)
+
+> Assicurati che `ffmpeg` e `ffprobe` siano installati e accessibili tramite il terminale (PATH di sistema).
+
+---
+
+## Utilizzo 🚀
+
+### ▶️ Modalità Singolo File
+
+1. Inserisci il percorso di un file `.mkv` quando richiesto.
+2. Visualizza le tracce disponibili.
+3. Seleziona quella da esportare.
+
+### 📁 Modalità Directory
+
+1. Inserisci il percorso di una cartella.
+2. Indica il numero della traccia da estrarre.
+3. Scegli se elaborare ricorsivamente le sottocartelle.
+
+### Esempio Output
+
+file audio verranno salvati con il seguente formato:
+
+```
+nomefile_trackX.flac
+```
+
+Nello **stesso percorso** del video originale, dove `X` è il numero della traccia selezionata.
+
+---
+
+## Esempio di Utilizzo 🧪
+
+### Singolo File:
+
+```plaintext
+Inserisci il percorso del file MKV o della directory: /video/film.mkv
+
+Tracce audio trovate:
+0: Traccia 0 (ita)
+1: Traccia 1 (eng)
+
+Inserisci il numero della traccia da esportare: 1
+Audio estratto: /video/film_track1.flac
+```
+
+### Cartella:
+
+```plaintext
+Inserisci il percorso del file MKV o della directory: /media/serie_tv
+Inserisci il numero della traccia da esportare: 0
+Vuoi elaborare tutti i file MKV nella directory in modo ricorsivo? (s/n): s
+```
+
+---
+
+## Note 📝
+
+- Funziona solo con file `.mkv`.
+- L'output è sempre in formato `.flac`, ma lo script può essere adattato ad altri formati (`.mp3`, `.wav`, ecc).
+- Le lingue vengono mostrate se disponibili nei metadati.
+
+---
+
+## _Analizzatore Codec Video_ - **codec_explorer.py** 🎥📊
+
+Uno strumento grafico interattivo Python che esamina ricorsivamente tutti i video in una directory specificata. Per ogni file video con codec H264 o H265, visualizza:
+
+- Nome file
+- Codec video
+- Risoluzione
+- Bitrate stimato (kbps)
+- Dimensione del file in GB
+
+---
+
+### Descrizione 📄
+
+L'**Analizzatore Codec Video** è una utility intuitiva che analizza i file multimediali, identificando i codec H264 e H265 (HEVC) e fornendo statistiche tecniche dettagliate.
+
+Utile per:
+
+- Classificare e organizzare collezioni video in base al codec.
+- Ottenere rapidamente informazioni tecniche sui propri file multimediali.
+- Esportare i dati raccolti per analisi approfondite (Excel/CSV).
+
+---
+
+### Funzionalità 🌟
+
+- **Riconoscimento automatico dei codec**: Identifica e separa i file in base al codec video (H264 o H265/HEVC).
+- **Analisi tecnica completa**: Utilizza `ffprobe` per recuperare risoluzione, durata e calcolare il bitrate medio.
+- **Interfaccia grafica intuitiva (Tkinter)**: Permette l'esplorazione e la visualizzazione organizzata dei dati.
+- **Esportazione semplice**: Salva i risultati in formato `.xlsx` (Excel) o `.csv`.
+
+---
+
+#### Esempio di Utilizzo 🧪
+
+Passaggi:
+
+1.  Clicca su "Seleziona cartella e analizza".
+2.  Attendi l'analisi dei file video.
+3.  I risultati saranno mostrati in due schede: **Video H264** e **Video H265**.
+4.  Per salvare i dati, clicca su "Esporta in Excel o CSV".
+
+---
+
+### Output 📊
+
+I risultati sono organizzati in due tabelle distinte all'interno dell'interfaccia grafica:
+
+#### Video H264
+
+#### Video H265
+
+Ogni riga contiene le seguenti informazioni:
+
+`Nome File` | `Codec` | `Risoluzione` | `Bitrate (kbps)` | `Dimensione (GB)`
+
+---
+
+### Note 📝
+
+- **File supportati**: `.mp4`, `.mkv`, `.avi`, `.mov`, `.flv` e altri formati compatibili con `ffprobe`.
+- Lo script ignora automaticamente i file con codec diversi da H264 o H265.
+- Per un funzionamento corretto, `ffprobe` deve essere installato nel sistema.
+- ⚠️ **Dipendenza**: Se `ffprobe` non è disponibile, l'analisi dei file fallirà. Si raccomanda di installare `ffmpeg` (che include `ffprobe`) da [ffmpeg.org](https://ffmpeg.org/) o tramite il tuo gestore di pacchetti.
 
 ---
 
@@ -289,6 +450,57 @@ Il file **cartelle_primo_livello.txt** verrà generato nella stessa cartella spe
 
 ---
 
+## _Convertitore di Email in PDF 📧➡️📄_ - **eml_converter.py** 🗂️
+
+Uno script Python per convertire file **.eml** (email salvate) in file **PDF**, mantenendo i dettagli importanti del messaggio come oggetto, mittente, destinatario e contenuto del corpo.
+
+---
+
+## Descrizione 📄
+
+Questo **Convertitore di Email in PDF** esplora una cartella specificata dall'utente, trasforma i file **.eml** in HTML leggibile e poi li converte in file **PDF** salvati in una directory dedicata.
+
+Utile per:
+
+- **Archiviazione email** in un formato facilmente consultabile.
+- **Creazione di report** PDF di comunicazioni importanti.
+- **Automatizzare** il processo di conversione email in PDF.
+
+---
+
+## Funzionalità 🌟
+
+- **Conversione automatica**: Legge file **.eml**, genera un HTML e lo salva come PDF.
+- **Output organizzato**: Salva tutti i PDF in una cartella dedicata chiamata **converted_pdfs**.
+- **Dettagli inclusi**: Oggetto, mittente, destinatario e corpo del messaggio preservati nel PDF.
+
+---
+
+## Requisiti 📦
+
+- **wkhtmltopdf**: Strumento esterno necessario per generare PDF. Scaricalo e installalo dal sito ufficiale: [wkhtmltopdf.org](https://wkhtmltopdf.org/).
+
+---
+
+### Esempio Output
+
+```plaintext
+Inserisci il percorso della cartella contenente i file .eml: /percorso/della/cartella
+Converted: email1.eml -> /percorso/della/cartella/converted_pdfs/email1.pdf
+Converted: email2.eml -> /percorso/della/cartella/converted_pdfs/email2.pdf
+Tutti i file .eml sono stati convertiti in PDF nella cartella 'converted_pdfs'.
+```
+
+---
+
+## Note 📝
+
+- **Formati supportati**: Lo script funziona con file **.eml** standard.
+- **Percorsi validi**: Assicurati di fornire un percorso esistente e accessibile.
+- **Output pulito**: Ogni PDF include i dettagli dell'email in un formato leggibile.
+
+---
+
 ## _Estensioni dei File in una Cartella_ - **estensioni.py** 🗂️
 
 Uno script Python che analizza una directory specificata dall'utente ed elenca tutte le **estensioni dei file** presenti, escludendo duplicati e organizzandole in ordine alfabetico.
@@ -348,6 +560,110 @@ Le estensioni vengono visualizzate in ordine alfabetico per una lettura chiara e
 - **Percorsi validi**: Verifica che il percorso inserito esista e sia una directory valida.
 - **Senza duplicati**: Ogni estensione viene mostrata una sola volta.
 - **Ricorsivo**: Esplora anche le sottocartelle.
+
+---
+
+## _Scaricatore di Immagini da Pagina Web 🌐🖼️_ - **image_downloader.py** 🗂️
+
+Uno script Python per **scaricare tutte le immagini** presenti in una pagina web, inclusi i contenuti **Base64** convertiti in PNG o nel loro formato originale.
+
+---
+
+## Descrizione 📄
+
+Questo **Image Downloader** analizza il contenuto HTML di una pagina web, individua tutti i tag `<img>` e scarica le immagini collegate nel formato originale. Gestisce sia immagini con URL assoluti e relativi, sia immagini codificate in Base64.
+
+Utile per:
+
+- **Salvare tutte le immagini** da una pagina web con un click.
+- **Effettuare scraping visivo** per archiviazione o analisi.
+- **Convertire immagini Base64** in file immagine leggibili.
+
+---
+
+## Funzionalità 🌟
+
+- ✅ Rileva immagini standard e in lazy loading (`src`, `data-src`).
+- 🧠 Converte immagini Base64 in file reali, inclusi `.png`.
+- 📁 Crea automaticamente una cartella `export` per l’output.
+- 🔁 Gestisce URL relativi grazie a `urljoin`.
+- 🧽 Pulisce gli URL rimuovendo parametri inutili (`?`).
+
+---
+
+### Esempio Output
+
+```plaintext
+Inserisci l'URL della pagina web: https://esempio.it
+Scaricata: export/logo.png
+Scaricata immagine Base64: export/base64_image_1.png
+```
+
+---
+
+## Note 📝
+
+- Le immagini SVG in Base64 vengono convertite in `.png`.
+- Lo script non scarica risorse dinamiche caricate da JavaScript.
+- Funziona solo con pagine accessibili pubblicamente.
+
+---
+
+# _Convertitore PNG in JPEG_ - **png_to_jpeg.py** 🖼️➡️🖼️
+
+Uno script Python che converte automaticamente tutte le immagini `.png` in `.jpg` all'interno di una cartella (e sottocartelle), gestendo correttamente anche le immagini con trasparenza.
+
+---
+
+## Descrizione 📄
+
+Il **Convertitore PNG in JPEG** esplora ricursivamente una cartella e converte ogni immagine `.png` in formato `.jpg`. Le immagini con trasparenza vengono adattate con sfondo bianco per mantenere la compatibilità JPEG.
+
+Utile per:
+
+- **Ottimizzare immagini per il web**.
+- **Rimuovere trasparenze** non supportate da JPEG.
+- **Convertire rapidamente** grandi quantità di immagini `.png`.
+
+---
+
+## Funzionalità 🌟
+
+- **Conversione ricorsiva**: esplora tutte le sottocartelle.
+- **Sfondo bianco automatico**: per PNG con trasparenza.
+- **Eliminazione automatica dei PNG**: dopo la conversione, il file originale viene eliminato.
+- **Log in tempo reale**: stampa in console i file convertiti e eventuali errori.
+
+---
+
+## Esempio di Utilizzo 🧪
+
+### Avvia lo script:
+
+```bash
+python png_to_jpeg.py
+```
+
+### Inserisci il percorso della cartella da analizzare quando richiesto:
+
+```plaintext
+Inserisci il percorso della cartella da analizzare: /percorso/cartella
+```
+
+### Al termine, vedrai un riepilogo dei file convertiti:
+
+```plaintext
+[✔] Convertito: /img/foto1.png → /img/foto1.jpg
+[✔] Convertito: /img/foto2.png → /img/foto2.jpg
+```
+
+---
+
+## Note 📝
+
+- Le immagini `.png` vengono eliminate dopo la conversione.
+- Le immagini `.png` con trasparenza avranno sfondo bianco.
+- Lo script supporta anche immagini in modalità LA, RGBA, RGB, L.
 
 ---
 
@@ -654,196 +970,5 @@ I file spostati saranno salvati nella cartella:
 - **Criterio di ricerca**: Cerca solo file i cui nomi terminano con il set di caratteri specificato.
 - **Percorsi validi**: Assicurati di selezionare una cartella esistente.
 - **Output pulito**: I file vengono spostati senza duplicare o sovrascrivere altri contenuti.
-
----
-
-## _Convertitore di Email in PDF 📧➡️📄_ - **eml_converter.py** 🗂️
-
-Uno script Python per convertire file **.eml** (email salvate) in file **PDF**, mantenendo i dettagli importanti del messaggio come oggetto, mittente, destinatario e contenuto del corpo.
-
----
-
-## Descrizione 📄
-
-Questo **Convertitore di Email in PDF** esplora una cartella specificata dall'utente, trasforma i file **.eml** in HTML leggibile e poi li converte in file **PDF** salvati in una directory dedicata.
-
-Utile per:
-
-- **Archiviazione email** in un formato facilmente consultabile.
-- **Creazione di report** PDF di comunicazioni importanti.
-- **Automatizzare** il processo di conversione email in PDF.
-
----
-
-## Funzionalità 🌟
-
-- **Conversione automatica**: Legge file **.eml**, genera un HTML e lo salva come PDF.
-- **Output organizzato**: Salva tutti i PDF in una cartella dedicata chiamata **converted_pdfs**.
-- **Dettagli inclusi**: Oggetto, mittente, destinatario e corpo del messaggio preservati nel PDF.
-
----
-
-## Requisiti 📦
-
-- **wkhtmltopdf**: Strumento esterno necessario per generare PDF. Scaricalo e installalo dal sito ufficiale: [wkhtmltopdf.org](https://wkhtmltopdf.org/).
-
----
-
-### Esempio Output
-
-```plaintext
-Inserisci il percorso della cartella contenente i file .eml: /percorso/della/cartella
-Converted: email1.eml -> /percorso/della/cartella/converted_pdfs/email1.pdf
-Converted: email2.eml -> /percorso/della/cartella/converted_pdfs/email2.pdf
-Tutti i file .eml sono stati convertiti in PDF nella cartella 'converted_pdfs'.
-```
-
----
-
-## Note 📝
-
-- **Formati supportati**: Lo script funziona con file **.eml** standard.
-- **Percorsi validi**: Assicurati di fornire un percorso esistente e accessibile.
-- **Output pulito**: Ogni PDF include i dettagli dell'email in un formato leggibile.
-
----
-
-## _Estrattore Tracce Audio da MKV 🎥🎵_ - **audio_extract.py** 🗂️
-
-Uno script Python per **identificare** e **estrarre tracce audio** da file `.mkv`, singolarmente o in modo ricorsivo da una cartella. Utilizza `ffprobe` per analizzare le tracce e `ffmpeg` per estrarle nel formato `.flac`.
-
----
-
-## Descrizione 📄
-
-Questo **Estrattore Audio da MKV** consente di selezionare e salvare una traccia audio specifica da un file `.mkv`, mantenendo la qualità del flusso originale grazie alla conversione in `.flac`.
-
-Utile per:
-
-- **Recuperare tracce audio multilingua** da film e serie.
-- **Creare archivi audio** da video in alta qualità.
-- **Automatizzare l'estrazione** da intere directory video.
-
----
-
-## Funzionalità 🌟
-
-- **Analisi automatica**: mostra tutte le tracce audio disponibili con la lingua (se presente).
-- **Conversione diretta**: estrae la traccia scelta e la salva come file `.flac`.
-- **Supporto directory**: può elaborare cartelle con più file `.mkv`, anche in modo ricorsivo.
-- **Interfaccia interattiva**: guida passo dopo passo tramite input da terminale.
-
----
-
-## Requisiti 📦
-
-- **ffmpeg** (incluso anche `ffprobe`)
-
-> Assicurati che `ffmpeg` e `ffprobe` siano installati e accessibili tramite il terminale (PATH di sistema).
-
----
-
-## Utilizzo 🚀
-
-### ▶️ Modalità Singolo File
-
-1. Inserisci il percorso di un file `.mkv` quando richiesto.
-2. Visualizza le tracce disponibili.
-3. Seleziona quella da esportare.
-
-### 📁 Modalità Directory
-
-1. Inserisci il percorso di una cartella.
-2. Indica il numero della traccia da estrarre.
-3. Scegli se elaborare ricorsivamente le sottocartelle.
-
-### Esempio Output
-
-file audio verranno salvati con il seguente formato:
-
-```
-nomefile_trackX.flac
-```
-
-Nello **stesso percorso** del video originale, dove `X` è il numero della traccia selezionata.
-
----
-
-## Esempio di Utilizzo 🧪
-
-### Singolo File:
-
-```plaintext
-Inserisci il percorso del file MKV o della directory: /video/film.mkv
-
-Tracce audio trovate:
-0: Traccia 0 (ita)
-1: Traccia 1 (eng)
-
-Inserisci il numero della traccia da esportare: 1
-Audio estratto: /video/film_track1.flac
-```
-
-### Cartella:
-
-```plaintext
-Inserisci il percorso del file MKV o della directory: /media/serie_tv
-Inserisci il numero della traccia da esportare: 0
-Vuoi elaborare tutti i file MKV nella directory in modo ricorsivo? (s/n): s
-```
-
----
-
-## Note 📝
-
-- Funziona solo con file `.mkv`.
-- L'output è sempre in formato `.flac`, ma lo script può essere adattato ad altri formati (`.mp3`, `.wav`, ecc).
-- Le lingue vengono mostrate se disponibili nei metadati.
-
----
-
-## _Scaricatore di Immagini da Pagina Web 🌐🖼️_ - **image_downloader.py** 🗂️
-
-Uno script Python per **scaricare tutte le immagini** presenti in una pagina web, inclusi i contenuti **Base64** convertiti in PNG o nel loro formato originale.
-
----
-
-## Descrizione 📄
-
-Questo **Image Downloader** analizza il contenuto HTML di una pagina web, individua tutti i tag `<img>` e scarica le immagini collegate nel formato originale. Gestisce sia immagini con URL assoluti e relativi, sia immagini codificate in Base64.
-
-Utile per:
-
-- **Salvare tutte le immagini** da una pagina web con un click.
-- **Effettuare scraping visivo** per archiviazione o analisi.
-- **Convertire immagini Base64** in file immagine leggibili.
-
----
-
-## Funzionalità 🌟
-
-- ✅ Rileva immagini standard e in lazy loading (`src`, `data-src`).
-- 🧠 Converte immagini Base64 in file reali, inclusi `.png`.
-- 📁 Crea automaticamente una cartella `export` per l’output.
-- 🔁 Gestisce URL relativi grazie a `urljoin`.
-- 🧽 Pulisce gli URL rimuovendo parametri inutili (`?`).
-
----
-
-### Esempio Output
-
-```plaintext
-Inserisci l'URL della pagina web: https://esempio.it
-Scaricata: export/logo.png
-Scaricata immagine Base64: export/base64_image_1.png
-```
-
----
-
-## Note 📝
-
-- Le immagini SVG in Base64 vengono convertite in `.png`.
-- Lo script non scarica risorse dinamiche caricate da JavaScript.
-- Funziona solo con pagine accessibili pubblicamente.
 
 ---
