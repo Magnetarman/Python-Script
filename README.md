@@ -4,7 +4,7 @@ Script Python Utili. Gli script sono testati personalmente ed utilizzati giornal
 
 **Versione 3.0** - Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
 
-> [!Note] > Attenzione !!!
+> [!Note] Attenzione !!!
 > Prima di eseguire gli script assicurati di aver installato Python.
 
 [Download Python For Windows](https://www.python.org/downloads/)
