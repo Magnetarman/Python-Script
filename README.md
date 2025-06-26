@@ -1,5 +1,21 @@
 <p align="center">
-	<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KICAgIDxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgODAwIDIwMCI+CiAgICAgICAgPGRlZnM+CiAgICAgICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmctZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICAgICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzQxNThEMDtzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgICAgICAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdHlsZT0ic3RvcC1jb2xvcjojQzg1MEMwO3N0b3Atb3BhY2l0eToxIiAvPgogICAgICAgICAgICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZDQzcwO3N0b3Atb3BhY2l0eToxIiAvPgogICAgICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgICAgICA8ZmlsdGVyIGlkPSJzaGFkb3ciPgogICAgICAgICAgICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMCIgZHk9IjQiIHN0ZERldmlhdGlvbj0iNCIgZmxvb2Qtb3BhY2l0eT0iMC4yNSIgLz4KICAgICAgICAgICAgPC9maWx0ZXI+CiAgICAgICAgPC9kZWZzPgogICAgICAgIDxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2JnLWdyYWRpZW50KSIgcng9IjE1IiByeT0iMTUiLz4KICAgICAgICA8dGV4dCB4PSI0MDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ4IgogICAgICAgIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIgogICAgICAgIGZpbGw9IiNGRkZGRkYiIGZpbHRlcj0idXJsKCNzaGFkb3cpIj5QWVRIT04tU0NSSVBUPC90ZXh0PgogICAgPC9zdmc+" alt="python-script-banner" width="800">
+	<?xml version="1.0" encoding="utf-8"?>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200">
+        <defs>
+            <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#4158D0;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#C850C0;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FFCC70;stop-opacity:1" />
+            </linearGradient>
+            <filter id="shadow">
+                <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.25" />
+            </filter>
+        </defs>
+        <rect width="800" height="200" fill="url(#bg-gradient)" rx="15" ry="15"/>
+        <text x="400" y="100" font-family="Arial, sans-serif" font-size="48"
+            font-weight="bold" text-anchor="middle" dominant-baseline="middle"
+            fill="#FFFFFF" filter="url(#shadow)">PYTHON SCRIPT</text>
+    </svg>
 </p>
 <br>
 <p align="center">
@@ -146,7 +162,7 @@ Introdotto il file `main.py` che gestisce:
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/estensioni.py'>estensioni.py</a></b></td>
-				<td><code>❯ Analisi e elenco ordinato delle estensioni file in una directory.</code></td>
+				<td><code>❯ REPLACE-ME</code></td>
 			</tr>
 			</table>
 		</blockquote>
