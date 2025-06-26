@@ -7,10 +7,11 @@
 </p>
 <br>
 <p align="center">
-	<img src="https://img.shields.io/github/license/Magnetarman/Python-Script?style=flat&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
+	<img src="https://img.shields.io/badge/version-3.1-blue.svg" alt="versione">
 	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
 	<img src="https://img.shields.io/github/languages/top/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-top-language">
 	<img src="https://img.shields.io/github/languages/count/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-language-count">
+	<img src="https://img.shields.io/github/license/Magnetarman/Python-Script?style=flat&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
   <img src="https://github.com/Magnetarman/Python-Script/actions/workflows/update-reqs.yml/badge.svg" alt="requirements.txt">
 </p>
 <p align="center">Tool e Tecnologie Utilizzate:</p>
@@ -242,6 +243,6 @@ Utilizza Python-Script seguendo questi step:
 
 ## 🎗 Licenza
 
-Creato con ❤️ da [Magnetarman](magnetarman.com), potenziato da ChatGPT e grazie ad [Antonio Porcelli](https://progressify.dev/) per avermi inizializzato allo scrivere e capire Python. Licenza MIT.
+Creato con ❤️ da [Magnetarman](https://magnetarman.com/), potenziato da ChatGPT e grazie ad [Antonio Porcelli](https://progressify.dev/) per avermi inizializzato allo scrivere e capire Python. Licenza MIT.
 
 ---
