@@ -1,314 +1,247 @@
-# Python-Script
+<p align="center">
+	<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KICAgIDxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgODAwIDIwMCI+CiAgICAgICAgPGRlZnM+CiAgICAgICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmctZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICAgICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzQxNThEMDtzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgICAgICAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdHlsZT0ic3RvcC1jb2xvcjojQzg1MEMwO3N0b3Atb3BhY2l0eToxIiAvPgogICAgICAgICAgICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZDQzcwO3N0b3Atb3BhY2l0eToxIiAvPgogICAgICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgICAgICA8ZmlsdGVyIGlkPSJzaGFkb3ciPgogICAgICAgICAgICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMCIgZHk9IjQiIHN0ZERldmlhdGlvbj0iNCIgZmxvb2Qtb3BhY2l0eT0iMC4yNSIgLz4KICAgICAgICAgICAgPC9maWx0ZXI+CiAgICAgICAgPC9kZWZzPgogICAgICAgIDxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2JnLWdyYWRpZW50KSIgcng9IjE1IiByeT0iMTUiLz4KICAgICAgICA8dGV4dCB4PSI0MDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ4IgogICAgICAgIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIgogICAgICAgIGZpbGw9IiNGRkZGRkYiIGZpbHRlcj0idXJsKCNzaGFkb3cpIj5QWVRIT04tU0NSSVBUPC90ZXh0PgogICAgPC9zdmc+" alt="python-script-banner" width="800">
+</p>
+<br>
+<p align="center">
+	<em><code>Script Python Utili. Gli script sono testati personalmente ed utilizzati giornalmente.</code></em>
+</p>
+<br>
+<p align="center">
+	<img src="https://img.shields.io/github/license/Magnetarman/Python-Script?style=flat&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
+	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
+	<img src="https://img.shields.io/github/languages/top/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-top-language">
+	<img src="https://img.shields.io/github/languages/count/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-language-count">
+  <img src="https://github.com/Magnetarman/Python-Script/actions/workflows/update-reqs.yml/badge.svg" alt="requirements.txt">
+</p>
+<p align="center">Tool e Tecnologie Utilizzate:</p>
+<p align="center">
+	<img src="https://img.shields.io/badge/NumPy-013243.svg?style=flat&logo=NumPy&logoColor=white" alt="NumPy">
+	<img src="https://img.shields.io/badge/Python-3776AB.svg?style=flat&logo=Python&logoColor=white" alt="Python">
+	<img src="https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=flat&logo=GitHub-Actions&logoColor=white" alt="GitHub%20Actions">
+	<img src="https://img.shields.io/badge/PowerShell-5391FE.svg?style=flat&logo=PowerShell&logoColor=white" alt="PowerShell">
+	<img src="https://img.shields.io/badge/pandas-150458.svg?style=flat&logo=pandas&logoColor=white" alt="pandas">
+</p>
+<hr>
 
-Script Python Utili. Gli script sono testati personalmente ed utilizzati giornalmente. Se incontrate errori o problemi aprite una issue.
+## 👾 Features
 
 **Versione 3.0** - Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
 
-> [!Note]
-> Prima di eseguire gli script assicurati di aver installato Python.
+Introdotto il file `main.py` che gestisce:
 
-[Download Python For Windows](https://www.python.org/downloads/)
+- L'installazione automatica delle dipendenze dal file `requirements.txt`.
+- Un menu interattivo per scegliere quale script eseguire.
+- Organizzazione automatica degli script in ordine alfabetico.
+- Breve descrizione affiancata a ciascuno script.
+- Migliore gestione e chiarezza degli strumenti disponibili.
 
-Oppure:
+---
 
-1. Clona questa repository:
+## 📁 Struttura Cartelle
 
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
+```sh
+└── Python-Script/
+    ├── .github
+    │   └── workflows
+    │       └── update-reqs.yml
+    ├── LICENSE
+    ├── README.md
+    ├── install.ps1
+    ├── main.py
+	├── Docs
+    ├── pipreqs-config.toml
+    ├── requirements.txt
+    └── scripts
+        ├── audio_extract.py
+        ├── codec_expoler.py
+        ├── color_palette.py
+        ├── efolder.py
+        ├── elenco_cartelle.py
+        ├── eml_converter.py
+        ├── estensioni.py
+        ├── image_downloader.py
+        ├── png_converter.py
+        ├── remove.py
+        ├── sposta_file.py
+        ├── transcribe_wav.py
+        └── trash.py
 ```
 
-2. Lancia lo script di installazione:
+### 📂 Idex Progetto
 
-```powershell
-./install.ps1
+<details open>
+	<summary><b><code>PYTHON-SCRIPT/</code></b></summary>
+	<details> <!-- __root__ Submodule -->
+		<summary><b>__root__</b></summary>
+		<blockquote>
+			<table>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/install.ps1'>install.ps1</a></b></td>
+				<td><code>❯ Installa Python 3.10 e lancia lo script generale "main.py"</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/main.py'>main.py</a></b></td>
+				<td><code>❯ Script Generale con breve descrizione degli script disponibili</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/requirements.txt'>requirements.txt</a></b></td>
+				<td><code>❯ Librerie necessarie al funzionamento degli script</code></td>
+			</tr>
+			</table>
+		</blockquote>
+	</details>
+		</blockquote>
+	</details>
+	<details> <!-- scripts Submodule -->
+		<summary><b>scripts</b></summary>
+		<blockquote>
+			<table>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/png_converter.py'>png_converter.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/audio_extract.py'>audio_extract.py</a></b></td>
+				<td><code>❯ Estrae tracce audio dai file `.mkv` (singoli o da cartelle), analizzandole con `ffprobe` e salvandole come `.flac` tramite `ffmpeg`.</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/color_palette.py'>color_palette.py</a></b></td>
+				<td><code>❯ Estrazione e salvataggio dei colori in formato PDF dominanti da un'immagine.</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/transcribe_wav.py'>transcribe_wav.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/remove.py'>remove.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/efolder.py'>efolder.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/sposta_file.py'>sposta_file.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/codec_expoler.py'>codec_expoler.py</a></b></td>
+				<td><code>❯ Analizza i file video identifica codec H264 o H265, ne mostra i dettagli e consente l’esportazione.</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/image_downloader.py'>image_downloader.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/eml_converter.py'>eml_converter.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/elenco_cartelle.py'>elenco_cartelle.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/trash.py'>trash.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/estensioni.py'>estensioni.py</a></b></td>
+				<td><code>❯ REPLACE-ME</code></td>
+			</tr>
+			</table>
+		</blockquote>
+	</details>
+</details>
+
+---
+
+## 🚀 Getting Started
+
+### ☑️ Prerequisiti
+
+Prima di iniziare con Python-Script, assicurati che il tuo ambiente di esecuzione soddisfi i seguenti requisiti:
+
+- **Linguaggio di Programmazione:** Python
+- **Gestore di Pacchetti:** Pip
+
+### ⚙️ Installatione
+
+Utilizza Python-Script seguendo questi step:
+
+1. Clona la repository the Python-Script:
+
+```sh
+❯ git clone https://github.com/Magnetarman/Python-Script
+```
+
+2. utilizza il terminale per Navigare fino alla cartella:
+
+```sh
+❯ cd Python-Script
+```
+
+3. Lancia "main.py":
+
+```sh
+❯ py main.py
 ```
 
 ---
 
-## Avvio Wrapper 🔧
+## 📌 Roadmap
 
-**Se hai già python installato e configurato:**
-
-1. Clona questa repository:
-
-```bash
-git clone https://github.com/Magnetarman/Python-Script/
-```
-
-2. Lancia il Wrapper:
-
-```bash
-py main.py
-```
-
-3. Segui le istruzioni a schermo per la scelta e l'utilizzo dei vari script
+- [x] **`V 3.0`**: <strike>Creazione 'main.py'.</strike>
+- [ ] **`V 3.1`**: Automatizzare il processo di installazione di Python e dipendenze al 100%.
+- [ ] **`V 4.0`**: unificare il tutto in un unico'main.py' con aggiunta di Interfaccia grafica.
 
 ---
 
-## Aggiornamento Automatico _requirements.txt_
+## 🔰 Come Contribuire
 
-![Update requirements.txt](https://github.com/Magnetarman/Python-Script/actions/workflows/update-reqs.yml/badge.svg)
+- **💬 [Partecipa alle Discussioni](https://github.com/Magnetarman/Python-Script/discussions)**: Condividi le tue idee, fornisci feedback o fai domande.
+- **🐛 [Segnala Problemi](https://github.com/Magnetarman/Python-Script/issues)**: Segnala i bug trovati o richiedi nuove funzionalità per il progetto `Python-Script`.
+- **💡 [ Invia Pull Request](https://github.com/Magnetarman/Python-Script/blob/main/CONTRIBUTING.md)**: Revisiona le Pull Request (PR) aperte e invia le tue.
 
----
+<details closed>
+<summary>Linee Guida</summary>
 
-## Novità della Versione 3.0
+1. **Esegui il Fork della Repository**: Inizia facendo il "fork" della repository del progetto sul tuo account GitHub.
+2. **Clona in Locale**: Clona la repository di cui hai fatto il fork sulla tua macchina locale usando un client Git.
+   ```sh
+   git clone https://github.com/Magnetarman/Python-Script
+   ```
+3. **Crea un Nuovo Branch**: Lavora sempre su un nuovo "branch", dandogli un nome descrittivo.
+   ```sh
+   git checkout -b new-feature-x
+   ```
+4. **Apporta le Tue Modifiche**: Sviluppa e testa le tue modifiche in locale.
+5. **Esegui il Commit delle Tue Modifiche**: Fai il "commit" con un messaggio chiaro che descriva i tuoi aggiornamenti.
+   ```sh
+   git commit -m 'Implementata nuova funzionalità x.'
+   ```
+6. **Esegui il Push su GitHub**: Fai il "push" delle modifiche sulla tua repository "fork".
+   ```sh
+   git push origin nuova-funzionalita-x
+   ```
+7. **nvia una Pull Request**: Crea una "Pull Request" (PR) verso la repository originale del progetto. Descrivi chiaramente le modifiche e le loro motivazioni.
+8. **Revisione**: Una volta che la tua PR sarà revisionata e approvata, verrà unita ("merged") nel branch principale. Congratulazioni per il tuo contributo!
+</details>
 
-- **Punto unificato:**\
-  Introdotto il file `main.py` che gestisce:
-
-  - L'installazione automatica delle dipendenze dal file `requirements.txt`.
-  - Un menu interattivo per scegliere quale script eseguire.
-  - Organizzazione automatica degli script in ordine alfabetico.
-  - Breve descrizione affiancata a ciascuno script.
-
-- **Riorganizzazione della repository:**\
-  Migliore gestione e chiarezza degli strumenti disponibili.
-
----
-
----
-
-## _Script Disponibili_
-
-## _Estrattore Tracce Audio da MKV 🎥🎵_ - **audio_extract.py** 🗂️
-
-Uno script Python per **identificare** e **estrarre tracce audio** da file `.mkv`, singolarmente o in modo ricorsivo da una cartella. Utilizza `ffprobe` per analizzare le tracce e `ffmpeg` per estrarle nel formato `.flac`.
-
----
-
-## Descrizione 📄
-
-Questo **Estrattore Audio da MKV** consente di selezionare e salvare una traccia audio specifica da un file `.mkv`, mantenendo la qualità del flusso originale grazie alla conversione in `.flac`.
-
-Utile per:
-
-- **Recuperare tracce audio multilingua** da film e serie.
-- **Creare archivi audio** da video in alta qualità.
-- **Automatizzare l'estrazione** da intere directory video.
-
----
-
-## Funzionalità 🌟
-
-- **Analisi automatica**: mostra tutte le tracce audio disponibili con la lingua (se presente).
-- **Conversione diretta**: estrae la traccia scelta e la salva come file `.flac`.
-- **Supporto directory**: può elaborare cartelle con più file `.mkv`, anche in modo ricorsivo.
-- **Interfaccia interattiva**: guida passo dopo passo tramite input da terminale.
+<details closed>
+<summary>Contributor Graph</summary>
+<br>
+<p align="left">
+   <a href="https://github.com{/Magnetarman/Python-Script/}graphs/contributors">
+      <img src="https://contrib.rocks/image?repo=Magnetarman/Python-Script">
+   </a>
+</p>
+</details>
 
 ---
 
-## Requisiti 📦
+## 🎗 Licenza
 
-- **ffmpeg** (incluso anche `ffprobe`)
-
-> Assicurati che `ffmpeg` e `ffprobe` siano installati e accessibili tramite il terminale (PATH di sistema).
-
----
-
-## Utilizzo 🚀
-
-### ▶️ Modalità Singolo File
-
-1. Inserisci il percorso di un file `.mkv` quando richiesto.
-2. Visualizza le tracce disponibili.
-3. Seleziona quella da esportare.
-
-### 📁 Modalità Directory
-
-1. Inserisci il percorso di una cartella.
-2. Indica il numero della traccia da estrarre.
-3. Scegli se elaborare ricorsivamente le sottocartelle.
-
-### Esempio Output
-
-file audio verranno salvati con il seguente formato:
-
-```
-nomefile_trackX.flac
-```
-
-Nello **stesso percorso** del video originale, dove `X` è il numero della traccia selezionata.
-
----
-
-## Esempio di Utilizzo 🧪
-
-### Singolo File:
-
-```plaintext
-Inserisci il percorso del file MKV o della directory: /video/film.mkv
-
-Tracce audio trovate:
-0: Traccia 0 (ita)
-1: Traccia 1 (eng)
-
-Inserisci il numero della traccia da esportare: 1
-Audio estratto: /video/film_track1.flac
-```
-
-### Cartella:
-
-```plaintext
-Inserisci il percorso del file MKV o della directory: /media/serie_tv
-Inserisci il numero della traccia da esportare: 0
-Vuoi elaborare tutti i file MKV nella directory in modo ricorsivo? (s/n): s
-```
-
----
-
-## Note 📝
-
-- Funziona solo con file `.mkv`.
-- L'output è sempre in formato `.flac`, ma lo script può essere adattato ad altri formati (`.mp3`, `.wav`, ecc).
-- Le lingue vengono mostrate se disponibili nei metadati.
-
----
-
-## _Analizzatore Codec Video_ - **codec_explorer.py** 🎥📊
-
-Uno strumento grafico interattivo Python che esamina ricorsivamente tutti i video in una directory specificata. Per ogni file video con codec H264 o H265, visualizza:
-
-- Nome file
-- Codec video
-- Risoluzione
-- Bitrate stimato (kbps)
-- Dimensione del file in GB
-
----
-
-### Descrizione 📄
-
-L'**Analizzatore Codec Video** è una utility intuitiva che analizza i file multimediali, identificando i codec H264 e H265 (HEVC) e fornendo statistiche tecniche dettagliate.
-
-Utile per:
-
-- Classificare e organizzare collezioni video in base al codec.
-- Ottenere rapidamente informazioni tecniche sui propri file multimediali.
-- Esportare i dati raccolti per analisi approfondite (Excel/CSV).
-
----
-
-### Funzionalità 🌟
-
-- **Riconoscimento automatico dei codec**: Identifica e separa i file in base al codec video (H264 o H265/HEVC).
-- **Analisi tecnica completa**: Utilizza `ffprobe` per recuperare risoluzione, durata e calcolare il bitrate medio.
-- **Interfaccia grafica intuitiva (Tkinter)**: Permette l'esplorazione e la visualizzazione organizzata dei dati.
-- **Esportazione semplice**: Salva i risultati in formato `.xlsx` (Excel) o `.csv`.
-
----
-
-#### Esempio di Utilizzo 🧪
-
-Passaggi:
-
-1.  Clicca su "Seleziona cartella e analizza".
-2.  Attendi l'analisi dei file video.
-3.  I risultati saranno mostrati in due schede: **Video H264** e **Video H265**.
-4.  Per salvare i dati, clicca su "Esporta in Excel o CSV".
-
----
-
-### Output 📊
-
-I risultati sono organizzati in due tabelle distinte all'interno dell'interfaccia grafica:
-
-#### Video H264
-
-#### Video H265
-
-Ogni riga contiene le seguenti informazioni:
-
-`Nome File` | `Codec` | `Risoluzione` | `Bitrate (kbps)` | `Dimensione (GB)`
-
----
-
-### Note 📝
-
-- **File supportati**: `.mp4`, `.mkv`, `.avi`, `.mov`, `.flv` e altri formati compatibili con `ffprobe`.
-- Lo script ignora automaticamente i file con codec diversi da H264 o H265.
-- Per un funzionamento corretto, `ffprobe` deve essere installato nel sistema.
-- ⚠️ **Dipendenza**: Se `ffprobe` non è disponibile, l'analisi dei file fallirà. Si raccomanda di installare `ffmpeg` (che include `ffprobe`) da [ffmpeg.org](https://ffmpeg.org/) o tramite il tuo gestore di pacchetti.
-
----
-
-## _Estrattore di Colori Dominanti_ - **color_palette.py** 🎨
-
-Uno script Python che estrae i **colori dominanti** da un'immagine utilizzando il **clustering KMeans** e li visualizza come una palette. Lo script semplifica immagini complesse nei colori più rappresentativi e salva il risultato come una palette PDF.
-
----
-
-### Descrizione 📄
-
-L'**Estrattore di Colori Dominanti** analizza un'immagine di input, identifica i colori predominanti utilizzando **KMeans** (machine learning) e genera una **palette visiva chiara** salvata come PDF.
-
-Utile per:
-
-- Designer alla ricerca di ispirazione cromatica.
-- Identificare i colori principali in una foto o immagine.
-- Generare palette cromatiche per progetti creativi e grafici.
-
----
-
-### Funzionalità 🌟
-
-- **Estrazione automatica dei colori**: Rileva i primi N colori dominanti (default: 4).
-- **Supporto immagini versatile**: Gestisce formati RGB, RGBA e scala di grigi.
-- **Visualizzazione intuitiva**: Crea una palette con codici **HEX** chiari e leggibili.
-- **Output in PDF**: Salva la palette cromatica come file **color_palette.pdf**.
-
----
-
-#### Esempio Input
-
-```plaintext
-Please enter the path to the image: /percorso/immagine.jpg
-```
-
-Lo script elaborerà l'immagine, estrarrà i colori dominanti e salverà la palette cromatica come **color_palette.pdf** nella stessa cartella dell'immagine di input.
-
----
-
-### Esempio 📊
-
-#### Immagine di Input
-
-Un esempio di immagine (es. tramonto.jpg):  
-![Esempio Immagine](https://via.placeholder.com/300x200.png?text=Esempio+Immagine)
-
-#### Palette di Output
-
-La palette generata viene visualizzata con i colori dominanti e i relativi codici **HEX**:
-
-```plaintext
-Palette Colori:
-------------------------------
-Colore 1: #FF5733
-Colore 2: #C70039
-Colore 3: #900C3F
-Colore 4: #581845
-```
-
-![Esempio Palette](https://via.placeholder.com/400x100.png?text=Palette+Colori)
-
----
-
-### Output 💽
-
-La palette cromatica viene salvata come file PDF:
-
-```plaintext
-/percorso/immagine/color_palette.pdf
-```
-
-Ogni colore è etichettato con il relativo codice **HEX** per una facile consultazione.
-
----
-
-### Note 📝
-
-- **Formati supportati**: .jpg, .png, .bmp e altri formati compatibili con Pillow.
-- **Suggerimento**: Per risultati ottimali, usa immagini con colori chiari e ben definiti.
-- Il numero di colori è modificabile cambiando il parametro **num_colors** nello script.
+Creato con ❤️ da [Magnetarman](magnetarman.com), potenziato da ChatGPT e grazie ad [Antonio Porcelli](https://progressify.dev/) per avermi inizializzato allo scrivere e capire Python. Licenza MIT.
 
 ---
 
