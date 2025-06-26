@@ -147,7 +147,7 @@ Introdotto il file `main.py` che gestisce:
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/estensioni.py'>estensioni.py</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Analisi e elenco ordinato delle estensioni file in una directory.</code></td>
 			</tr>
 			</table>
 		</blockquote>
