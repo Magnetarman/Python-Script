@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://raw.githubusercontent.com/Magnetarman/Python-Script/Banner.png" alt="python-script-banner" width="800">
+	<img src="https://raw.githubusercontent.com/Magnetarman/Python-Script/refs/heads/main/Banner.png" alt="python-script-banner" width="800">
 </p>
 <br>
 <p align="center">
