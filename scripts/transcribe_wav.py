@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# Trascrive automaticamente i file audio .wav in testo utilizzando il modello Whisper, salvando le trascrizioni e saltando quelle già esistenti.
 import os
 import subprocess
 import sys
