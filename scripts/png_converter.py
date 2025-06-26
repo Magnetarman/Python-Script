@@ -1,3 +1,4 @@
+# Conversione ricorsiva di tutte le immagini PNG in JPEG all'interno di una cartella specificata, gestendo la trasparenza e rimuovendo i file PNG originali.
 import os
 from PIL import Image
 
