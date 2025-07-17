@@ -26,15 +26,19 @@
 
 ## 👾 Features
 
+**Experimental Branch** - Ramo Sperimentale pubblico.
+
+> **ATTENZIONE** - Questo ramo è da interdersi come sviluppo attivo, è sconsigliato utilizzare la versione degli script presenti in questo ramo in quanto potrebbero avere problemi di funzionamento o non avviarsi del tutto. **Consigliato l'utilizzo a personale esperto.**
+
 **Versione 3.0** - Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
 
-Introdotto il file `main.py` che gestisce:
-
-- L'installazione automatica delle dipendenze dal file `requirements.txt`.
-- Un menu interattivo per scegliere quale script eseguire.
-- Organizzazione automatica degli script in ordine alfabetico.
-- Breve descrizione affiancata a ciascuno script.
-- Migliore gestione e chiarezza degli strumenti disponibili.
+> Introdotto il file `main.py` che gestisce:
+>
+> - L'installazione automatica delle dipendenze dal file `requirements.txt`.
+> - Un menu interattivo per scegliere quale script eseguire.
+> - Organizzazione automatica degli script in ordine alfabetico.
+> - Breve descrizione affiancata a ciascuno script.
+> - Migliore gestione e chiarezza degli strumenti disponibili.
 
 ---
 
@@ -65,9 +69,7 @@ Introdotto il file `main.py` che gestisce:
         ├── remove.py
         ├── sposta_file.py
         ├── transcribe_wav.py
-        ├── pdf_combiner.py
         └── trash.py
-
 ```
 
 ### 📂 Idex Progetto
@@ -150,10 +152,6 @@ Introdotto il file `main.py` che gestisce:
 			<tr>
 				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/estensioni.py'>estensioni.py</a></b></td>
 				<td><code>❯ Analisi e elenco ordinato delle estensioni file in una directory.</code></td>
-			</tr>
-				<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/pdf_combiner.py'>pdf_combiner.py</a></b></td>
-				<td><code>❯  Genera PDF da immagini Jpeg.</code></td>
 			</tr>
 			</table>
 		</blockquote>
