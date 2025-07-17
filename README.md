@@ -65,7 +65,7 @@ Introdotto il file `main.py` che gestisce:
         ├── remove.py
         ├── sposta_file.py
         ├── transcribe_wav.py
-		├── pdf_combiner.py
+        ├── pdf_combiner.py
         └── trash.py
 
 ```
