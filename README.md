@@ -8,7 +8,7 @@
 <br>
 <p align="center">
 	<img src="https://img.shields.io/badge/version-3.1.2-blue.svg" alt="versione">
-	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
+	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script/Experimental?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
 	<img src="https://img.shields.io/github/languages/top/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-top-language">
 	<img src="https://img.shields.io/github/languages/count/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-language-count">
 	<img src="https://img.shields.io/github/license/Magnetarman/Python-Script?style=flat&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
