@@ -82,7 +82,7 @@ def import_whisper():
             print(f"Impossibile importare whisper anche dopo l'installazione: {e}")
             sys.exit(1)
 
-def transcribe_podcast(file_path, model_name='large-v3', language='it'):
+def transcribe_podcast(file_path, model_name='medium', language='it'):
     """
     Trascrive un file audio in formato .wav utilizzando il modello Whisper.
     """
