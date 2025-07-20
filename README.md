@@ -69,6 +69,7 @@
         ├── remove.py
         ├── sposta_file.py
         ├── transcribe_wav.py
+		├── pdf_combiner.py
         └── trash.py
 ```
 
@@ -152,6 +153,11 @@
 			<tr>
 				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/estensioni.py'>estensioni.py</a></b></td>
 				<td><code>❯ Analisi e elenco ordinato delle estensioni file in una directory.</code></td>
+				</tr>
+				<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/pdf_combiner.py'>pdf_combiner.py</a></b></td>
+				<td><code>❯  Genera PDF da immagini Jpeg.</code></td>
+			</tr>
 			</tr>
 			</table>
 		</blockquote>
@@ -197,8 +203,10 @@ Utilizza Python-Script seguendo questi step:
 
 - [x] **`V 3.0`**: <strike>Creazione 'main.py'.</strike>
 - [x] **`V 3.1`**: <strike>Refactor 'Readme.md'. Creazione Cartella 'Docs' con la documentazione di ogni script.</strike>
+- [x] **`V 3.1.1`**: <strike>Aggiunta Script PDF Combiner in versione Stabile.</strike>
+- [x] **`V 3.1.2`**: <strike>il wrapper `main.py` aggiunge automaticamente i nuovi script all'avvio.</strike>
 - [ ] **`V 3.2`**: Automatizzare il processo di installazione di Python e dipendenze al 100%.
-- [ ] **`V 4.0`**: unificare il tutto in un unico'main.py' con aggiunta di Interfaccia grafica.
+- [ ] **`V 4.0`**: unificare il tutto in un unico 'main.py' con aggiunta di Interfaccia grafica.
 
 ---
 
@@ -231,16 +239,6 @@ Utilizza Python-Script seguendo questi step:
    ```
 7. **Invia una Pull Request**: Crea una "Pull Request" (PR) verso la repository originale del progetto. Descrivi chiaramente le modifiche e le loro motivazioni.
 8. **Revisione**: Una volta che la tua PR sarà revisionata e approvata, verrà unita ("merged") nel branch principale. Congratulazioni per il tuo contributo!
-</details>
-
-<details closed>
-<summary>Contributor Graph</summary>
-<br>
-<p align="left">
-   <a href="https://github.com{/Magnetarman/Python-Script/}graphs/contributors">
-      <img src="https://contrib.rocks/image?repo=Magnetarman/Python-Script">
-   </a>
-</p>
 </details>
 
 ---
