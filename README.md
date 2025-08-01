@@ -53,7 +53,7 @@
     ├── README.md
     ├── install.ps1
     ├── main.py
-	├── Docs
+    ├── Docs
     ├── pipreqs-config.toml
     ├── requirements.txt
     └── scripts
@@ -185,7 +185,7 @@ Utilizza Python-Script seguendo questi step:
 ❯ git clone https://github.com/Magnetarman/Python-Script
 ```
 
-2. utilizza il terminale per Navigare fino alla cartella:
+2. Utilizza il terminale per Navigare fino alla cartella:
 
 ```sh
 ❯ cd Python-Script
@@ -205,7 +205,7 @@ Utilizza Python-Script seguendo questi step:
 ❯ git clone https://github.com/Magnetarman/Python-Script
 ```
 
-2. utilizza il terminale per Navigare fino alla cartella:
+2. Avvia il terminale in **modalita amministratore**, Naviga fino alla cartella::
 
 ```sh
 ❯ cd Python-Script
@@ -214,7 +214,7 @@ Utilizza Python-Script seguendo questi step:
 3. Avvia lo script `install.ps1`:
 
 ```sh
-❯ /install.ps1
+❯ ./install.ps1
 ```
 
 > Lo script `install.ps1` avviato installerà Python e dipendenze minimali. Successivamente lo scipt si occuperà di avviare automaticamente il `main.py` per utilizzare gli script disponibili.
