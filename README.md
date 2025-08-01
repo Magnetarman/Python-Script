@@ -197,6 +197,28 @@ Utilizza Python-Script seguendo questi step:
 ❯ py main.py
 ```
 
+### ⚙️ Installatione Alternativa
+
+1. Clona la repository the Python-Script:
+
+```sh
+❯ git clone https://github.com/Magnetarman/Python-Script
+```
+
+2. utilizza il terminale per Navigare fino alla cartella:
+
+```sh
+❯ cd Python-Script
+```
+
+3. Avvia lo script `install.ps1`:
+
+```sh
+❯ /install.ps1
+```
+
+> Lo script `install.ps1` avviato installerà Python e dipendenze minimali. Successivamente lo scipt si occuperà di avviare automaticamente il `main.py` per utilizzare gli script disponibili.
+
 ---
 
 ## 📌 Roadmap
