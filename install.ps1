@@ -282,6 +282,92 @@ if ($versionToUse -ne "") {
     Write-Host "ERRORE: Nessuna versione Python utilizzabile trovata!"
 }
 
+# Funzione per aggiungere Python e pip al PATH di Windows
+function Add-PythonToPath {
+    param (
+        [string]$pythonVersion
+    )
+    
+    Write-Host "Aggiungendo Python $pythonVersion al PATH di Windows..."
+    
+    try {
+        # Ottieni il percorso di installazione di Python
+        $pythonOutput = py -$pythonVersion -c "import sys; print(sys.executable)" 2>$null
+        
+        if ($pythonOutput) {
+            $pythonPath = Split-Path $pythonOutput
+            $scriptsPath = Join-Path $pythonPath "Scripts"
+            
+            Write-Host "Percorso Python: $pythonPath"
+            Write-Host "Percorso Scripts: $scriptsPath"
+            
+            # Ottieni il PATH corrente
+            $currentPath = [Environment]::GetEnvironmentVariable("PATH", "User")
+            
+            # Controlla se i percorsi sono già nel PATH
+            $pathsToAdd = @()
+            
+            if ($currentPath -notlike "*$pythonPath*") {
+                $pathsToAdd += $pythonPath
+                Write-Host "Aggiungendo $pythonPath al PATH..."
+            } else {
+                Write-Host "Python path già presente nel PATH."
+            }
+            
+            if ($currentPath -notlike "*$scriptsPath*") {
+                $pathsToAdd += $scriptsPath
+                Write-Host "Aggiungendo $scriptsPath al PATH..."
+            } else {
+                Write-Host "Scripts path già presente nel PATH."
+            }
+            
+            # Aggiungi i percorsi al PATH se necessario
+            if ($pathsToAdd.Count -gt 0) {
+                $newPath = $currentPath
+                foreach ($pathToAdd in $pathsToAdd) {
+                    if ($newPath -ne "") {
+                        $newPath += ";"
+                    }
+                    $newPath += $pathToAdd
+                }
+                
+                # Imposta il nuovo PATH per l'utente corrente
+                [Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
+                
+                # Aggiorna il PATH nella sessione corrente
+                $env:PATH = $newPath
+                
+                Write-Host "PATH aggiornato con successo!"
+                Write-Host "I percorsi Python sono ora disponibili globalmente."
+                
+                return $true
+            } else {
+                Write-Host "Tutti i percorsi Python sono già nel PATH."
+                return $true
+            }
+        } else {
+            Write-Host "Impossibile ottenere il percorso di Python $pythonVersion"
+            return $false
+        }
+    }
+    catch {
+        Write-Host "Errore durante l'aggiunta di Python al PATH: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+# Aggiungi la versione Python principale al PATH
+if ($versionToUse -ne "") {
+    Write-Host "Configurazione PATH per Python $versionToUse..."
+    $pathResult = Add-PythonToPath -pythonVersion $versionToUse
+    
+    if ($pathResult) {
+        Write-Host "PATH configurato correttamente!"
+    } else {
+        Write-Host "Problemi nella configurazione del PATH, continuo comunque..."
+    }
+}
+
 # Visualizzare il messaggio "Attendere..." per 2 secondi
 Write-Host ""
 Write-Host "Attendere..."
@@ -309,11 +395,18 @@ if (Test-Path $mainScript) {
     if ($executionVersion -ne "") {
         Write-Host "Eseguo main.py con Python $executionVersion..."
         
+        # Aggiungi anche questa versione al PATH se diversa da quella usata per le dipendenze
+        if ($executionVersion -ne $versionToUse) {
+            Write-Host "Configurazione PATH per Python $executionVersion..."
+            Add-PythonToPath -pythonVersion $executionVersion
+        }
+        
         # Verifica finale che la versione sia utilizzabile
         try {
             $testResult = py -$executionVersion --version 2>$null
             if ($testResult -match "Python $executionVersion") {
                 # Esegui main.py con la versione Python corretta
+                Write-Host "Avvio di main.py..."
                 py -$executionVersion $mainScript
             } else {
                 Write-Host "Versione $executionVersion non verificabile, uso comando generico..."
