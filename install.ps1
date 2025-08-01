@@ -13,61 +13,87 @@ if (-not (Check-Admin)) {
     exit
 }
 
-# Funzione per verificare se una versione specifica di Python è installata
-function Check-PythonVersion {
-    param (
-        [string]$version
-    )
+# Funzione per ottenere tutte le versioni Python realmente disponibili
+function Get-AvailablePythonVersions {
+    $availableVersions = @()
     
     try {
-        $output = py -$version --version 2>$null
-        if ($output -match "Python $version") {
-            return $true
+        # Usa py -0 per ottenere la lista delle versioni installate
+        $output = py -0 2>&1
+        
+        if ($output) {
+            foreach ($line in $output) {
+                if ($line -match '-(\d+\.\d+)') {
+                    $version = $matches[1]
+                    if ($version -notin $availableVersions) {
+                        $availableVersions += $version
+                    }
+                }
+            }
         }
     }
     catch {
-        # Ignora l'errore e continua
+        Write-Host "Errore nel rilevamento versioni Python: $($_.Exception.Message)"
     }
     
-    return $false
+    # Se py -0 non funziona, prova metodi alternativi
+    if ($availableVersions.Count -eq 0) {
+        # Prova con comandi diretti
+        $testVersions = @("3.12", "3.11", "3.10", "3.9", "3.8")
+        foreach ($version in $testVersions) {
+            try {
+                $result = py -$version --version 2>$null
+                if ($result -and $result -match "Python $version") {
+                    $availableVersions += $version
+                }
+            }
+            catch {
+                # Versione non disponibile
+            }
+        }
+    }
+    
+    return $availableVersions
 }
 
-# Funzione per installare Python tramite winget
-function Install-Python {
+# Funzione per installare Python tramite winget se necessario
+function Install-PythonIfNeeded {
     param (
         [string]$version
     )
     
-    Write-Host "Installando Python $version tramite winget..."
+    Write-Host "Tentativo di installazione Python $version tramite winget..."
     
     try {
         switch ($version) {
             "3.10" { 
-                winget install --id Python.Python.3.10 -e --source winget --accept-source-agreements --accept-package-agreements
+                winget install --id Python.Python.3.10 -e --source winget --accept-source-agreements --accept-package-agreements --silent
             }
             "3.11" { 
-                winget install --id Python.Python.3.11 -e --source winget --accept-source-agreements --accept-package-agreements
+                winget install --id Python.Python.3.11 -e --source winget --accept-source-agreements --accept-package-agreements --silent
             }
             "3.12" { 
-                winget install --id Python.Python.3.12 -e --source winget --accept-source-agreements --accept-package-agreements
-            }
-            default { 
-                Write-Host "Versione Python non supportata: $version"
-                return $false
+                winget install --id Python.Python.3.12 -e --source winget --accept-source-agreements --accept-package-agreements --silent
             }
         }
         
-        # Aspetta un momento per permettere l'installazione
-        Start-Sleep -Seconds 3
+        # Attendi e ricontrolla
+        Start-Sleep -Seconds 5
         
-        # Verifica se l'installazione è riuscita
-        if (Check-PythonVersion -version $version) {
-            Write-Host "Python $version installato con successo."
-            return $true
-        } else {
-            Write-Host "Installazione di Python $version completata, ma verifica fallita."
-            return $false
+        # Verifica se ora è disponibile
+        try {
+            $result = py -$version --version 2>$null
+            if ($result -and $result -match "Python $version") {
+                Write-Host "Python $version installato e verificato con successo."
+                return $true
+            }
         }
+        catch {
+            # Installazione fallita
+        }
+        
+        Write-Host "Installazione di Python $version non riuscita o non verificabile."
+        return $false
     }
     catch {
         Write-Host "Errore durante l'installazione di Python $version : $($_.Exception.Message)"
@@ -75,7 +101,7 @@ function Install-Python {
     }
 }
 
-# Funzione per installare le dipendenze Python
+# Funzione per installare le dipendenze
 function Install-Dependencies {
     param (
         [string]$pythonVersion
@@ -86,32 +112,89 @@ function Install-Dependencies {
     
     Write-Host "Installando dipendenze con Python $pythonVersion..."
     
+    # Verifica che la versione sia realmente disponibile prima di procedere
+    try {
+        $testResult = py -$pythonVersion --version 2>$null
+        if (-not ($testResult -match "Python $pythonVersion")) {
+            Write-Host "ERRORE: Python $pythonVersion non è realmente disponibile!"
+            return $false
+        }
+    }
+    catch {
+        Write-Host "ERRORE: Impossibile verificare Python $pythonVersion!"
+        return $false
+    }
+    
     # Aggiorna pip
     Write-Host "Aggiornamento di pip..."
-    py -$pythonVersion -m pip install --upgrade pip
+    try {
+        py -$pythonVersion -m pip install --upgrade pip --quiet
+        Write-Host "Pip aggiornato con successo."
+    }
+    catch {
+        Write-Host "Errore nell'aggiornamento di pip, continuo comunque..."
+    }
     
     if (Test-Path $requirementsFile) {
         Write-Host "Trovato requirements.txt. Installando dipendenze..."
-        py -$pythonVersion -m pip install -r $requirementsFile
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "Dipendenze installate con successo da requirements.txt"
-            return $true
-        } else {
-            Write-Host "Errore durante l'installazione da requirements.txt"
+        try {
+            py -$pythonVersion -m pip install -r $requirementsFile
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "Dipendenze installate con successo da requirements.txt"
+                return $true
+            } else {
+                Write-Host "Errore durante l'installazione da requirements.txt (codice: $LASTEXITCODE)"
+                
+                # Prova installazione delle dipendenze una per una
+                Write-Host "Tentativo di installazione individuale delle dipendenze..."
+                $content = Get-Content $requirementsFile
+                $success = $true
+                
+                foreach ($line in $content) {
+                    $line = $line.Trim()
+                    if ($line -and -not $line.StartsWith("#")) {
+                        Write-Host "Installando: $line"
+                        try {
+                            py -$pythonVersion -m pip install $line
+                            if ($LASTEXITCODE -ne 0) {
+                                Write-Host "Errore con $line, continuo con le altre..."
+                                $success = $false
+                            }
+                        }
+                        catch {
+                            Write-Host "Eccezione durante l'installazione di $line"
+                            $success = $false
+                        }
+                    }
+                }
+                
+                return $success
+            }
+        }
+        catch {
+            Write-Host "Eccezione durante l'installazione delle dipendenze: $($_.Exception.Message)"
             return $false
         }
     } else {
         Write-Host "File requirements.txt non trovato. Installando librerie comuni..."
         
-        $commonLibraries = @("numpy", "pandas", "matplotlib", "requests", "pillow")
+        $commonLibraries = @("numpy", "pandas", "matplotlib", "requests")
         $allSuccess = $true
         
         foreach ($lib in $commonLibraries) {
             Write-Host "Installando $lib..."
-            py -$pythonVersion -m pip install $lib
-            if ($LASTEXITCODE -ne 0) {
-                Write-Host "Errore durante l'installazione di $lib"
+            try {
+                py -$pythonVersion -m pip install $lib --quiet
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "$lib installato con successo."
+                } else {
+                    Write-Host "Errore durante l'installazione di $lib"
+                    $allSuccess = $false
+                }
+            }
+            catch {
+                Write-Host "Eccezione durante l'installazione di $lib"
                 $allSuccess = $false
             }
         }
@@ -120,61 +203,88 @@ function Install-Dependencies {
     }
 }
 
-# Lista delle versioni Python da installare
-$pythonVersions = @("3.10", "3.11", "3.12")
-$installedVersions = @()
-$primaryVersion = ""
+Write-Host "=== INIZIO CONTROLLO E INSTALLAZIONE PYTHON ==="
 
-Write-Host "Controllo e installazione delle versioni Python..."
+# Ottieni versioni Python realmente disponibili
+Write-Host "Rilevamento versioni Python disponibili..."
+$availableVersions = Get-AvailablePythonVersions
 
-# Controlla e installa ogni versione
-foreach ($version in $pythonVersions) {
-    Write-Host "`nControllo Python $version..."
-    
-    if (Check-PythonVersion -version $version) {
-        Write-Host "Python $version è già installato."
-        $installedVersions += $version
-        if ($primaryVersion -eq "") {
-            $primaryVersion = $version
-        }
-    } else {
-        Write-Host "Python $version non trovato. Procedo con l'installazione..."
-        if (Install-Python -version $version) {
-            $installedVersions += $version
-            if ($primaryVersion -eq "") {
-                $primaryVersion = $version
-            }
-        }
+if ($availableVersions.Count -gt 0) {
+    Write-Host "Versioni Python trovate:"
+    foreach ($version in $availableVersions) {
+        Write-Host "  - Python $version"
     }
-}
-
-# Mostra riepilogo versioni installate
-Write-Host "`nRiepilogo versioni Python installate:"
-foreach ($version in $installedVersions) {
-    Write-Host "  - Python $version"
-}
-
-# Determina la versione da usare per le dipendenze
-if ($installedVersions.Count -gt 0) {
-    # Preferisci 3.11 se disponibile, altrimenti usa la più recente
-    if ($installedVersions -contains "3.11") {
-        $primaryVersion = "3.11"
-    } elseif ($installedVersions -contains "3.12") {
-        $primaryVersion = "3.12"
-    } else {
-        $primaryVersion = $installedVersions[-1]
-    }
-    
-    Write-Host "`nUsando Python $primaryVersion per installare le dipendenze..."
-    Install-Dependencies -pythonVersion $primaryVersion
 } else {
-    Write-Host "`nNessuna versione di Python è stata installata correttamente."
-    Write-Host "Tentativo di installazione del Python Launcher..."
-    winget install --id Python.Launcher -e --source winget --accept-source-agreements --accept-package-agreements
+    Write-Host "Nessuna versione Python trovata. Installazione di Python 3.11..."
+    
+    # Installa Python Launcher se non presente
+    Write-Host "Installando Python Launcher..."
+    winget install --id Python.Launcher -e --source winget --accept-source-agreements --accept-package-agreements --silent
+    
+    # Installa Python 3.11
+    if (Install-PythonIfNeeded -version "3.11") {
+        $availableVersions += "3.11"
+    }
+    
+    # Se 3.11 fallisce, prova 3.10
+    if ($availableVersions.Count -eq 0) {
+        if (Install-PythonIfNeeded -version "3.10") {
+            $availableVersions += "3.10"
+        }
+    }
+}
+
+# Installa versioni aggiuntive se necessario
+$targetVersions = @("3.11", "3.12")
+foreach ($targetVersion in $targetVersions) {
+    if ($targetVersion -notin $availableVersions) {
+        Write-Host "Tentativo di installazione Python $targetVersion..."
+        if (Install-PythonIfNeeded -version $targetVersion) {
+            $availableVersions += $targetVersion
+        }
+    }
+}
+
+# Ri-rileva le versioni dopo le installazioni
+Write-Host "Ri-rilevamento versioni Python dopo installazioni..."
+$finalVersions = Get-AvailablePythonVersions
+
+Write-Host "Versioni Python finali disponibili:"
+if ($finalVersions.Count -gt 0) {
+    foreach ($version in $finalVersions) {
+        Write-Host "  - Python $version"
+    }
+} else {
+    Write-Host "ATTENZIONE: Nessuna versione Python rilevata!"
+}
+
+# Scegli la versione migliore per installare le dipendenze
+$versionToUse = ""
+$preferenceOrder = @("3.11", "3.12", "3.10", "3.9", "3.8")
+
+foreach ($preferredVersion in $preferenceOrder) {
+    if ($preferredVersion -in $finalVersions) {
+        $versionToUse = $preferredVersion
+        break
+    }
+}
+
+if ($versionToUse -ne "") {
+    Write-Host "Usando Python $versionToUse per installare le dipendenze..."
+    $installResult = Install-Dependencies -pythonVersion $versionToUse
+    
+    if ($installResult) {
+        Write-Host "Dipendenze installate con successo!"
+    } else {
+        Write-Host "Problemi durante l'installazione delle dipendenze."
+    }
+} else {
+    Write-Host "ERRORE: Nessuna versione Python utilizzabile trovata!"
 }
 
 # Visualizzare il messaggio "Attendere..." per 2 secondi
-Write-Host "`nAttendere..."
+Write-Host ""
+Write-Host "Attendere..."
 Start-Sleep -Seconds 2
 
 # Ottieni il percorso della cartella in cui è stato eseguito lo script PowerShell
@@ -182,39 +292,66 @@ $scriptDir = Get-Location
 
 # Verifica se il file main.py esiste nella stessa cartella dello script PowerShell
 $mainScript = Join-Path $scriptDir "main.py"
+Write-Host "Verifica esistenza main.py in: $scriptDir"
+
 if (Test-Path $mainScript) {
-    Write-Host "`nTrovato main.py nella cartella dello script."
+    Write-Host "Trovato main.py nella cartella dello script."
     
-    # Determina la versione Python migliore da usare
-    $versionToUse = ""
-    
-    if ($installedVersions -contains "3.11") {
-        $versionToUse = "3.11"
-    } elseif ($installedVersions -contains "3.12") {
-        $versionToUse = "3.12"
-    } elseif ($installedVersions -contains "3.10") {
-        $versionToUse = "3.10"
+    # Usa la versione Python migliore disponibile
+    $executionVersion = ""
+    foreach ($preferredVersion in $preferenceOrder) {
+        if ($preferredVersion -in $finalVersions) {
+            $executionVersion = $preferredVersion
+            break
+        }
     }
     
-    if ($versionToUse -ne "") {
-        Write-Host "Eseguo main.py con Python $versionToUse..."
+    if ($executionVersion -ne "") {
+        Write-Host "Eseguo main.py con Python $executionVersion..."
         
-        # Esegui main.py con la versione Python corretta
-        py -$versionToUse $mainScript
-    } else {
-        Write-Host "Nessuna versione Python valida trovata. Tentativo con 'python'..."
-        python $mainScript
-        
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "Tentativo con 'py'..."
+        # Verifica finale che la versione sia utilizzabile
+        try {
+            $testResult = py -$executionVersion --version 2>$null
+            if ($testResult -match "Python $executionVersion") {
+                # Esegui main.py con la versione Python corretta
+                py -$executionVersion $mainScript
+            } else {
+                Write-Host "Versione $executionVersion non verificabile, uso comando generico..."
+                py $mainScript
+            }
+        }
+        catch {
+            Write-Host "Errore nella verifica finale, uso comando generico..."
             py $mainScript
+        }
+    } else {
+        Write-Host "Nessuna versione Python valida, tentativo con comando generico..."
+        try {
+            py $mainScript
+        }
+        catch {
+            Write-Host "Tentativo con 'python'..."
+            python $mainScript
         }
     }
 } else {
-    Write-Host "`nIl file main.py non è stato trovato nella stessa cartella dello script PowerShell."
+    Write-Host "Il file main.py non è stato trovato nella stessa cartella dello script PowerShell."
     Write-Host "Cartella corrente: $scriptDir"
     Write-Host "File cercato: $mainScript"
+    
+    # Lista i file .py nella cartella per debug
+    $pyFiles = Get-ChildItem -Path $scriptDir -Filter "*.py" -ErrorAction SilentlyContinue
+    if ($pyFiles.Count -gt 0) {
+        Write-Host "File Python trovati nella cartella:"
+        foreach ($file in $pyFiles) {
+            Write-Host "  - $($file.Name)"
+        }
+    } else {
+        Write-Host "Nessun file Python trovato nella cartella."
+    }
 }
 
-Write-Host "`nScript completato. Premere un tasto per chiudere..."
+Write-Host ""
+Write-Host "=== SCRIPT COMPLETATO ==="
+Write-Host "Premere un tasto per chiudere..."
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
