@@ -202,7 +202,7 @@ Utilizza Python-Script seguendo questi step:
 ❯ git clone https://github.com/Magnetarman/Python-Script
 ```
 
-2. Avvia il terminale in **modalita amministratore**, Naviga fino alla cartella::
+2. Avvia il terminale in **modalita amministratore**, Naviga fino alla cartella:
 
 ```sh
 ❯ cd Python-Script
