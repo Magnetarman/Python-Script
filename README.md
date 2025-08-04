@@ -7,7 +7,7 @@
 </p>
 <br>
 <p align="center">
-	<img src="https://img.shields.io/badge/version-3.1-blue.svg" alt="versione">
+	<img src="https://img.shields.io/badge/version-3.2-blue.svg" alt="versione">
 	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
 	<img src="https://img.shields.io/github/languages/top/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-top-language">
 	<img src="https://img.shields.io/github/languages/count/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-language-count">
@@ -53,7 +53,7 @@
     ├── README.md
     ├── install.ps1
     ├── main.py
-	├── Docs
+    ├── Docs
     ├── pipreqs-config.toml
     ├── requirements.txt
     └── scripts
@@ -69,6 +69,7 @@
         ├── remove.py
         ├── sposta_file.py
         ├── transcribe_wav.py
+        ├── pdf_combiner.py
         └── trash.py
 ```
 
@@ -152,6 +153,11 @@
 			<tr>
 				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/estensioni.py'>estensioni.py</a></b></td>
 				<td><code>❯ Analisi e elenco ordinato delle estensioni file in una directory.</code></td>
+				</tr>
+				<tr>
+				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/pdf_combiner.py'>pdf_combiner.py</a></b></td>
+				<td><code>❯  Genera PDF da immagini Jpeg.</code></td>
+			</tr>
 			</tr>
 			</table>
 		</blockquote>
@@ -179,7 +185,7 @@ Utilizza Python-Script seguendo questi step:
 ❯ git clone https://github.com/Magnetarman/Python-Script
 ```
 
-2. utilizza il terminale per Navigare fino alla cartella:
+2. Utilizza il terminale per Navigare fino alla cartella:
 
 ```sh
 ❯ cd Python-Script
@@ -191,14 +197,38 @@ Utilizza Python-Script seguendo questi step:
 ❯ py main.py
 ```
 
+### ⚙️ Installatione Alternativa
+
+1. Clona la repository the Python-Script:
+
+```sh
+❯ git clone https://github.com/Magnetarman/Python-Script
+```
+
+2. Avvia il terminale in **modalita amministratore**, Naviga fino alla cartella::
+
+```sh
+❯ cd Python-Script
+```
+
+3. Avvia lo script `install.ps1`:
+
+```sh
+❯ ./install.ps1
+```
+
+> Lo script `install.ps1` avviato installerà Python e dipendenze minimali. Successivamente lo scipt si occuperà di avviare automaticamente il `main.py` per utilizzare gli script disponibili.
+
 ---
 
 ## 📌 Roadmap
 
 - [x] **`V 3.0`**: <strike>Creazione 'main.py'.</strike>
 - [x] **`V 3.1`**: <strike>Refactor 'Readme.md'. Creazione Cartella 'Docs' con la documentazione di ogni script.</strike>
-- [ ] **`V 3.2`**: Automatizzare il processo di installazione di Python e dipendenze al 100%.
-- [ ] **`V 4.0`**: unificare il tutto in un unico'main.py' con aggiunta di Interfaccia grafica.
+- [x] **`V 3.1.1`**: <strike>Aggiunta Script PDF Combiner in versione Stabile.</strike>
+- [x] **`V 3.1.2`**: <strike>il wrapper `main.py` aggiunge automaticamente i nuovi script all'avvio.</strike>
+- [x] **`V 3.2`**: Automatizzare il processo di installazione di Python e dipendenze al 100%.
+- [ ] **`V 4.0`**: unificare il tutto in un unico 'main.py' con aggiunta di Interfaccia grafica.
 
 ---
 
@@ -231,16 +261,6 @@ Utilizza Python-Script seguendo questi step:
    ```
 7. **Invia una Pull Request**: Crea una "Pull Request" (PR) verso la repository originale del progetto. Descrivi chiaramente le modifiche e le loro motivazioni.
 8. **Revisione**: Una volta che la tua PR sarà revisionata e approvata, verrà unita ("merged") nel branch principale. Congratulazioni per il tuo contributo!
-</details>
-
-<details closed>
-<summary>Contributor Graph</summary>
-<br>
-<p align="left">
-   <a href="https://github.com{/Magnetarman/Python-Script/}graphs/contributors">
-      <img src="https://contrib.rocks/image?repo=Magnetarman/Python-Script">
-   </a>
-</p>
 </details>
 
 ---

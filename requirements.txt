@@ -1,9 +1,10 @@
 beautifulsoup4==4.13.4
 matplotlib==3.10.3
 numpy==2.3.1
-pandas==2.3.0
+pandas==2.3.1
 pdfkit==1.0.0
-Pillow==11.2.1
+Pillow==11.3.0
+reportlab==4.4.2
 Requests==2.32.4
-scikit_learn==1.7.0
+scikit_learn==1.7.1
 whisper==1.1.10

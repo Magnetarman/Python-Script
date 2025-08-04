@@ -8,8 +8,8 @@ def upgrade_pip_and_install_whisper():
     """
     Aggiorna pip e installa o reinstalla correttamente whisper.
     """
-    user_name = os.getlogin()
-    python_path = os.path.join(f"C:\\Users\\{user_name}\\AppData\\Local\\Programs\\Python\\Python310", "python.exe")
+    user_home = os.environ.get('USERPROFILE')
+    python_path = os.path.join(user_home, "AppData", "Local", "Programs", "Python", "Python310", "python.exe")
     
     if not os.path.exists(python_path):
         print(f"Errore: Python 3.10 non trovato in {python_path}.")
@@ -43,11 +43,11 @@ def ensure_python_3_10():
     if sys.version_info[0] != 3 or sys.version_info[1] != 10:
         print("Forzando l'esecuzione con Python 3.10...")
 
-        # Recupera il nome dell'utente corrente
-        user_name = os.getlogin()
+        # Recupera il percorso della home directory reale
+        user_home = os.environ.get('USERPROFILE')
 
         # Costruisci il percorso di Python 3.10 dinamicamente
-        python_path = os.path.join(f"C:\\Users\\{user_name}\\AppData\\Local\\Programs\\Python\\Python310", "python.exe")
+        python_path = os.path.join(user_home, "AppData", "Local", "Programs", "Python", "Python310", "python.exe")
 
         if not os.path.exists(python_path):
             print(f"Errore: Python 3.10 non trovato in {python_path}. Verifica che Python 3.10 sia installato correttamente.")
