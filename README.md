@@ -227,7 +227,7 @@ Utilizza Python-Script seguendo questi step:
 - [x] **`V 3.1`**: <strike>Refactor 'Readme.md'. Creazione Cartella 'Docs' con la documentazione di ogni script.</strike>
 - [x] **`V 3.1.1`**: <strike>Aggiunta Script PDF Combiner in versione Stabile.</strike>
 - [x] **`V 3.1.2`**: <strike>il wrapper `main.py` aggiunge automaticamente i nuovi script all'avvio.</strike>
-- [x] **`V 3.2`**: Automatizzare il processo di installazione di Python e dipendenze al 100%.
+- [x] **`V 3.2`**: <strike>Automatizzare il processo di installazione di Python e dipendenze al 100%.</strike>
 - [ ] **`V 4.0`**: unificare il tutto in un unico 'main.py' con aggiunta di Interfaccia grafica.
 
 ---
