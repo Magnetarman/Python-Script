@@ -26,9 +26,6 @@
 
 ## 👾 Features
 
-**Experimental Branch** - Ramo Sperimentale pubblico.
-
-> **ATTENZIONE** - Questo ramo è da interdersi come sviluppo attivo, è sconsigliato utilizzare la versione degli script presenti in questo ramo in quanto potrebbero avere problemi di funzionamento o non avviarsi del tutto. **Consigliato l'utilizzo a personale esperto.**
 
 **Versione 3.0** - Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
 
