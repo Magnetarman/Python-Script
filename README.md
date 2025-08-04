@@ -7,8 +7,8 @@
 </p>
 <br>
 <p align="center">
-	<img src="https://img.shields.io/badge/version-3.1.2-blue.svg" alt="versione">
-	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script/Experimental?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
+	<img src="https://img.shields.io/badge/version-3.2-blue.svg" alt="versione">
+	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
 	<img src="https://img.shields.io/github/languages/top/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-top-language">
 	<img src="https://img.shields.io/github/languages/count/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-language-count">
 	<img src="https://img.shields.io/github/license/Magnetarman/Python-Script?style=flat&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
@@ -227,7 +227,7 @@ Utilizza Python-Script seguendo questi step:
 - [x] **`V 3.1`**: <strike>Refactor 'Readme.md'. Creazione Cartella 'Docs' con la documentazione di ogni script.</strike>
 - [x] **`V 3.1.1`**: <strike>Aggiunta Script PDF Combiner in versione Stabile.</strike>
 - [x] **`V 3.1.2`**: <strike>il wrapper `main.py` aggiunge automaticamente i nuovi script all'avvio.</strike>
-- [ ] **`V 3.2`**: Automatizzare il processo di installazione di Python e dipendenze al 100%.
+- [x] **`V 3.2`**: Automatizzare il processo di installazione di Python e dipendenze al 100%.
 - [ ] **`V 4.0`**: unificare il tutto in un unico 'main.py' con aggiunta di Interfaccia grafica.
 
 ---
