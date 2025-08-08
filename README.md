@@ -70,7 +70,7 @@
         └── trash.py
 ```
 
-### 📂 Idex Progetto
+### 📂 Index Progetto
 
 <details open>
 	<summary><b><code>PYTHON-SCRIPT/</code></b></summary>
