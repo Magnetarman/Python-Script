@@ -54,6 +54,20 @@
     ├── install.ps1
     ├── main.py
     ├── Docs
+		├── audio_extract.md
+        ├── codec_expoler.md
+        ├── color_palette.md
+        ├── efolder.md
+        ├── eml_converter.md
+        ├── estensioni.md
+        ├── image_downloader.md
+        ├── png_converter.md
+        ├── remove.md
+        ├── sposta_file.md
+        ├── transcribe_wav.md
+        ├── pdf_combiner.md
+        ├── trash.md
+        └── tree_size.md
     ├── pipreqs-config.toml
     ├── requirements.txt
     └── scripts
