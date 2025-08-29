@@ -147,6 +147,8 @@ tree_h265 = create_tree_tab("Video H265")
 export_btn = tk.Button(root_window, text="Esporta in Excel o CSV", command=export_data)
 export_btn.pack(pady=10)
 
+
+if __name__ == "__main__":
     while True:
         root_window.mainloop()
         scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per ritornare a main.py: ").strip()
