@@ -45,7 +45,7 @@
 ## 📁 Struttura Cartelle
 
 ```sh
-└── Python-Script/
+└── Python-Script
     ├── .github
     │   └── workflows
     │       └── update-reqs.yml
@@ -53,8 +53,8 @@
     ├── README.md
     ├── install.ps1
     ├── main.py
-    ├── Docs
-		├── audio_extract.md
+    └── Docs
+        ├── audio_extract.md
         ├── codec_expoler.md
         ├── color_palette.md
         ├── efolder.md
