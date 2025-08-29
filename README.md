@@ -7,7 +7,7 @@
 </p>
 <br>
 <p align="center">
-	<img src="https://img.shields.io/badge/version-3.3-red.svg" alt="versione">
+	<img src="https://img.shields.io/badge/version-3.3-green.svg" alt="versione">
 	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
 	<img src="https://img.shields.io/github/languages/top/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-top-language">
 	<img src="https://img.shields.io/github/languages/count/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-language-count">
@@ -25,10 +25,6 @@
 <hr>
 
 ## 👾 Features
-
-**Experimental Branch** - Ramo Sperimentale pubblico.
-
-> **ATTENZIONE** - Questo ramo è da interdersi come sviluppo attivo, è sconsigliato utilizzare la versione degli script presenti in questo ramo in quanto potrebbero avere problemi di funzionamento o non avviarsi del tutto. **Consigliato l'utilizzo a personale esperto.**
 
 **Versione 3.0** - Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
 
@@ -302,7 +298,7 @@ Utilizza Python-Script seguendo questi step:
 - [x] **`V 3.1.1`**: <strike>Aggiunta Script PDF Combiner in versione Stabile.</strike>
 - [x] **`V 3.1.2`**: <strike>il wrapper `main.py` aggiunge automaticamente i nuovi script all'avvio.</strike>
 - [x] **`V 3.2`**: <strike>Automatizzare il processo di installazione di Python e dipendenze al 100%.</strike>
-- [ ] **`V 3.3`**: Aggiunti nuovi script, aggiunta documentazione mancante. 'main.py' non viene terminato alla fine di uno script.
+- [x] **`V 3.3`**: Aggiunti nuovi script, aggiunta documentazione mancante. 'main.py' non viene terminato alla fine di uno script.
 - [ ] **`V 4.0`**: unificare il tutto in un unico 'main.py' con aggiunta di Interfaccia grafica.
 
 ---
@@ -313,8 +309,9 @@ Utilizza Python-Script seguendo questi step:
 - **🐛 [Segnala Problemi](https://github.com/Magnetarman/Python-Script/issues)**: Segnala i bug trovati o richiedi nuove funzionalità per il progetto \Python-Script`.
 - **💡 [ Invia Pull Request](https://github.com/Magnetarman/Python-Script/blob/main/CONTRIBUTING.md)**: Revisiona le Pull Request (PR) aperte e invia le tue.
 
+<br>
 <details closed>
-<summary>Linee Guida</summary>
+<summary>📖 Linee Guida </summary>
 
 1. **Esegui il Fork della Repository**: Inizia facendo il "fork" della repository del progetto sul tuo account GitHub.
 2. **Clona in Locale**: Clona la repository di cui hai fatto il fork sulla tua macchina locale usando un client Git.
