@@ -3,11 +3,15 @@
 
 from __future__ import annotations
 
+
 import os
 import sys
 import traceback
+import subprocess
+import getpass
 from datetime import datetime, date
 from typing import Optional, Tuple, List
+
 
 # Proviamo a usare anytree, se non disponibile fallback a treelib
 USING_ANYTREE = False
@@ -16,7 +20,7 @@ USING_TREELIB = False
 try:
     from anytree import Node, PreOrderIter
     USING_ANYTREE = True
-except Exception:  # pragma: no cover - fallback
+except Exception:
     try:
         from treelib import Node as TLNode, Tree as TLTree
         USING_TREELIB = True
@@ -32,7 +36,6 @@ except Exception:  # pragma: no cover - fallback
 # ------------------------- Utility di formattazione ------------------------- #
 
 def sizeof_fmt(num: int) -> str:
-    """Rende una dimensione in byte in formato leggibile (B, KB, MB, GB, TB)."""
     for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
         if num < 1024.0:
             return f"{num:3.1f} {unit}"
@@ -41,19 +44,12 @@ def sizeof_fmt(num: int) -> str:
 
 
 def get_creation_time(path: str) -> float:
-    """Restituisce un timestamp di creazione compatibile multi-OS.
-
-    Windows: usa st_ctime.
-    macOS:   preferisce st_birthtime se presente, altrimenti st_mtime.
-    Linux:   spesso non espone il birthtime; fallback a st_mtime.
-    """
     try:
         stat = os.stat(path)
         if hasattr(stat, "st_birthtime") and stat.st_birthtime:
             return stat.st_birthtime
         return stat.st_ctime if os.name == "nt" else stat.st_mtime
     except Exception:
-        # Se non accessibile, usa mtime come ultima risorsa 0
         try:
             return os.path.getmtime(path)
         except Exception:
@@ -63,7 +59,6 @@ def get_creation_time(path: str) -> float:
 def fmt_datetime(ts: float) -> str:
     if not ts:
         return "-"
-    # Formato ISO locale leggibile
     return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M")
 
 
@@ -354,21 +349,49 @@ def render_html(root_obj, root_path: str, total_nodes: int, skipped: int) -> str
 
 # ------------------------------- Validazione ------------------------------- #
 
+def try_mount_unc(path: str) -> None:
+    """Se il percorso è UNC e non accessibile, chiede credenziali e prova a montarlo con net use."""
+    if os.name != "nt":
+        return  # solo Windows
+
+    if not (path.startswith("\\\\") or path.startswith("//")):
+        return
+
+    # Percorso UNC non accessibile → chiediamo credenziali
+    print(f"Il percorso {path} non è accessibile. Inserisci credenziali per la condivisione.")
+    user = input("Utente (DOMINIO\\utente o utente): ").strip()
+    pwd = getpass.getpass("Password: ")
+
+    try:
+        cmd = ["net", "use", path, pwd, f"/user:{user}"]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print("Errore nel montaggio con net use:", result.stderr, file=sys.stderr)
+        else:
+            print("Condivisione montata con successo.")
+    except Exception as e:
+        print(f"Errore nell'esecuzione di net use: {e}", file=sys.stderr)
+
+
 def validate_path(p: str) -> str:
     p = p.strip().strip('"').strip("'")
     if not p:
         raise ValueError("Percorso vuoto.")
     p = os.path.expanduser(p)
-    # Accetta anche percorsi UNC (\\\\server\\share) su Windows
     abs_p = os.path.abspath(p)
+
+    if not os.path.exists(abs_p):
+        try_mount_unc(p)
+
     if not os.path.exists(abs_p):
         raise FileNotFoundError(f"Il percorso non esiste o non è accessibile: {abs_p}")
-    # Richiediamo una directory come radice di scansione
+
     if not os.path.isdir(abs_p):
         raise NotADirectoryError(f"Il percorso deve essere una cartella: {abs_p}")
-    # Controllo di accesso in lettura
+
     if not os.access(abs_p, os.R_OK):
         raise PermissionError(f"Permesso negato per la lettura: {abs_p}")
+
     return abs_p
 
 
@@ -386,7 +409,6 @@ def main():
     print("Scansione in corso... Questa operazione può richiedere tempo per strutture molto grandi.")
     root_obj, total_nodes, skipped, errors = scan_directory(root_path)
 
-    # Log essenziali su stderr per non inquinare STDOUT
     if errors:
         print(f"Avvisi/Errori durante la scansione: {len(errors)}", file=sys.stderr)
 
