@@ -80,36 +80,38 @@ def main():
     else:
         directory = base_dir
 
-    scripts = get_scripts(directory)
-    if not scripts:
-        print("Nessuno script disponibile da eseguire.")
-        return
+    while True:
+        scripts = get_scripts(directory)
+        if not scripts:
+            print("Nessuno script disponibile da eseguire.")
+            return
 
-    # Stampa il menu di selezione in ordine alfabetico
-    print("Seleziona lo script da eseguire:\n")
-    for idx, script in enumerate(scripts, start=1):
-        desc = get_description(os.path.join(directory, script))
-        print(f"{idx}. {script} - {desc}")
+        # Stampa il menu di selezione in ordine alfabetico
+        print("Seleziona lo script da eseguire:\n")
+        for idx, script in enumerate(scripts, start=1):
+            desc = get_description(os.path.join(directory, script))
+            print(f"{idx}. {script} - {desc}")
 
-    print("\n0. Esci")
+        print("\n0. Esci")
 
-    try:
-        choice = int(input("\nInserisci il numero corrispondente alla tua scelta: "))
-    except ValueError:
-        print("Scelta non valida. Inserire un numero.")
-        return
+        try:
+            choice = int(input("\nInserisci il numero corrispondente alla tua scelta: "))
+        except ValueError:
+            print("Scelta non valida. Inserire un numero.")
+            continue
 
-    if choice == 0:
-        print("Uscita.")
-        return
+        if choice == 0:
+            print("Uscita.")
+            break
 
-    if 1 <= choice <= len(scripts):
-        selected_script = os.path.join(directory, scripts[choice - 1])
-        print(f"Esecuzione di {scripts[choice - 1]}...\n")
-        # Avvia lo script selezionato usando l'interprete Python
-        subprocess.run([sys.executable, selected_script])
-    else:
-        print("Scelta non valida.")
+        if 1 <= choice <= len(scripts):
+            selected_script = os.path.join(directory, scripts[choice - 1])
+            print(f"Esecuzione di {scripts[choice - 1]}...\n")
+            # Avvia lo script selezionato usando l'interprete Python
+            subprocess.run([sys.executable, selected_script])
+            print("\nScript completato.\n")
+        else:
+            print("Scelta non valida.")
 
 if __name__ == '__main__':
     main()

@@ -60,4 +60,12 @@ def main():
                     extract_audio(video_file, track_number)
 
 if __name__ == "__main__":
-    main()
+    while True:
+        main()
+        scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per ritornare a main.py: ").strip()
+        if scelta == '1':
+            continue
+        elif scelta == '0':
+            break
+        else:
+            print("Scelta non valida. Inserire 1 o 0.")

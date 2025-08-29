@@ -135,3 +135,16 @@ if __name__ == "__main__":
         print("Trascrizione completata.")
     else:
         print("Il percorso inserito non è valido. Per favore riprova.")
+        while True:
+            scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per ritornare a main.py: ").strip()
+            if scelta == '1':
+                podcast_dir = input("Inserisci il percorso della cartella contenente i podcast: ").strip()
+                if os.path.isdir(podcast_dir):
+                    main(podcast_dir)
+                    print("Trascrizione completata.")
+                else:
+                    print("Il percorso inserito non è valido. Per favore riprova.")
+            elif scelta == '0':
+                break
+            else:
+                print("Scelta non valida. Inserire 1 o 0.")

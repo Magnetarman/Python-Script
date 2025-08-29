@@ -75,5 +75,13 @@ def download_images(url):
             print(f"Errore nel download di {img_url}: {e}")
 
 if __name__ == "__main__":
-    url = input("Inserisci l'URL della pagina web: ")
-    download_images(url)
+    while True:
+        url = input("Inserisci l'URL della pagina web: ")
+        download_images(url)
+        scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per ritornare a main.py: ").strip()
+        if scelta == '1':
+            continue
+        elif scelta == '0':
+            break
+        else:
+            print("Scelta non valida. Inserire 1 o 0.")

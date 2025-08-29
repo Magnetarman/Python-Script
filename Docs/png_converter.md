@@ -1,4 +1,4 @@
-# _Convertitore PNG in JPEG_ - **png_to_jpeg.py** 🖼️➡️🖼️
+# _Convertitore PNG in JPEG_ - **png_converter.py** 🖼️➡️🖼️
 
 Uno script Python che converte automaticamente tutte le immagini `.png` in `.jpg` all'interno di una cartella (e sottocartelle), gestendo correttamente anche le immagini con trasparenza.
 

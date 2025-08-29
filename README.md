@@ -7,7 +7,7 @@
 </p>
 <br>
 <p align="center">
-	<img src="https://img.shields.io/badge/version-3.2-blue.svg" alt="versione">
+	<img src="https://img.shields.io/badge/version-3.3-green.svg" alt="versione">
 	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
 	<img src="https://img.shields.io/github/languages/top/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-top-language">
 	<img src="https://img.shields.io/github/languages/count/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-language-count">
@@ -26,7 +26,6 @@
 
 ## 👾 Features
 
-
 **Versione 3.0** - Nuovo approccio all'esecuzione: non si esegue più uno script isolato, ma tramite un unico punto d’ingresso interattivo.
 
 > Introdotto il file `main.py` che gestisce:
@@ -42,7 +41,7 @@
 ## 📁 Struttura Cartelle
 
 ```sh
-└── Python-Script/
+└── Python-Script
     ├── .github
     │   └── workflows
     │       └── update-reqs.yml
@@ -50,7 +49,21 @@
     ├── README.md
     ├── install.ps1
     ├── main.py
-    ├── Docs
+    └── Docs
+        ├── audio_extract.md
+        ├── codec_expoler.md
+        ├── color_palette.md
+        ├── efolder.md
+        ├── eml_converter.md
+        ├── estensioni.md
+        ├── image_downloader.md
+        ├── png_converter.md
+        ├── remove.md
+        ├── sposta_file.md
+        ├── transcribe_wav.md
+        ├── pdf_combiner.md
+        ├── trash.md
+        └── tree_size.md
     ├── pipreqs-config.toml
     ├── requirements.txt
     └── scripts
@@ -58,7 +71,6 @@
         ├── codec_expoler.py
         ├── color_palette.py
         ├── efolder.py
-        ├── elenco_cartelle.py
         ├── eml_converter.py
         ├── estensioni.py
         ├── image_downloader.py
@@ -67,95 +79,156 @@
         ├── sposta_file.py
         ├── transcribe_wav.py
         ├── pdf_combiner.py
-        └── trash.py
+        ├── trash.py
+        └── tree_size.py
 ```
 
 ### 📂 Index Progetto
 
 <details open>
-	<summary><b><code>PYTHON-SCRIPT/</code></b></summary>
-	<details> <!-- __root__ Submodule -->
+	<summary><b><code>PYTHON-SCRIPT</code></b></summary>
+	<details>
 		<summary><b>__root__</b></summary>
 		<blockquote>
 			<table>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/install.ps1'>install.ps1</a></b></td>
-				<td><code>❯ Installa Python 3.10 e lancia lo script generale "main.py"</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/main.py'>main.py</a></b></td>
-				<td><code>❯ Script Generale con breve descrizione degli script disponibili</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/requirements.txt'>requirements.txt</a></b></td>
-				<td><code>❯ Librerie necessarie al funzionamento degli script</code></td>
-			</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/install.ps1'>install.ps1</a></b></td>
+					<td><code>❯ Installa Python 3.10 e lancia lo script generale "main.py"</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/main.py'>main.py</a></b></td>
+					<td><code>❯ Script Generale con breve descrizione degli script disponibili</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/requirements.txt'>requirements.txt</a></b></td>
+					<td><code>❯ Librerie necessarie al funzionamento degli script</code></td>
+				</tr>
 			</table>
 		</blockquote>
 	</details>
+	<details>
+		<summary><b>Docs</b></summary>
+		<blockquote>
+			<table>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/audio_extract.md'>audio_extract.py</a></b></td>
+					<td><code>❯ Estrazione tracce audio .flac da file .mkv (anche ricorsiva).</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/codec_explorer.md'>codec_expoler.py</a></b></td>
+					<td><code>❯ Analizza i file video identifica codec H264 o H265, ne mostra i dettagli e consente l’esportazione.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/color_palette.md'>color_palette.py</a></b></td>
+					<td><code>❯ Estrazione e salvataggio dei colori in formato PDF dominanti da un'immagine.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/efolder.md'>efolder.py</a></b></td>
+					<td><code>❯ Individuazione e rimozione sicura di cartelle vuote in una directory.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/eml_converter.md'>eml_converter.py</a></b></td>
+					<td><code>❯ Conversione di email .eml in PDF con dettagli del messaggio.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/estensioni.md'>estensioni.py</a></b></td>
+					<td><code>❯ Analisi e elenco ordinato delle estensioni file in una directory.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/image_downloader.md'>image_downloader.py</a></b></td>
+					<td><code>❯ Download immagini da una pagina web, inclusi contenuti Base64.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/pdf_combiner.md'>pdf_combiner.py</a></b></td>
+					<td><code>❯  Genera PDF da immagini Jpeg.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/png_converter.md'>png_converter.py</a></b></td>
+					<td><code>❯ Conversione ricorsiva di tutte le immagini PNG in JPEG all'interno di una cartella specificata, gestendo la trasparenza e rimuovendo i file PNG originali.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/remove.md'>remove.py</a></b></td>
+					<td><code>❯ Rimozione file non musicali e pulizia cartelle vuote in una directory.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/sposta_file.md'>sposta_file.py</a></b></td>
+					<td><code>❯ Spostamento file in directory principale e rimozione cartelle vuote.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/transcribe_wav.md'>transcribe_wav.py</a></b></td>
+					<td><code>❯ Trascrive automaticamente i file audio .wav in testo utilizzando il modello Whisper, salvando le trascrizioni e saltando quelle già esistenti.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/trash.md'>trash.py</a></b></td>
+					<td><code>❯ Spostamento file con nomi specifici in una cartella "duplicati".</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/main/Docs/tree_size.md'>tree_size.py</a></b></td>
+					<td><code>❯ Esporta la "fotografia" completa e interattiva di una struttura di cartelle in un file HTML statico.</code></td>
+				</tr>
+			</table>
 		</blockquote>
 	</details>
-	<details> <!-- scripts Submodule -->
+	<details>
 		<summary><b>scripts</b></summary>
 		<blockquote>
 			<table>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/png_converter.py'>png_converter.py</a></b></td>
-				<td><code>❯ Conversione ricorsiva di tutte le immagini PNG in JPEG all'interno di una cartella specificata, gestendo la trasparenza e rimuovendo i file PNG originali.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/audio_extract.py'>audio_extract.py</a></b></td>
-				<td><code>❯ Estrazione tracce audio .flac da file .mkv (anche ricorsiva).</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/color_palette.py'>color_palette.py</a></b></td>
-				<td><code>❯ Estrazione e salvataggio dei colori in formato PDF dominanti da un'immagine.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/transcribe_wav.py'>transcribe_wav.py</a></b></td>
-				<td><code>❯ Trascrive automaticamente i file audio .wav in testo utilizzando il modello Whisper, salvando le trascrizioni e saltando quelle già esistenti.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/remove.py'>remove.py</a></b></td>
-				<td><code>❯ Rimozione file non musicali e pulizia cartelle vuote in una directory.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/efolder.py'>efolder.py</a></b></td>
-				<td><code>❯ Individuazione e rimozione sicura di cartelle vuote in una directory.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/sposta_file.py'>sposta_file.py</a></b></td>
-				<td><code>❯ Spostamento file in directory principale e rimozione cartelle vuote.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/codec_expoler.py'>codec_expoler.py</a></b></td>
-				<td><code>❯ Analizza i file video identifica codec H264 o H265, ne mostra i dettagli e consente l’esportazione.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/image_downloader.py'>image_downloader.py</a></b></td>
-				<td><code>❯ Download immagini da una pagina web, inclusi contenuti Base64.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/eml_converter.py'>eml_converter.py</a></b></td>
-				<td><code>❯ Conversione di email .eml in PDF con dettagli del messaggio.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/elenco_cartelle.py'>elenco_cartelle.py</a></b></td>
-				<td><code>❯ Elenco cartelle di primo livello e salvataggio su file di testo.</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/trash.py'>trash.py</a></b></td>
-				<td><code>❯ Spostamento file con nomi specifici in una cartella "duplicati".</code></td>
-			</tr>
-			<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/estensioni.py'>estensioni.py</a></b></td>
-				<td><code>❯ Analisi e elenco ordinato delle estensioni file in una directory.</code></td>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/audio_extract.py'>audio_extract.py</a></b></td>
+					<td><code>❯ Estrazione tracce audio .flac da file .mkv (anche ricorsiva).</code></td>
 				</tr>
 				<tr>
-				<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/pdf_combiner.py'>pdf_combiner.py</a></b></td>
-				<td><code>❯  Genera PDF da immagini Jpeg.</code></td>
-			</tr>
-			</tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/codec_expoler.py'>codec_expoler.py</a></b></td>
+					<td><code>❯ Analizza i file video identifica codec H264 o H265, ne mostra i dettagli e consente l’esportazione.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/color_palette.py'>color_palette.py</a></b></td>
+					<td><code>❯ Estrazione e salvataggio dei colori in formato PDF dominanti da un'immagine.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/efolder.py'>efolder.py</a></b></td>
+					<td><code>❯ Individuazione e rimozione sicura di cartelle vuote in una directory.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/eml_converter.py'>eml_converter.py</a></b></td>
+					<td><code>❯ Conversione di email .eml in PDF con dettagli del messaggio.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/estensioni.py'>estensioni.py</a></b></td>
+					<td><code>❯ Analisi e elenco ordinato delle estensioni file in una directory.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/image_downloader.py'>image_downloader.py</a></b></td>
+					<td><code>❯ Download immagini da una pagina web, inclusi contenuti Base64.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/pdf_combiner.py'>pdf_combiner.py</a></b></td>
+					<td><code>❯  Genera PDF da immagini Jpeg.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/png_converter.py'>png_converter.py</a></b></td>
+					<td><code>❯ Conversione ricorsiva di tutte le immagini PNG in JPEG all'interno di una cartella specificata, gestendo la trasparenza e rimuovendo i file PNG originali.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/remove.py'>remove.py</a></b></td>
+					<td><code>❯ Rimozione file non musicali e pulizia cartelle vuote in una directory.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/sposta_file.py'>sposta_file.py</a></b></td>
+					<td><code>❯ Spostamento file in directory principale e rimozione cartelle vuote.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/transcribe_wav.py'>transcribe_wav.py</a></b></td>
+					<td><code>❯ Trascrive automaticamente i file audio .wav in testo utilizzando il modello Whisper, salvando le trascrizioni e saltando quelle già esistenti.</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/trash.py'>trash.py</a></b></td>
+					<td><code>❯ Spostamento file con nomi specifici in una cartella "duplicati".</code></td>
+				</tr>
+				<tr>
+					<td><b><a href='https://github.com/Magnetarman/Python-Script/blob/master/scripts/tree_size.py'>tree_size.py</a></b></td>
+					<td><code>❯ Esporta la "fotografia" completa e interattiva di una struttura di cartelle in un file HTML statico.</code></td>
+				</tr>
 			</table>
 		</blockquote>
 	</details>
@@ -225,6 +298,7 @@ Utilizza Python-Script seguendo questi step:
 - [x] **`V 3.1.1`**: <strike>Aggiunta Script PDF Combiner in versione Stabile.</strike>
 - [x] **`V 3.1.2`**: <strike>il wrapper `main.py` aggiunge automaticamente i nuovi script all'avvio.</strike>
 - [x] **`V 3.2`**: <strike>Automatizzare il processo di installazione di Python e dipendenze al 100%.</strike>
+- [x] **`V 3.3`**: <strike>Aggiunti nuovi script, aggiunta documentazione mancante. 'main.py' non viene terminato alla fine di uno script.</strike>
 - [ ] **`V 4.0`**: unificare il tutto in un unico 'main.py' con aggiunta di Interfaccia grafica.
 
 ---
@@ -235,8 +309,9 @@ Utilizza Python-Script seguendo questi step:
 - **🐛 [Segnala Problemi](https://github.com/Magnetarman/Python-Script/issues)**: Segnala i bug trovati o richiedi nuove funzionalità per il progetto \Python-Script`.
 - **💡 [ Invia Pull Request](https://github.com/Magnetarman/Python-Script/blob/main/CONTRIBUTING.md)**: Revisiona le Pull Request (PR) aperte e invia le tue.
 
+<br>
 <details closed>
-<summary>Linee Guida</summary>
+<summary>📖 Linee Guida </summary>
 
 1. **Esegui il Fork della Repository**: Inizia facendo il "fork" della repository del progetto sul tuo account GitHub.
 2. **Clona in Locale**: Clona la repository di cui hai fatto il fork sulla tua macchina locale usando un client Git.
