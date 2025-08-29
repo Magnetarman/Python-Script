@@ -64,4 +64,12 @@ def move_files_to_main_directory(main_directory):
 main_directory = input("Inserisci il percorso della directory principale: ").strip()
 
 # Esegui la funzione
-move_files_to_main_directory(main_directory)
+while True:
+    move_files_to_main_directory(main_directory)
+    scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per ritornare a main.py: ").strip()
+    if scelta == '1':
+        continue
+    elif scelta == '0':
+        break
+    else:
+        print("Scelta non valida. Inserire 1 o 0.")

@@ -424,6 +424,14 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        while True:
+            main()
+            scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per ritornare a main.py: ").strip()
+            if scelta == '1':
+                continue
+            elif scelta == '0':
+                break
+            else:
+                print("Scelta non valida. Inserire 1 o 0.")
     except KeyboardInterrupt:
         print("Interrotto dall'utente.")

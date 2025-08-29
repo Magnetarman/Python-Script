@@ -7,7 +7,7 @@
 </p>
 <br>
 <p align="center">
-	<img src="https://img.shields.io/badge/version-3.2-blue.svg" alt="versione">
+	<img src="https://img.shields.io/badge/version-3.3-red.svg" alt="versione">
 	<img src="https://img.shields.io/github/last-commit/Magnetarman/Python-Script?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
 	<img src="https://img.shields.io/github/languages/top/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-top-language">
 	<img src="https://img.shields.io/github/languages/count/Magnetarman/Python-Script?style=flat&color=0080ff" alt="repo-language-count">
@@ -61,7 +61,6 @@
         ├── codec_expoler.py
         ├── color_palette.py
         ├── efolder.py
-        ├── elenco_cartelle.py
         ├── eml_converter.py
         ├── estensioni.py
         ├── image_downloader.py
@@ -70,7 +69,8 @@
         ├── sposta_file.py
         ├── transcribe_wav.py
         ├── pdf_combiner.py
-        └── trash.py
+        ├── trash.py
+        └── tree_size.py
 ```
 
 ### 📂 Index Progetto
@@ -228,6 +228,7 @@ Utilizza Python-Script seguendo questi step:
 - [x] **`V 3.1.1`**: <strike>Aggiunta Script PDF Combiner in versione Stabile.</strike>
 - [x] **`V 3.1.2`**: <strike>il wrapper `main.py` aggiunge automaticamente i nuovi script all'avvio.</strike>
 - [x] **`V 3.2`**: <strike>Automatizzare il processo di installazione di Python e dipendenze al 100%.</strike>
+- [ ] **`V 3.3`**: Aggiunti nuovi script, aggiunta documentazione mancante. 'main.py' non viene terminato alla fine di uno script.
 - [ ] **`V 4.0`**: unificare il tutto in un unico 'main.py' con aggiunta di Interfaccia grafica.
 
 ---

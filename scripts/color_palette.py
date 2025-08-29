@@ -56,6 +56,13 @@ def extract_colors(image_path, num_colors=4):
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    # Request image path from the user
-    image_path = input("Please enter the path to the image: ").strip()
-    extract_colors(image_path)
+    while True:
+        image_path = input("Please enter the path to the image: ").strip()
+        extract_colors(image_path)
+        scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per ritornare a main.py: ").strip()
+        if scelta == '1':
+            continue
+        elif scelta == '0':
+            break
+        else:
+            print("Scelta non valida. Inserire 1 o 0.")

@@ -51,13 +51,22 @@ def convert_eml_to_pdf(input_folder):
             pdfkit.from_string(html_content, pdf_path)
             print(f"Converted: {filename} -> {pdf_path}")
 
-if __name__ == "__main__":
-    # Richiede il percorso della cartella all'utente
-    input_folder = input("Inserisci il percorso della cartella contenente i file .eml: ").strip()
 
+def main():
+    input_folder = input("Inserisci il percorso della cartella contenente i file .eml: ").strip()
     if not os.path.isdir(input_folder):
         print("Errore: Il percorso specificato non è una cartella valida.")
-        sys.exit(1)
-
+        return
     convert_eml_to_pdf(input_folder)
     print("Tutti i file .eml sono stati convertiti in PDF nella cartella 'converted_pdfs'.")
+
+if __name__ == "__main__":
+    while True:
+        main()
+        scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per ritornare a main.py: ").strip()
+        if scelta == '1':
+            continue
+        elif scelta == '0':
+            break
+        else:
+            print("Scelta non valida. Inserire 1 o 0.")

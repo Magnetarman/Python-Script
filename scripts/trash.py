@@ -17,23 +17,31 @@ search_term = input("Inserisci il set di caratteri che vuoi cercare alla fine de
 directory = select_directory()
 
 if directory:
-    # Crea la cartella "duplicati" nella stessa directory in cui si trova lo script
-    duplicati_folder = os.path.join(directory, "duplicati")
-    os.makedirs(duplicati_folder, exist_ok=True)
+    while True:
+        # Crea la cartella "duplicati" nella stessa directory in cui si trova lo script
+        duplicati_folder = os.path.join(directory, "duplicati")
+        os.makedirs(duplicati_folder, exist_ok=True)
 
-    # Cerca tutti i file nella directory specificata e nelle sottocartelle
-    for root, dirs, files in os.walk(directory):
-        for file_name in files:
-            # Ottieni il nome del file senza estensione
-            name_without_ext, ext = os.path.splitext(file_name)
-            # Controlla se il nome del file (senza estensione) termina con il set di caratteri specificato
-            if name_without_ext.endswith(search_term):
-                # Ottieni il percorso completo del file
-                file_path = os.path.join(root, file_name)
-                # Sposta il file nella cartella "duplicati"
-                shutil.move(file_path, duplicati_folder)
-                print(f"File spostato in 'duplicati': {file_path}")
+        # Cerca tutti i file nella directory specificata e nelle sottocartelle
+        for root, dirs, files in os.walk(directory):
+            for file_name in files:
+                # Ottieni il nome del file senza estensione
+                name_without_ext, ext = os.path.splitext(file_name)
+                # Controlla se il nome del file (senza estensione) termina con il set di caratteri specificato
+                if name_without_ext.endswith(search_term):
+                    # Ottieni il percorso completo del file
+                    file_path = os.path.join(root, file_name)
+                    # Sposta il file nella cartella "duplicati"
+                    shutil.move(file_path, duplicati_folder)
+                    print(f"File spostato in 'duplicati': {file_path}")
 
-    print("Operazione completata!")
+        print("Operazione completata!")
+        scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per ritornare a main.py: ").strip()
+        if scelta == '1':
+            continue
+        elif scelta == '0':
+            break
+        else:
+            print("Scelta non valida. Inserire 1 o 0.")
 else:
     print("Nessuna cartella selezionata.")
