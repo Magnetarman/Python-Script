@@ -231,12 +231,21 @@ function collapseAll() {
   document.querySelectorAll('.tree ul').forEach(ul => ul.classList.add('hidden'));
 }
 function filterTree() {
-  const q = document.getElementById('q').value.toLowerCase();
-  document.querySelectorAll('.tree li').forEach(li => {
-    const name = li.getAttribute('data-name');
-    const match = !q || (name && name.toLowerCase().includes(q));
-    li.style.display = match ? '' : 'none';
-  });
+    const q = document.getElementById('q').value.toLowerCase();
+    const items = document.querySelectorAll('.tree li');
+    items.forEach(function(item) {
+        const nameSpan = item.querySelector('.name');
+        const name = nameSpan ? nameSpan.textContent.toLowerCase() : '';
+        let match = q === '' || (name && name.includes(q));
+        if (!match) {
+            // Se non corrisponde, controllo se uno dei figli visibili corrisponde
+            const childMatch = Array.from(item.querySelectorAll(':scope > ul > li')).some(
+                child => child.style.display !== 'none'
+            );
+            match = childMatch;
+        }
+        item.style.display = match ? '' : 'none';
+    });
 }
 """
 
@@ -415,7 +424,8 @@ def main():
     print("Generazione HTML...")
     html = render_html(root_obj, root_path, total_nodes, skipped)
 
-    out_name = f"Export_data_{date.today().isoformat()}.html"
+    now = datetime.now()
+    out_name = f"Export_data_{now.strftime('%Y-%m-%d_%H-%M-%S')}.html"
     with open(out_name, "w", encoding="utf-8", newline="") as f:
         f.write(html)
 
