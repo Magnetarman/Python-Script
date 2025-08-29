@@ -90,7 +90,7 @@
 ### 📂 Index Progetto
 
 <details open>
-	<summary><b><code>PYTHON-SCRIPT/</code></b></summary>
+	<summary><b><code>PYTHON-SCRIPT</code></b></summary>
 	<details>
 		<summary><b>__root__</b></summary>
 		<blockquote>
