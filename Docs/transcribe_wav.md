@@ -1,6 +1,6 @@
 ## _Trascrizione Automatica Podcast_ - **transcribe_wav.py** 🎙️
 
-Uno script Python che trascrive automaticamente i file audio in formato **.wav** in testo utilizzando il modello Whisper di OpenAI, salvando le trascrizioni e saltando quelle già presenti.
+Uno script Python che trascrive automaticamente file audio in vari formati (WAV, MP3, FLAC, OGG, M4A, AAC, WMA, Opus, AIFF, WebM, MP4) in testo utilizzando il modello Whisper di OpenAI. Converte automaticamente i formati non-WAV in WAV per la trascrizione, salvando le trascrizioni e saltando quelle già presenti.
 
 ---
 
@@ -20,12 +20,13 @@ Utile per:
 
 - **Supporto Python 3.10**: Verifica e forza l'esecuzione con Python 3.10 se necessario.
 - **Installazione automatica di Whisper**: Aggiorna pip e installa (o reinstalla) openai-whisper se non presente.
+- **Conversione automatica formati**: Converte automaticamente MP3, FLAC, OGG, M4A, AAC, WMA, Opus, AIFF, WebM, MP4 in WAV utilizzando FFmpeg.
 - **Accelerazione audio 2x**: Opzionalmente accelera l'audio a 2x velocità utilizzando FFmpeg per velocizzare la trascrizione.
-- **Trascrizione automatica**: Analizza i file .wav presenti nella cartella specificata.
+- **Trascrizione automatica**: Analizza tutti i file audio supportati presenti nella cartella specificata.
 - **Skip file già trascritti**: Salta i file che hanno già una trascrizione esistente.
 - **Salvataggio sicuro**: Le trascrizioni vengono salvate come file .txt nella stessa cartella dell'audio.
 - **Gestione errori**: Notifica eventuali errori durante la trascrizione senza interrompere l'esecuzione.
-- **Pulizia automatica**: Rimuove automaticamente i file temporanei creati durante l'accelerazione.
+- **Pulizia automatica**: Rimuove automaticamente i file temporanei creati durante l'accelerazione e conversione.
 
 ---
 
@@ -35,22 +36,49 @@ Utile per:
 Inserisci il percorso della cartella contenente i podcast: C:\Users\User\Podcasts
 ```
 
-Lo script analizzerà tutti i file .wav nella cartella e sottocartelle e genererà i file di trascrizione corrispondenti.
+Lo script analizzerà tutti i file audio supportati nella cartella e sottocartelle e genererà i file di trascrizione corrispondenti.
 
 ---
 
-### Esempio Input con Accelerazione 2x
+### Conversione Automatica Formati 🔄
+
+Lo script supporta automaticamente la conversione di vari formati audio in WAV per la trascrizione:
+
+- **Formati supportati**: WAV, MP3, FLAC, OGG, M4A, AAC, WMA, Opus, AIFF, WebM, MP4
+- **Conversione automatica**: I formati non-WAV vengono convertiti automaticamente utilizzando FFmpeg
+- **Qualità preservata**: La conversione mantiene la qualità audio originale
+- **Processo trasparente**: Conversione e pulizia automatica dei file temporanei
+- **Fallback intelligente**: Se la conversione fallisce, il file viene saltato con messaggio di errore
+
+**Esempio di conversione durante l'esecuzione:**
+
+```plaintext
+Conversione da MP3 a WAV richiesta...
+Conversione in corso: podcast.mp3 → WAV
+Conversione completata: podcast_converted.wav
+Trascrizione in corso per podcast.mp3...
+File WAV convertito rimosso
+Trascrizione completata per podcast.mp3, salvata in podcast.txt
+```
+
+---
+
+### Esempio Input con Conversione e Accelerazione 2x
 
 ```plaintext
 Inserisci il percorso della cartella contenente i podcast: C:\Users\User\Podcasts
 Vuoi accelerare l'audio a 2x velocità per velocizzare la trascrizione? (s/n): s
 Modalità velocità 2x attivata
+Conversione da MP3 a WAV richiesta...
+Conversione in corso: episodio1.mp3 → WAV
+Conversione completata: episodio1_converted.wav
 Accelerazione audio 2x in corso...
-Audio accelerato 2x: episodio1.wav
+Audio accelerato 2x: episodio1_converted.wav
 Audio accelerato con successo
-Trascrizione in corso per episodio1.wav...
+Trascrizione in corso per episodio1.mp3...
 File temporaneo rimosso
-Trascrizione completata per episodio1.wav, salvata in C:\Users\User\Podcasts\episodio1.txt
+File WAV convertito rimosso
+Trascrizione completata per episodio1.mp3, salvata in C:\Users\User\Podcasts\episodio1.txt
 ```
 
 ---
@@ -97,8 +125,9 @@ Oggi parleremo di tecnologia e innovazione...
 ### Note 📝
 
 - **Percorsi validi**: Verifica che la cartella inserita esista.
-- **Formati supportati**: Attualmente lo script gestisce solo file **.wav**.
+- **Formati supportati**: WAV, MP3, FLAC, OGG, M4A, AAC, WMA, Opus, AIFF, WebM, MP4.
+- **Conversione automatica**: I formati non-WAV vengono convertiti automaticamente in WAV per la trascrizione.
 - **Compatibilità**: Assicurarsi di avere Python 3.10 installato.
 - **Output non distruttivo**: Lo script non modifica i file audio originali.
 - **Installazione automatica**: Pip e Whisper vengono aggiornati/installati automaticamente se necessario.
-- **FFmpeg opzionale**: Per utilizzare la funzionalità di accelerazione 2x, installa FFmpeg nel sistema.
+- **FFmpeg richiesto**: Per la conversione formati e accelerazione 2x, installa FFmpeg nel sistema.

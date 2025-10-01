@@ -85,6 +85,68 @@ def import_required_modules():
             print(f"Impossibile importare i moduli anche dopo l'installazione: {e}")
             sys.exit(1)
 
+def get_supported_audio_formats():
+    """
+    Restituisce la lista dei formati audio supportati per la conversione.
+    Returns:
+        list: Lista delle estensioni supportate (senza punto)
+    """
+    return [
+        'wav', 'mp3', 'flac', 'ogg', 'm4a', 'aac',
+        'wma', 'opus', 'aiff', 'webm', 'mp4'
+    ]
+
+def is_audio_format_supported(file_path):
+    """
+    Verifica se il formato del file audio è supportato.
+    Args:
+        file_path: Percorso del file da verificare
+    Returns:
+        bool: True se il formato è supportato, False altrimenti
+    """
+    supported_formats = get_supported_audio_formats()
+    file_ext = os.path.splitext(file_path)[1][1:].lower()  # Rimuovi il punto e metti minuscolo
+    return file_ext in supported_formats
+
+def convert_audio_to_wav(input_path, output_path):
+    """
+    Converte un file audio in formato WAV utilizzando FFmpeg.
+    Args:
+        input_path: Percorso del file audio da convertire
+        output_path: Percorso del file WAV di destinazione
+    Returns:
+        bool: True se la conversione è riuscita, False altrimenti
+    """
+    try:
+        # Comando FFmpeg per convertire in WAV mantenendo la qualità originale
+        cmd = [
+            'ffmpeg', '-y', '-i', input_path,
+            '-acodec', 'pcm_s16le',  # Codec WAV standard
+            '-ar', '44100',          # Sample rate 44.1kHz
+            '-ac', '2',              # Canali stereo
+            output_path
+        ]
+
+        print(f"  Conversione in corso: {os.path.basename(input_path)} → WAV")
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+
+        if result.returncode == 0:
+            print(f"  Conversione completata: {os.path.basename(output_path)}")
+            return True
+        else:
+            print(f"  Errore nella conversione: {result.stderr}")
+            return False
+
+    except subprocess.TimeoutExpired:
+        print("  Timeout nella conversione audio")
+        return False
+    except FileNotFoundError:
+        print("  FFmpeg non trovato. Installa FFmpeg per la conversione audio")
+        return False
+    except Exception as e:
+        print(f"  Errore durante la conversione: {e}")
+        return False
+
 def speed_up_audio(input_path, output_path, speed_factor=2.0):
     """
     Accelera un file audio utilizzando FFmpeg.
@@ -282,14 +344,17 @@ def save_transcription(transcription, output_path):
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(transcription)
 
-def count_wav_files(podcast_dir):
+def count_supported_audio_files(podcast_dir):
     """
-    Conta il numero totale di file .wav da elaborare.
+    Conta il numero totale di file audio supportati da elaborare.
     """
     count = 0
+    supported_formats = get_supported_audio_formats()
+
     for root, dirs, files in os.walk(podcast_dir):
         for file_name in files:
-            if file_name.lower().endswith('.wav'):
+            file_ext = os.path.splitext(file_name)[1][1:].lower()
+            if file_ext in supported_formats:
                 base_name = os.path.splitext(file_name)[0]
                 output_path = os.path.join(root, base_name + '.txt')
                 if not (os.path.exists(output_path) and os.path.getsize(output_path) > 1):
@@ -313,10 +378,11 @@ def main(podcast_dir, speed_up=False):
     whisper, tqdm = import_required_modules()
     
     # Conta i file da elaborare
-    total_files = count_wav_files(podcast_dir)
+    total_files = count_supported_audio_files(podcast_dir)
     
     if total_files == 0:
-        print("Nessun file .wav da elaborare trovato.")
+        print("Nessun file audio supportato da elaborare trovato.")
+        print("Formati supportati: WAV, MP3, FLAC, OGG, M4A, AAC, WMA, Opus, AIFF, WebM, MP4")
         return
     
     print(f"\nTrovati {total_files} file da trascrivere.")
@@ -330,52 +396,83 @@ def main(podcast_dir, speed_up=False):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
                 base_name, ext = os.path.splitext(file_name)
-                
-                if ext.lower() == '.wav':
-                    output_file_name = base_name + '.txt'
-                    output_path = os.path.join(root, output_file_name)
-                    
-                    # Verifica se la trascrizione esiste già
-                    if os.path.exists(output_path) and os.path.getsize(output_path) > 1:
-                        continue
-                    
-                    try:
-                        file_start_time = time.time()
-                        
-                        # Aggiorna la descrizione con il file corrente
-                        main_pbar.set_description(f"Elaborando: {file_name[:30]}...")
-                        
-                        transcription = transcribe_podcast_with_progress(file_path, speed_up=speed_up)
-                        save_transcription(transcription, output_path)
-                        
-                        processed_files += 1
-                        elapsed_total = time.time() - start_time
-                        file_elapsed = time.time() - file_start_time
-                        
-                        # Calcola ETA
-                        if processed_files > 0:
-                            avg_time_per_file = elapsed_total / processed_files
-                            remaining_files = total_files - processed_files
-                            eta_seconds = avg_time_per_file * remaining_files
-                            eta_formatted = format_time(eta_seconds)
+
+                # Verifica se il formato è supportato
+                if not is_audio_format_supported(file_path):
+                    continue
+
+                output_file_name = base_name + '.txt'
+                output_path = os.path.join(root, output_file_name)
+
+                # Verifica se la trascrizione esiste già
+                if os.path.exists(output_path) and os.path.getsize(output_path) > 1:
+                    continue
+
+                # File WAV da utilizzare per la trascrizione (originale o convertito)
+                wav_file_path = None
+                converted_file_path = None
+
+                try:
+                    file_start_time = time.time()
+
+                    # Aggiorna la descrizione con il file corrente
+                    main_pbar.set_description(f"Elaborando: {file_name[:30]}...")
+
+                    # Se non è WAV, convertilo
+                    if ext.lower() != '.wav':
+                        print(f"  Conversione da {ext.upper()[1:]} a WAV richiesta...")
+                        converted_file_path = os.path.join(root, base_name + '_converted.wav')
+                        if convert_audio_to_wav(file_path, converted_file_path):
+                            wav_file_path = converted_file_path
+                            print(f"  Conversione completata: {file_name}")
                         else:
-                            eta_formatted = "Calcolando..."
-                        
-                        # Aggiorna la barra di progresso
-                        main_pbar.update(1)
-                        main_pbar.set_postfix({
-                            "File": f"{file_elapsed:.1f}s",
-                            "ETA": eta_formatted,
-                            "Totale": format_time(elapsed_total)
-                        })
-                        
-                        print(f"\n✓ Completato: {file_name}")
-                        print(f"  Salvato in: {output_path}")
-                        print(f"  Tempo impiegato: {file_elapsed:.1f} secondi")
-                        
-                    except Exception as e:
-                        print(f"\n✗ Errore durante la trascrizione di {file_name}: {e}")
-                        main_pbar.update(1)
+                            print(f"  Impossibile convertire {file_name}, salto...")
+                            main_pbar.update(1)
+                            continue
+                    else:
+                        # È già WAV, usa il file originale
+                        wav_file_path = file_path
+
+                    # Procedi con la trascrizione
+                    transcription = transcribe_podcast_with_progress(wav_file_path, speed_up=speed_up)
+                    save_transcription(transcription, output_path)
+
+                    processed_files += 1
+                    elapsed_total = time.time() - start_time
+                    file_elapsed = time.time() - file_start_time
+
+                    # Calcola ETA
+                    if processed_files > 0:
+                        avg_time_per_file = elapsed_total / processed_files
+                        remaining_files = total_files - processed_files
+                        eta_seconds = avg_time_per_file * remaining_files
+                        eta_formatted = format_time(eta_seconds)
+                    else:
+                        eta_formatted = "Calcolando..."
+
+                    # Aggiorna la barra di progresso
+                    main_pbar.update(1)
+                    main_pbar.set_postfix({
+                        "File": f"{file_elapsed:.1f}s",
+                        "ETA": eta_formatted,
+                        "Totale": format_time(elapsed_total)
+                    })
+
+                    print(f"\n✓ Completato: {file_name}")
+                    print(f"  Salvato in: {output_path}")
+                    print(f"  Tempo impiegato: {file_elapsed:.1f} secondi")
+
+                except Exception as e:
+                    print(f"\n✗ Errore durante la trascrizione di {file_name}: {e}")
+                    main_pbar.update(1)
+                finally:
+                    # Pulisce il file WAV convertito se è stato creato
+                    if converted_file_path and os.path.exists(converted_file_path):
+                        try:
+                            os.remove(converted_file_path)
+                            print("  File WAV convertito rimosso")
+                        except Exception as e:
+                            print(f"  Attenzione: impossibile rimuovere il file convertito: {e}")
     
     total_elapsed = time.time() - start_time
     print(f"\n🎉 Trascrizione completata!")
