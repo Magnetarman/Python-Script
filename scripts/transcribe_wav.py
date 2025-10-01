@@ -147,42 +147,176 @@ def convert_audio_to_wav(input_path, output_path):
         print(f"  Errore durante la conversione: {e}")
         return False
 
-def speed_up_audio(input_path, output_path, speed_factor=2.0):
+def split_audio_into_chunks(input_path, chunk_duration=300):
     """
-    Accelera un file audio utilizzando FFmpeg.
+    Divide un file audio in chunk consecutivi per il processamento parallelo.
     Args:
-        input_path: Percorso del file audio originale
-        output_path: Percorso del file audio accelerato
-        speed_factor: Fattore di velocità (2.0 = 2x velocità)
+        input_path: Percorso del file audio da dividere
+        chunk_duration: Durata di ogni chunk in secondi (default: 5 minuti)
     Returns:
-        bool: True se l'operazione è riuscita, False altrimenti
+        list: Lista dei percorsi dei chunk creati, o None se fallisce
     """
     try:
-        # Comando FFmpeg per accelerare l'audio mantenendo il pitch
-        cmd = [
-            'ffmpeg', '-y', '-i', input_path,
-            '-filter:a', f'atempo={speed_factor}',
-            '-vn', output_path
+        # Crea directory temporanea per i chunk
+        temp_dir = os.path.dirname(input_path)
+        base_name = os.path.splitext(os.path.basename(input_path))[0]
+
+        # Crea i percorsi per i due chunk
+        chunk1_path = os.path.join(temp_dir, f"{base_name}_chunk1.wav")
+        chunk2_path = os.path.join(temp_dir, f"{base_name}_chunk2.wav")
+
+        # Usa FFprobe per ottenere la durata totale
+        ffprobe_cmd = [
+            'ffprobe', '-v', 'quiet', '-show_entries',
+            'format=duration', '-of', 'csv=p=0', input_path
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=10)
+        if result.returncode != 0:
+            print("  Impossibile ottenere durata audio")
+            return None
 
-        if result.returncode == 0:
-            print(f"  Audio accelerato {speed_factor}x: {os.path.basename(input_path)}")
-            return True
-        else:
-            print(f"  Errore nell'accelerazione audio: {result.stderr}")
-            return False
+        total_duration = float(result.stdout.strip())
 
-    except subprocess.TimeoutExpired:
-        print("  Timeout nell'accelerazione audio")
-        return False
-    except FileNotFoundError:
-        print("  FFmpeg non trovato. Installa FFmpeg per utilizzare la velocità 2x")
-        return False
+        # Se l'audio è più corto di chunk_duration * 1.5, elabora come singolo chunk
+        if total_duration < chunk_duration * 1.5:
+            print(f"  Audio corto ({total_duration:.1f}s), elaborazione singola")
+            return [input_path]
+
+        # Calcola punto di divisione (metà circa)
+        split_point = total_duration / 2
+
+        print(f"  Divisione audio in 2 chunk da ~{split_point:.1f}s cadauno")
+
+        # Crea primo chunk (da 0 a split_point)
+        cmd1 = [
+            'ffmpeg', '-y', '-i', input_path,
+            '-t', str(split_point),
+            '-acodec', 'pcm_s16le', '-ar', '44100',
+            chunk1_path
+        ]
+
+        # Crea secondo chunk (da split_point a fine)
+        cmd2 = [
+            'ffmpeg', '-y', '-i', input_path,
+            '-ss', str(split_point),
+            '-acodec', 'pcm_s16le', '-ar', '44100',
+            chunk2_path
+        ]
+
+        # Crea i chunk in sequenza
+        print("  Creazione chunk 1...")
+        result1 = subprocess.run(cmd1, capture_output=True, text=True, timeout=60)
+
+        if result1.returncode != 0:
+            print("  Errore creazione chunk 1")
+            return None
+
+        print("  Creazione chunk 2...")
+        result2 = subprocess.run(cmd2, capture_output=True, text=True, timeout=60)
+
+        if result2.returncode != 0:
+            print("  Errore creazione chunk 2")
+            # Pulisce chunk 1 se chunk 2 fallisce
+            if os.path.exists(chunk1_path):
+                os.remove(chunk1_path)
+            return None
+
+        print("  Chunk creati con successo")
+        return [chunk1_path, chunk2_path]
+
     except Exception as e:
-        print(f"  Errore durante l'accelerazione: {e}")
-        return False
+        print(f"  Errore durante la divisione audio: {e}")
+        return None
+
+def transcribe_chunk_parallel(chunk_path, model_name='medium', language='it'):
+    """
+    Trascrive un singolo chunk audio utilizzando Whisper.
+    Args:
+        chunk_path: Percorso del chunk da trascrivere
+        model_name: Nome del modello Whisper
+        language: Lingua del contenuto
+    Returns:
+        str: Testo trascritto del chunk
+    """
+    try:
+        whisper, tqdm = import_required_modules()
+
+        # Suppress FP16 warning
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
+            model = whisper.load_model(model_name)
+
+        # Trascrive il chunk
+        result = model.transcribe(chunk_path, language=language)
+        return result['text']
+
+    except Exception as e:
+        print(f"  Errore nella trascrizione del chunk {os.path.basename(chunk_path)}: {e}")
+        return ""
+
+def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
+    """
+    Trascrive un file audio dividendo in chunk e processando in parallelo.
+    Args:
+        file_path: Percorso del file audio da trascrivere
+        model_name: Nome del modello Whisper
+        language: Lingua del contenuto
+    Returns:
+        str: Testo trascritto completo
+    """
+    import concurrent.futures
+    import time
+
+    print("Avvio trascrizione parallela...")
+
+    # Dividi l'audio in chunk
+    chunks = split_audio_into_chunks(file_path)
+
+    if not chunks or len(chunks) == 1:
+        # Se non è stato possibile dividere o audio troppo corto, trascrizione singola
+        print("Esecuzione trascrizione singola (audio corto o indivisibile)")
+        return transcribe_podcast_with_progress(file_path, model_name, language, speed_up=False)
+
+    print(f"Trascrizione parallela di {len(chunks)} chunk...")
+
+    start_time = time.time()
+
+    try:
+        # Avvia trascrizione parallela dei chunk
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            # Invia i job per i due chunk
+            future1 = executor.submit(transcribe_chunk_parallel, chunks[0], model_name, language)
+            future2 = executor.submit(transcribe_chunk_parallel, chunks[1], model_name, language)
+
+            # Attende i risultati
+            print("Elaborazione chunk in corso...")
+            chunk1_text = future1.result(timeout=600)  # 10 minuti timeout
+            chunk2_text = future2.result(timeout=600)
+
+        # Unisce i risultati
+        full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
+
+        elapsed = time.time() - start_time
+        print(f"Trascrizione parallela completata in {elapsed:.1f} secondi")
+
+        # Pulisce i chunk se sono stati creati
+        for chunk in chunks:
+            if chunk != file_path and os.path.exists(chunk):
+                try:
+                    os.remove(chunk)
+                    print(f"  Chunk {os.path.basename(chunk)} rimosso")
+                except Exception as e:
+                    print(f"  Attenzione: impossibile rimuovere {chunk}: {e}")
+
+        return full_transcription
+
+    except concurrent.futures.TimeoutError:
+        print("Timeout nella trascrizione parallela, fallback a trascrizione singola")
+        return transcribe_podcast_with_progress(file_path, model_name, language, speed_up=False)
+    except Exception as e:
+        print(f"Errore nella trascrizione parallela: {e}, fallback a trascrizione singola")
+        return transcribe_podcast_with_progress(file_path, model_name, language, speed_up=False)
 
 def get_audio_duration(file_path):
     """
@@ -236,14 +370,14 @@ def get_audio_duration(file_path):
     except Exception:
         return 300  # Default 5 minuti se tutti i metodi falliscono
 
-def transcribe_podcast_with_progress(file_path, model_name='medium', language='it', speed_up=False):
+def transcribe_podcast_with_progress(file_path, model_name='medium', language='it', parallel=False):
     """
-    Trascrive un file audio con barra di progresso basata su chunk temporali.
+    Trascrive un file audio con barra di progresso e opzionale processamento parallelo.
     Args:
         file_path: Percorso del file audio da trascrivere
         model_name: Nome del modello Whisper da utilizzare
         language: Lingua del contenuto audio
-        speed_up: Se True, accelera l'audio 2x prima della trascrizione
+        parallel: Se True, utilizza processamento parallelo per velocizzare
     """
     whisper, tqdm = import_required_modules()
 
@@ -265,23 +399,11 @@ def transcribe_podcast_with_progress(file_path, model_name='medium', language='i
 
     print("Trascrizione in corso...")
 
-    # Crea file temporaneo se necessario per velocità 2x
-    temp_file_path = None
-    actual_file_path = file_path
+    # Utilizza processamento parallelo se richiesto
+    if parallel:
+        return transcribe_audio_parallel(file_path, model_name, language)
 
-    if speed_up:
-        print("Accelerazione audio 2x in corso...")
-        temp_dir = os.path.dirname(file_path)
-        temp_filename = f"temp_speedup_{os.path.basename(file_path)}"
-        temp_file_path = os.path.join(temp_dir, temp_filename)
-
-        if speed_up_audio(file_path, temp_file_path, 2.0):
-            actual_file_path = temp_file_path
-            print("  Audio accelerato con successo")
-        else:
-            print("  Impossibile accelerare l'audio, utilizzo file originale")
-            actual_file_path = file_path
-
+    # Altrimenti, trascrizione singola tradizionale
     start_time = time.time()
 
     # Barra di progresso basata su chunk completati
@@ -327,14 +449,6 @@ def transcribe_podcast_with_progress(file_path, model_name='medium', language='i
             "Durata": f"{audio_duration:.1f}s"
         })
 
-    # Pulisce il file temporaneo se è stato creato
-    if temp_file_path and os.path.exists(temp_file_path):
-        try:
-            os.remove(temp_file_path)
-            print("  File temporaneo rimosso")
-        except Exception as e:
-            print(f"  Attenzione: impossibile rimuovere il file temporaneo: {e}")
-
     return result['text']
 
 def save_transcription(transcription, output_path):
@@ -367,12 +481,12 @@ def format_time(seconds):
     """
     return str(timedelta(seconds=int(seconds)))
 
-def main(podcast_dir, speed_up=False):
+def main(podcast_dir, parallel=False):
     """
     Funzione principale con barra di progresso e ETA.
     Args:
         podcast_dir: Directory contenente i file audio
-        speed_up: Se True, accelera l'audio 2x prima della trascrizione
+        parallel: Se True, utilizza processamento parallelo per velocizzare
     """
     # Importa i moduli necessari
     whisper, tqdm = import_required_modules()
@@ -434,7 +548,7 @@ def main(podcast_dir, speed_up=False):
                         wav_file_path = file_path
 
                     # Procedi con la trascrizione
-                    transcription = transcribe_podcast_with_progress(wav_file_path, speed_up=speed_up)
+                    transcription = transcribe_podcast_with_progress(wav_file_path, parallel=parallel)
                     save_transcription(transcription, output_path)
 
                     processed_files += 1
@@ -494,21 +608,21 @@ if __name__ == "__main__":
         if os.path.isdir(podcast_dir):
             print(f"\nIniziando l'elaborazione della cartella: {podcast_dir}")
 
-            # Chiedi se utilizzare la velocità 2x
+            # Chiedi se utilizzare il processamento parallelo
             while True:
-                speed_choice = input("Vuoi accelerare l'audio a 2x velocità per velocizzare la trascrizione? (s/n): ").strip().lower()
-                if speed_choice in ['s', 'si', 'yes', 'y']:
-                    speed_up = True
-                    print("Modalità velocità 2x attivata")
+                parallel_choice = input("Vuoi utilizzare il processamento parallelo per velocizzare la trascrizione? (s/n): ").strip().lower()
+                if parallel_choice in ['s', 'si', 'yes', 'y']:
+                    parallel = True
+                    print("Modalità processamento parallelo attivata")
                     break
-                elif speed_choice in ['n', 'no', 'nope']:
-                    speed_up = False
+                elif parallel_choice in ['n', 'no', 'nope']:
+                    parallel = False
                     print("Modalità normale attivata")
                     break
                 else:
                     print("Rispondi 's' per sì o 'n' per no.")
 
-            main(podcast_dir, speed_up=speed_up)
+            main(podcast_dir, parallel=parallel)
         else:
             print("Il percorso inserito non è valido. Per favore riprova.")
             continue
