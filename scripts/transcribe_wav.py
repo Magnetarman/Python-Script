@@ -258,12 +258,52 @@ def transcribe_chunk_parallel(chunk_path, model, language='it'):
         str: Testo trascritto del chunk
     """
     try:
+        print(f"  DEBUG: Inizio trascrizione chunk {os.path.basename(chunk_path)}")
+
+        # Verifica che il chunk esista e sia valido
+        if not os.path.exists(chunk_path):
+            print(f"  ❌ ERRORE: Chunk non trovato: {chunk_path}")
+            return ""
+
+        chunk_size = os.path.getsize(chunk_path)
+        print(f"  DEBUG: Chunk size: {chunk_size} bytes")
+
+        if chunk_size < 1000:
+            print(f"  ❌ ERRORE: Chunk troppo piccolo: {chunk_size} bytes")
+            return ""
+
+        # Verifica che il modello sia valido
+        if not hasattr(model, 'transcribe'):
+            print(f"  ❌ ERRORE: Modello non valido, manca metodo transcribe")
+            return ""
+
         # Trascrive il chunk usando il modello già caricato
-        result = model.transcribe(chunk_path, language=language)
-        return result['text']
+        print(f"  DEBUG: Avvio trascrizione con modello {type(model)}")
+        try:
+            result = model.transcribe(chunk_path, language=language)
+            print(f"  DEBUG: Trascrizione completata per {os.path.basename(chunk_path)}")
+            return result['text']
+        except (AttributeError, KeyError) as e:
+            if "Linear" in str(e) or any(x in str(e) for x in ["KeyError", "transcribe", "decoder", "encoder"]):
+                print(f"  ❌ ERRORE CRITICO: Modello Whisper danneggiato durante la trascrizione")
+                print(f"  DEBUG: Errore modello: {e}")
+                print("  🔧 RISOLUZIONE AUTOMATICA: Reinstallazione forzata di Whisper in corso...")
+                try:
+                    # Forza la reinstallazione di Whisper
+                    subprocess.check_call([sys.executable, "-m", "pip", "install", "--force-reinstall", "openai-whisper"])
+                    print("  ✅ Whisper reinstallato. Riavvia lo script per utilizzare il modello riparato.")
+                except subprocess.CalledProcessError:
+                    print("  ❌ Impossibile reinstallare automaticamente. Esegui manualmente:")
+                    print("  pip install --force-reinstall openai-whisper")
+                return ""
+            else:
+                raise e
 
     except Exception as e:
-        print(f"  Errore nella trascrizione del chunk {os.path.basename(chunk_path)}: {e}")
+        print(f"  ❌ ERRORE nella trascrizione del chunk {os.path.basename(chunk_path)}: {e}")
+        print(f"  DEBUG: Tipo errore: {type(e).__name__}")
+        import traceback
+        print(f"  DEBUG: Traceback: {traceback.format_exc()}")
         return ""
 
 def transcribe_audio_parallel(file_path, model, language='it'):
@@ -526,8 +566,31 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
             progress_thread = threading.Thread(target=update_progress, daemon=True)
             progress_thread.start()
 
+        # Verifica che il file esista prima della trascrizione
+        if not os.path.exists(file_path):
+            print(f"  ❌ ERRORE: File non trovato per trascrizione: {file_path}")
+            return ""
+
         # Esegue la trascrizione
-        result = model.transcribe(file_path, language=language)
+        print(f"  DEBUG: Esecuzione trascrizione per {os.path.basename(file_path)}")
+        try:
+            result = model.transcribe(file_path, language=language)
+            print(f"  DEBUG: Trascrizione completata con successo")
+        except (AttributeError, KeyError) as e:
+            if "Linear" in str(e) or any(x in str(e) for x in ["KeyError", "transcribe", "decoder", "encoder"]):
+                print(f"  ❌ ERRORE CRITICO: Modello Whisper danneggiato durante la trascrizione")
+                print(f"  DEBUG: Errore modello: {e}")
+                print("  🔧 RISOLUZIONE AUTOMATICA: Reinstallazione forzata di Whisper in corso...")
+                try:
+                    # Forza la reinstallazione di Whisper
+                    subprocess.check_call([sys.executable, "-m", "pip", "install", "--force-reinstall", "openai-whisper"])
+                    print("  ✅ Whisper reinstallato. Riavvia lo script per utilizzare il modello riparato.")
+                except subprocess.CalledProcessError:
+                    print("  ❌ Impossibile reinstallare automaticamente. Esegui manualmente:")
+                    print("  pip install --force-reinstall openai-whisper")
+                return ""
+            else:
+                raise e
 
     # Completa la barra di progresso
     elapsed = time.time() - start_time
@@ -592,16 +655,44 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
     # Importa i moduli necessari
     whisper, tqdm = import_required_modules()
 
-    # Carica il modello Whisper una sola volta
+    # Carica il modello Whisper con fallback automatico
     print(f"Caricamento del modello {model_name}...")
-    try:
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
-            model = whisper.load_model(model_name)
-        print(f"DEBUG: Modello {model_name} caricato correttamente")
-    except Exception as e:
-        print(f"❌ ERRORE: Impossibile caricare il modello {model_name}: {e}")
+
+    # Lista di modelli da provare in ordine di preferenza
+    model_names = [model_name, 'base', 'small', 'tiny']
+
+    model = None
+    for attempt_model in model_names:
+        try:
+            print(f"  DEBUG: Tentativo con modello {attempt_model}")
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
+                model = whisper.load_model(attempt_model)
+
+            # Verifica che il modello sia valido
+            if hasattr(model, 'transcribe'):
+                print(f"✅ SUCCESSO: Modello {attempt_model} caricato correttamente")
+                if attempt_model != model_name:
+                    print(f"⚠️  ATTENZIONE: Usato modello {attempt_model} invece di {model_name}")
+                break
+            else:
+                print(f"❌ ERRORE: Modello {attempt_model} caricato ma non valido")
+                model = None
+
+        except Exception as e:
+            print(f"❌ ERRORE: Impossibile caricare il modello {attempt_model}: {e}")
+            model = None
+            continue
+
+    if model is None:
+        print(f"❌ ERRORE CRITICO: Impossibile caricare alcun modello Whisper valido")
+        print("Verifica l'installazione di Whisper e PyTorch")
+        print("Se il problema persiste, prova a reinstallare:")
+        print("  pip uninstall openai-whisper torch torchvision torchaudio")
+        print("  pip install openai-whisper")
         return
+
+    print(f"DEBUG: Modello verificato, pronto per la trascrizione")
 
     # Conta i file da elaborare
     total_files = count_supported_audio_files(podcast_dir)
