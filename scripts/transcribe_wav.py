@@ -329,8 +329,10 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
                 progress_thread.start()
 
                 # Attende i risultati con barra di progresso
-                chunk1_text = future1.result(timeout=600)  # 10 minuti timeout
-                chunk2_text = future2.result(timeout=600)
+                # Timeout aumentato per audio lunghi: 20 minuti per chunk
+                chunk_timeout = max(1200, audio_duration // 2 + 300)  # Minimo 20 minuti o metà durata + 5 minuti
+                chunk1_text = future1.result(timeout=chunk_timeout)
+                chunk2_text = future2.result(timeout=chunk_timeout)
 
         # Unisce i risultati
         full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
@@ -552,6 +554,7 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
     
     processed_files = 0
     start_time = time.time()
+    processed_file_list = []  # Lista per tracciare file già elaborati
     
     # Barra di progresso principale per tutti i file
     with tqdm(total=total_files,
@@ -571,8 +574,16 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
                 output_file_name = base_name + '.txt'
                 output_path = os.path.join(root, output_file_name)
 
-                # Verifica se la trascrizione esiste già
+                # Verifica se la trascrizione esiste già o se è già stata elaborata in questa sessione
                 if os.path.exists(output_path) and os.path.getsize(output_path) > 1:
+                    print(f"  ⏭️  Trascrizione già esistente per: {file_name}")
+                    main_pbar.update(1)
+                    continue
+
+                # Verifica se il file è già stato elaborato in questa sessione
+                if file_path in processed_file_list:
+                    print(f"  ⏭️  File già elaborato in questa sessione: {file_name}")
+                    main_pbar.update(1)
                     continue
 
                 # File WAV da utilizzare per la trascrizione (originale o convertito)
@@ -604,6 +615,8 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
                     transcription = transcribe_podcast_with_progress(wav_file_path, model_name, language, parallel)
                     save_transcription(transcription, output_path)
 
+                    # Aggiungi il file alla lista dei processati
+                    processed_file_list.append(file_path)
                     processed_files += 1
                     elapsed_total = time.time() - start_time
                     file_elapsed = time.time() - file_start_time
@@ -642,8 +655,14 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
                             print(f"  Attenzione: impossibile rimuovere il file convertito: {e}")
     
     total_elapsed = time.time() - start_time
+    # Conta file saltati
+    skipped_files = total_files - processed_files
+
     print(f"\n🎉 Trascrizione completata!")
-    print(f"📊 File elaborati: {processed_files}/{total_files}")
+    print(f"📊 File elaborati: {processed_files}")
+    if skipped_files > 0:
+        print(f"⏭️  File saltati (già esistenti): {skipped_files}")
+    print(f"📁 Totale file trovati: {total_files}")
     print(f"⏱️  Tempo totale: {format_time(total_elapsed)}")
     if processed_files > 0:
         print(f"📈 Tempo medio per file: {total_elapsed/processed_files:.1f} secondi")
@@ -681,14 +700,11 @@ if __name__ == "__main__":
             continue
         
         while True:
-            scelta = input("\nUtilizza di nuovo lo script digitando 1 o premi 0 per uscire: ").strip()
+            scelta = input("\n🔄 Utilizzare di nuovo lo script con una nuova cartella? (1=sì, 0=no): ").strip()
             if scelta == '1':
                 break
             elif scelta == '0':
-                print("Arrivederci!")
+                print("👋 Arrivederci!")
                 sys.exit(0)
             else:
-                print("Scelta non valida. Inserire 1 o 0.")
-        
-        if scelta == '0':
-            break
+                print("❌ Scelta non valida. Inserire 1 o 0.")
