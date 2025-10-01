@@ -267,8 +267,12 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
     """
     import concurrent.futures
     import time
+    from tqdm import tqdm
 
     print("Avvio trascrizione parallela...")
+
+    # Ottieni la durata per la barra di progresso
+    audio_duration = get_audio_duration(file_path)
 
     # Dividi l'audio in chunk
     chunks = split_audio_into_chunks(file_path)
@@ -276,23 +280,48 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
     if not chunks or len(chunks) == 1:
         # Se non è stato possibile dividere o audio troppo corto, trascrizione singola
         print("Esecuzione trascrizione singola (audio corto o indivisibile)")
-        return transcribe_podcast_with_progress(file_path, model_name, language, speed_up=False)
+        return transcribe_podcast_with_progress(file_path, model_name, language, parallel=False)
 
     print(f"Trascrizione parallela di {len(chunks)} chunk...")
 
     start_time = time.time()
 
     try:
-        # Avvia trascrizione parallela dei chunk
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            # Invia i job per i due chunk
-            future1 = executor.submit(transcribe_chunk_parallel, chunks[0], model_name, language)
-            future2 = executor.submit(transcribe_chunk_parallel, chunks[1], model_name, language)
+        # Crea barra di progresso per la trascrizione parallela
+        with tqdm(total=100, desc="Progresso parallelo", unit="%", ncols=80) as pbar:
 
-            # Attende i risultati
-            print("Elaborazione chunk in corso...")
-            chunk1_text = future1.result(timeout=600)  # 10 minuti timeout
-            chunk2_text = future2.result(timeout=600)
+            # Avvia trascrizione parallela dei chunk
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                # Invia i job per i due chunk
+                future1 = executor.submit(transcribe_chunk_parallel, chunks[0], model_name, language)
+                future2 = executor.submit(transcribe_chunk_parallel, chunks[1], model_name, language)
+
+                # Funzione per aggiornare la barra di progresso durante l'attesa
+                def update_progress():
+                    """Aggiorna la barra di progresso durante l'elaborazione parallela"""
+                    while not pbar.disable:
+                        elapsed = time.time() - start_time
+                        # Calcola il progresso basato sul tempo trascorso vs tempo stimato
+                        # I chunk paralleli dovrebbero essere circa 2x più veloci
+                        processing_ratio = 0.15  # secondi di processing per secondo di audio
+                        estimated_progress = min(95, (elapsed / (audio_duration * processing_ratio / 2)) * 100)
+
+                        if estimated_progress >= pbar.n:
+                            pbar.update(estimated_progress - pbar.n)
+                            pbar.set_postfix({
+                                "Elaborazione": f"{estimated_progress:.1f}%",
+                                "Durata": f"{audio_duration:.1f}s"
+                            })
+
+                        time.sleep(0.5)  # Aggiorna ogni 0.5 secondi
+
+                # Avvia il thread per l'aggiornamento del progresso
+                progress_thread = threading.Thread(target=update_progress, daemon=True)
+                progress_thread.start()
+
+                # Attende i risultati con barra di progresso
+                chunk1_text = future1.result(timeout=600)  # 10 minuti timeout
+                chunk2_text = future2.result(timeout=600)
 
         # Unisce i risultati
         full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
@@ -313,10 +342,10 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
 
     except concurrent.futures.TimeoutError:
         print("Timeout nella trascrizione parallela, fallback a trascrizione singola")
-        return transcribe_podcast_with_progress(file_path, model_name, language, speed_up=False)
+        return transcribe_podcast_with_progress(file_path, model_name, language, parallel=False)
     except Exception as e:
         print(f"Errore nella trascrizione parallela: {e}, fallback a trascrizione singola")
-        return transcribe_podcast_with_progress(file_path, model_name, language, speed_up=False)
+        return transcribe_podcast_with_progress(file_path, model_name, language, parallel=False)
 
 def get_audio_duration(file_path):
     """
@@ -439,7 +468,7 @@ def transcribe_podcast_with_progress(file_path, model_name='medium', language='i
             progress_thread.start()
 
             # Esegue la trascrizione
-            result = model.transcribe(actual_file_path, language=language)
+            result = model.transcribe(file_path, language=language)
 
         # Completa la barra di progresso
         elapsed = time.time() - start_time
@@ -481,11 +510,13 @@ def format_time(seconds):
     """
     return str(timedelta(seconds=int(seconds)))
 
-def main(podcast_dir, parallel=False):
+def main(podcast_dir, model_name='medium', language='it', parallel=False):
     """
     Funzione principale con barra di progresso e ETA.
     Args:
         podcast_dir: Directory contenente i file audio
+        model_name: Nome del modello Whisper da utilizzare
+        language: Lingua del contenuto audio
         parallel: Se True, utilizza processamento parallelo per velocizzare
     """
     # Importa i moduli necessari
@@ -548,7 +579,7 @@ def main(podcast_dir, parallel=False):
                         wav_file_path = file_path
 
                     # Procedi con la trascrizione
-                    transcription = transcribe_podcast_with_progress(wav_file_path, parallel=parallel)
+                    transcription = transcribe_podcast_with_progress(wav_file_path, model_name, language, parallel)
                     save_transcription(transcription, output_path)
 
                     processed_files += 1
@@ -622,7 +653,7 @@ if __name__ == "__main__":
                 else:
                     print("Rispondi 's' per sì o 'n' per no.")
 
-            main(podcast_dir, parallel=parallel)
+            main(podcast_dir, model_name='medium', language='it', parallel=parallel)
         else:
             print("Il percorso inserito non è valido. Per favore riprova.")
             continue
