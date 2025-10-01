@@ -13,20 +13,17 @@ from datetime import datetime, timedelta
 def upgrade_pip_and_install_packages():
     """
     Aggiorna pip e installa o reinstalla correttamente whisper e tqdm.
+    Utilizza il Python corrente invece di forzare Python 3.10.
     """
-    user_home = os.environ.get('USERPROFILE')
-    python_path = os.path.join(user_home, "AppData", "Local", "Programs", "Python", "Python310", "python.exe")
-    
-    if not os.path.exists(python_path):
-        print(f"Errore: Python 3.10 non trovato in {python_path}.")
-        sys.exit(1)
+    python_path = sys.executable
 
+    print(f"Utilizzo Python: {python_path}")
     print("Aggiornamento di pip in corso...")
     try:
         subprocess.check_call([python_path, "-m", "pip", "install", "--upgrade", "pip"])
     except subprocess.CalledProcessError as e:
         print(f"Errore durante l'aggiornamento di pip: {e}")
-        sys.exit(1)
+        print("Continuo con l'installazione...")
 
     print("Disinstallazione di vecchie versioni di whisper...")
     try:
@@ -39,31 +36,20 @@ def upgrade_pip_and_install_packages():
         subprocess.check_call([python_path, "-m", "pip", "install", "-U", "openai-whisper", "tqdm"])
     except subprocess.CalledProcessError as e:
         print(f"Errore durante l'installazione: {e}")
+        print("Prova a installare manualmente: pip install openai-whisper tqdm")
         sys.exit(1)
 
-def ensure_python_3_10():
+def ensure_python_version():
     """
-    Verifica se Python 3.10 è in uso, altrimenti forza l'esecuzione con Python 3.10.
+    Verifica se è in uso una versione compatibile di Python (3.8+).
     """
-    if sys.version_info[0] != 3 or sys.version_info[1] != 10:
-        print("Forzando l'esecuzione con Python 3.10...")
-        user_home = os.environ.get('USERPROFILE')
-        python_path = os.path.join(user_home, "AppData", "Local", "Programs", "Python", "Python310", "python.exe")
-        
-        if not os.path.exists(python_path):
-            print(f"Errore: Python 3.10 non trovato in {python_path}. Verifica che Python 3.10 sia installato correttamente.")
-            sys.exit(1)
+    if sys.version_info[0] != 3 or sys.version_info[1] < 8:
+        print(f"Python {sys.version_info.major}.{sys.version_info.minor} non supportato.")
+        print("È richiesto Python 3.8 o superiore.")
+        print("Per favore aggiorna Python e riprova.")
+        sys.exit(1)
 
-        try:
-            subprocess.check_call([python_path, "--version"])
-        except subprocess.CalledProcessError:
-            print("Errore: Python 3.10 non trovato o non configurato correttamente.")
-            sys.exit(1)
-
-        # Ensure we're running from the correct directory
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        subprocess.check_call([python_path, os.path.abspath(__file__)] + sys.argv[1:], cwd=script_dir)
-        sys.exit()
+    print(f"Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} - OK")
 
 def import_required_modules():
     """
@@ -72,17 +58,20 @@ def import_required_modules():
     try:
         import whisper
         from tqdm import tqdm
+        print(f"Moduli importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, tqdm OK")
         return whisper, tqdm
     except ImportError as e:
         print(f"Moduli non trovati: {e}. Installazione in corso...")
         upgrade_pip_and_install_packages()
-        
+
         try:
             import whisper
             from tqdm import tqdm
+            print(f"Moduli installati e importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, tqdm OK")
             return whisper, tqdm
         except ImportError as e:
             print(f"Impossibile importare i moduli anche dopo l'installazione: {e}")
+            print("Prova a installare manualmente i moduli: pip install openai-whisper tqdm")
             sys.exit(1)
 
 def get_supported_audio_formats():
@@ -118,6 +107,21 @@ def convert_audio_to_wav(input_path, output_path):
         bool: True se la conversione è riuscita, False altrimenti
     """
     try:
+        print(f"  DEBUG: Verifica FFmpeg...")
+        # Verifica se FFmpeg è disponibile
+        ffmpeg_check = subprocess.run(['ffmpeg', '-version'], capture_output=True, text=True, timeout=10)
+        if ffmpeg_check.returncode != 0:
+            print(f"  ❌ ERRORE: FFmpeg non trovato o non funzionante")
+            print(f"  Dettagli: {ffmpeg_check.stderr}")
+            return False
+
+        print(f"  DEBUG: FFprobe check...")
+        # Verifica se FFprobe è disponibile
+        ffprobe_check = subprocess.run(['ffprobe', '-version'], capture_output=True, text=True, timeout=10)
+        if ffprobe_check.returncode != 0:
+            print(f"  ❌ ERRORE: FFprobe non trovato o non funzionante")
+            return False
+
         # Comando FFmpeg per convertire in WAV mantenendo la qualità originale
         cmd = [
             'ffmpeg', '-y', '-i', input_path,
@@ -127,14 +131,19 @@ def convert_audio_to_wav(input_path, output_path):
             output_path
         ]
 
+        print(f"  DEBUG: Input path: {input_path}")
+        print(f"  DEBUG: Output path: {output_path}")
+        print(f"  DEBUG: File input esiste: {os.path.exists(input_path)}")
         print(f"  Conversione in corso: {os.path.basename(input_path)} → WAV")
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
 
         if result.returncode == 0:
+            print(f"  DEBUG: Conversione completata, file size: {os.path.getsize(output_path)} bytes")
             print(f"  Conversione completata: {os.path.basename(output_path)}")
             return True
         else:
-            print(f"  Errore nella conversione: {result.stderr}")
+            print(f"  ❌ ERRORE nella conversione: {result.stderr}")
+            print(f"  DEBUG: Return code: {result.returncode}")
             return False
 
     except subprocess.TimeoutExpired:
@@ -157,13 +166,22 @@ def split_audio_into_chunks(input_path, chunk_duration=300):
         list: Lista dei percorsi dei chunk creati, o None se fallisce
     """
     try:
-        # Crea directory temporanea per i chunk
-        temp_dir = os.path.dirname(input_path)
+        print(f"  DEBUG: split_audio_into_chunks chiamato per {input_path}")
+        print(f"  DEBUG: File esiste: {os.path.exists(input_path)}")
+        print(f"  DEBUG: File size: {os.path.getsize(input_path) if os.path.exists(input_path) else 'N/A'}")
+
+        # Crea directory temporanea per i chunk nella sottocartella _temp
+        temp_dir = os.path.join(os.path.dirname(input_path), "_temp")
+        print(f"  DEBUG: Temp dir: {temp_dir}")
+        os.makedirs(temp_dir, exist_ok=True)  # Crea la directory se non esiste
+        print(f"  DEBUG: Temp dir creata/verificata")
         base_name = os.path.splitext(os.path.basename(input_path))[0]
 
-        # Crea i percorsi per i due chunk
+        # Crea i percorsi per i due chunk nella sottocartella _temp
         chunk1_path = os.path.join(temp_dir, f"{base_name}_chunk1.wav")
         chunk2_path = os.path.join(temp_dir, f"{base_name}_chunk2.wav")
+        print(f"  DEBUG: Chunk1 path: {chunk1_path}")
+        print(f"  DEBUG: Chunk2 path: {chunk2_path}")
 
         # Usa FFprobe per ottenere la durata totale
         ffprobe_cmd = [
@@ -229,25 +247,18 @@ def split_audio_into_chunks(input_path, chunk_duration=300):
         print(f"  Errore durante la divisione audio: {e}")
         return None
 
-def transcribe_chunk_parallel(chunk_path, model_name='medium', language='it'):
+def transcribe_chunk_parallel(chunk_path, model, language='it'):
     """
     Trascrive un singolo chunk audio utilizzando Whisper.
     Args:
         chunk_path: Percorso del chunk da trascrivere
-        model_name: Nome del modello Whisper
+        model: Modello Whisper già caricato
         language: Lingua del contenuto
     Returns:
         str: Testo trascritto del chunk
     """
     try:
-        whisper, tqdm = import_required_modules()
-
-        # Suppress FP16 warning
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
-            model = whisper.load_model(model_name)
-
-        # Trascrive il chunk
+        # Trascrive il chunk usando il modello già caricato
         result = model.transcribe(chunk_path, language=language)
         return result['text']
 
@@ -255,12 +266,12 @@ def transcribe_chunk_parallel(chunk_path, model_name='medium', language='it'):
         print(f"  Errore nella trascrizione del chunk {os.path.basename(chunk_path)}: {e}")
         return ""
 
-def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
+def transcribe_audio_parallel(file_path, model, language='it'):
     """
     Trascrive un file audio dividendo in chunk e processando in parallelo.
     Args:
         file_path: Percorso del file audio da trascrivere
-        model_name: Nome del modello Whisper
+        model: Modello Whisper già caricato
         language: Lingua del contenuto
     Returns:
         str: Testo trascritto completo
@@ -280,7 +291,7 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
     if not chunks or len(chunks) == 1:
         # Se non è stato possibile dividere o audio troppo corto, trascrizione singola
         print("Esecuzione trascrizione singola (audio corto o indivisibile)")
-        return transcribe_podcast_with_progress(file_path, model_name, language, parallel=False)
+        return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
 
     print(f"⚡ Divisione audio in {len(chunks)} chunk per elaborazione parallela...")
 
@@ -288,50 +299,60 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
 
     try:
         # Crea barra di progresso per la trascrizione parallela
-        with tqdm(total=100,
-                 desc="🚀 Elaborazione Parallela",
-                 unit="%",
-                 ncols=100,
-                 bar_format='{l_bar}{bar}| {n:.1f}/{total:.1f}% [{elapsed}<{remaining}, {rate:.2f}%/s]') as pbar:
+        try:
+            pbar = tqdm(total=100,
+                       desc="🚀 Elaborazione Parallela",
+                       unit="%",
+                       ncols=100)
+        except Exception as e:
+            print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
+            print("Continuo senza barra di progresso...")
+            pbar = None
 
-            # Avvia trascrizione parallela dei chunk
-            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                # Invia i job per i due chunk
-                future1 = executor.submit(transcribe_chunk_parallel, chunks[0], model_name, language)
-                future2 = executor.submit(transcribe_chunk_parallel, chunks[1], model_name, language)
+        # Avvia trascrizione parallela dei chunk
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            # Invia i job per i due chunk
+            future1 = executor.submit(transcribe_chunk_parallel, chunks[0], model, language)
+            future2 = executor.submit(transcribe_chunk_parallel, chunks[1], model, language)
 
-                # Funzione per aggiornare la barra di progresso durante l'attesa
-                def update_progress():
-                    """Aggiorna la barra di progresso durante l'elaborazione parallela"""
-                    while not pbar.disable:
-                        elapsed = time.time() - start_time
-                        # Calcola il progresso basato sul tempo trascorso vs tempo stimato
-                        # I chunk paralleli dovrebbero essere circa 2x più veloci
-                        processing_ratio = 0.15  # secondi di processing per secondo di audio
-                        estimated_progress = min(95, (elapsed / (audio_duration * processing_ratio / 2)) * 100)
+            # Funzione per aggiornare la barra di progresso durante l'attesa
+            def update_progress():
+                """Aggiorna la barra di progresso durante l'elaborazione parallela"""
+                if pbar is None:
+                    return
+                while not pbar.disable:
+                    elapsed = time.time() - start_time
+                    # Calcola il progresso basato sul tempo trascorso vs tempo stimato
+                    # I chunk paralleli dovrebbero essere circa 2x più veloci
+                    processing_ratio = 0.15  # secondi di processing per secondo di audio
+                    estimated_progress = min(95, (elapsed / (audio_duration * processing_ratio / 2)) * 100)
 
-                        if estimated_progress >= pbar.n:
-                            # Calcola velocità e tempo rimanente stimato
-                            speed = estimated_progress / elapsed if elapsed > 0 else 0
-                            remaining = (100 - estimated_progress) / speed if speed > 0 else 0
+                    if estimated_progress >= pbar.n:
+                        # Calcola velocità e tempo rimanente stimato
+                        speed = estimated_progress / elapsed if elapsed > 0 else 0
+                        remaining = (100 - estimated_progress) / speed if speed > 0 else 0
 
-                            pbar.update(estimated_progress - pbar.n)
-                            pbar.set_postfix({
-                                "Audio": f"{audio_duration:.0f}s",
-                                "Velocità": f"{speed:.1f}%/s",
-                                "ETA": f"{remaining:.0f}s"
-                            })
+                        pbar.update(estimated_progress - pbar.n)
+                        pbar.set_postfix_str(f"Audio: {audio_duration:.0f}s, Velocità: {speed:.1f}%/s, ETA: {remaining:.0f}s")
 
-                        time.sleep(0.5)  # Aggiorna ogni 0.5 secondi
+                    time.sleep(0.5)  # Aggiorna ogni 0.5 secondi
 
-                # Avvia il thread per l'aggiornamento del progresso
+            # Avvia il thread per l'aggiornamento del progresso
+            if pbar:
                 progress_thread = threading.Thread(target=update_progress, daemon=True)
                 progress_thread.start()
 
-                # Attende i risultati con barra di progresso
-                # Timeout aumentato per audio lunghi: 20 minuti per chunk
-                chunk_timeout = max(1200, audio_duration // 2 + 300)  # Minimo 20 minuti o metà durata + 5 minuti
+            # Attende i risultati con barra di progresso
+            # Timeout aumentato per audio lunghi: 20 minuti per chunk
+            chunk_timeout = max(1200, audio_duration // 2 + 300)  # Minimo 20 minuti o metà durata + 5 minuti
+
+            if pbar:
                 chunk1_text = future1.result(timeout=chunk_timeout)
+                chunk2_text = future2.result(timeout=chunk_timeout)
+            else:
+                print("Attesa completamento trascrizione chunk 1...")
+                chunk1_text = future1.result(timeout=chunk_timeout)
+                print("Chunk 1 completato, attesa chunk 2...")
                 chunk2_text = future2.result(timeout=chunk_timeout)
 
         # Unisce i risultati
@@ -339,6 +360,13 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
 
         elapsed = time.time() - start_time
         print(f"✅ Trascrizione parallela completata in {elapsed:.1f} secondi")
+
+        # Chiude la barra di progresso se esiste
+        if pbar:
+            try:
+                pbar.close()
+            except:
+                pass
 
         # Pulisce i chunk se sono stati creati
         for chunk in chunks:
@@ -349,14 +377,25 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
                 except Exception as e:
                     print(f"  Attenzione: impossibile rimuovere {chunk}: {e}")
 
+        # Rimuovi la directory _temp se vuota
+        temp_dir = os.path.join(os.path.dirname(file_path), "_temp")
+        if os.path.exists(temp_dir):
+            try:
+                # Verifica se la directory è vuota
+                if not os.listdir(temp_dir):
+                    os.rmdir(temp_dir)
+                    print(f"  Directory temporanea {os.path.basename(temp_dir)} rimossa")
+            except Exception as e:
+                print(f"  Attenzione: impossibile rimuovere la directory temporanea: {e}")
+
         return full_transcription
 
     except concurrent.futures.TimeoutError:
         print("Timeout nella trascrizione parallela, fallback a trascrizione singola")
-        return transcribe_podcast_with_progress(file_path, model_name, language, parallel=False)
+        return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
     except Exception as e:
         print(f"Errore nella trascrizione parallela: {e}, fallback a trascrizione singola")
-        return transcribe_podcast_with_progress(file_path, model_name, language, parallel=False)
+        return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
 
 def get_audio_duration(file_path):
     """
@@ -410,22 +449,16 @@ def get_audio_duration(file_path):
     except Exception:
         return 300  # Default 5 minuti se tutti i metodi falliscono
 
-def transcribe_podcast_with_progress(file_path, model_name='medium', language='it', parallel=False):
+def transcribe_podcast_with_progress(file_path, model, language='it', parallel=False):
     """
     Trascrive un file audio con barra di progresso e opzionale processamento parallelo.
     Args:
         file_path: Percorso del file audio da trascrivere
-        model_name: Nome del modello Whisper da utilizzare
+        model: Modello Whisper già caricato
         language: Lingua del contenuto audio
         parallel: Se True, utilizza processamento parallelo per velocizzare
     """
-    whisper, tqdm = import_required_modules()
-
-    print(f"Caricamento del modello {model_name}...")
-    # Suppress FP16 warning
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
-        model = whisper.load_model(model_name)
+    print(f"  DEBUG: transcribe_podcast_with_progress chiamato per {os.path.basename(file_path)}")
 
     # Ottieni la durata effettiva del file audio
     print("Analisi del file audio...")
@@ -441,62 +474,70 @@ def transcribe_podcast_with_progress(file_path, model_name='medium', language='i
 
     # Utilizza processamento parallelo se richiesto
     if parallel:
-        return transcribe_audio_parallel(file_path, model_name, language)
+        return transcribe_audio_parallel(file_path, model, language)
 
     # Altrimenti, trascrizione singola tradizionale
     start_time = time.time()
 
     # Barra di progresso per la trascrizione singola
-    with tqdm(total=100,
-             desc="🎵 Trascrizione Audio",
-             unit="%",
-             ncols=100,
-             bar_format='{l_bar}{bar}| {n:.1f}/{total:.1f}% [{elapsed}<{remaining}, {rate:.2f}%/s]') as pbar:
-        # Avvia la trascrizione con soppressione del warning FP16
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
+    try:
+        from tqdm import tqdm as tqdm_class
+        pbar = tqdm_class(total=100,
+                   desc="🎵 Trascrizione Audio",
+                   unit="%",
+                   ncols=100)
+    except Exception as e:
+        print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
+        print("Continuo senza barra di progresso...")
+        pbar = None
+    
+    # Avvia la trascrizione con soppressione del warning FP16
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
 
-            def update_progress():
-                """Aggiorna la barra di progresso basata su stime temporali"""
-                import time
+        def update_progress():
+            """Aggiorna la barra di progresso basata su stime temporali"""
+            import time
 
-                # Simula il progresso basato sulla durata stimata
-                # Whisper processa circa 1 secondo di audio ogni 0.1-0.2 secondi su CPU
-                processing_ratio = 0.15  # secondi di processing per secondo di audio
+            if pbar is None:
+                return
 
-                while not pbar.disable:
-                    elapsed = time.time() - start_time
-                    # Calcola il progresso basato sul tempo trascorso vs tempo stimato
-                    estimated_progress = min(95, (elapsed / (audio_duration * processing_ratio)) * 100)
+            # Simula il progresso basato sulla durata stimata
+            # Whisper processa circa 1 secondo di audio ogni 0.1-0.2 secondi su CPU
+            processing_ratio = 0.15  # secondi di processing per secondo di audio
 
-                    if estimated_progress >= pbar.n:
-                        # Calcola velocità e tempo rimanente stimato
-                        speed = estimated_progress / elapsed if elapsed > 0 else 0
-                        remaining = (100 - estimated_progress) / speed if speed > 0 else 0
+            while not pbar.disable:
+                elapsed = time.time() - start_time
+                # Calcola il progresso basato sul tempo trascorso vs tempo stimato
+                estimated_progress = min(95, (elapsed / (audio_duration * processing_ratio)) * 100)
 
-                        pbar.update(estimated_progress - pbar.n)
-                        pbar.set_postfix({
-                            "Audio": f"{audio_duration:.0f}s",
-                            "Velocità": f"{speed:.1f}%/s",
-                            "ETA": f"{remaining:.0f}s"
-                        })
+                if estimated_progress >= pbar.n:
+                    # Calcola velocità e tempo rimanente stimato
+                    speed = estimated_progress / elapsed if elapsed > 0 else 0
+                    remaining = (100 - estimated_progress) / speed if speed > 0 else 0
 
-                    time.sleep(0.5)  # Aggiorna ogni 0.5 secondi
+                    pbar.update(estimated_progress - pbar.n)
+                    pbar.set_postfix_str(f"Audio: {audio_duration:.0f}s, Velocità: {speed:.1f}%/s, ETA: {remaining:.0f}s")
 
-            # Avvia il thread per l'aggiornamento del progresso
+                time.sleep(0.5)  # Aggiorna ogni 0.5 secondi
+
+        # Avvia il thread per l'aggiornamento del progresso
+        if pbar:
             progress_thread = threading.Thread(target=update_progress, daemon=True)
             progress_thread.start()
 
-            # Esegue la trascrizione
-            result = model.transcribe(file_path, language=language)
+        # Esegue la trascrizione
+        result = model.transcribe(file_path, language=language)
 
-        # Completa la barra di progresso
-        elapsed = time.time() - start_time
+    # Completa la barra di progresso
+    elapsed = time.time() - start_time
+    if pbar:
         pbar.update(100 - pbar.n)  # Completa fino al 100%
-        pbar.set_postfix({
-            "Tempo": f"{elapsed:.1f}s",
-            "Durata": f"{audio_duration:.1f}s"
-        })
+        pbar.set_postfix_str(f"Tempo: {elapsed:.1f}s, Durata: {audio_duration:.1f}s")
+        try:
+            pbar.close()
+        except:
+            pass
 
     return result['text']
 
@@ -510,18 +551,27 @@ def save_transcription(transcription, output_path):
 def count_supported_audio_files(podcast_dir):
     """
     Conta il numero totale di file audio supportati da elaborare.
+    Esclude la directory _temp per evitare di contare i chunk temporanei.
+    Conta i file che hanno .txt vuoto o inesistente (consistente con la logica di main).
     """
     count = 0
     supported_formats = get_supported_audio_formats()
 
     for root, dirs, files in os.walk(podcast_dir):
+        # Salta la directory _temp per evitare di contare i chunk temporanei
+        dirs[:] = [d for d in dirs if d != '_temp']
+
         for file_name in files:
             file_ext = os.path.splitext(file_name)[1][1:].lower()
             if file_ext in supported_formats:
                 base_name = os.path.splitext(file_name)[0]
                 output_path = os.path.join(root, base_name + '.txt')
-                if not (os.path.exists(output_path) and os.path.getsize(output_path) > 1):
+                # Conta solo se il file .txt NON esiste o è vuoto (≤10 bytes)
+                if not os.path.exists(output_path) or os.path.getsize(output_path) <= 10:
                     count += 1
+                    print(f"  📝 File da elaborare: {file_name}")
+                else:
+                    print(f"  ⏭️ File già trascritto: {file_name} ({os.path.getsize(output_path)} bytes)")
     return count
 
 def format_time(seconds):
@@ -541,7 +591,18 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
     """
     # Importa i moduli necessari
     whisper, tqdm = import_required_modules()
-    
+
+    # Carica il modello Whisper una sola volta
+    print(f"Caricamento del modello {model_name}...")
+    try:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
+            model = whisper.load_model(model_name)
+        print(f"DEBUG: Modello {model_name} caricato correttamente")
+    except Exception as e:
+        print(f"❌ ERRORE: Impossibile caricare il modello {model_name}: {e}")
+        return
+
     # Conta i file da elaborare
     total_files = count_supported_audio_files(podcast_dir)
     
@@ -557,102 +618,143 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
     processed_file_list = []  # Lista per tracciare file già elaborati
     
     # Barra di progresso principale per tutti i file
-    with tqdm(total=total_files,
-             desc="📁 Elaborazione File",
-             unit="file",
-             ncols=100,
-             bar_format='{l_bar}{bar}| {n:.0f}/{total:.0f} [{elapsed}<{remaining}, {rate:.2f}file/s]') as main_pbar:
-        for root, dirs, files in os.walk(podcast_dir):
-            for file_name in files:
-                file_path = os.path.join(root, file_name)
-                base_name, ext = os.path.splitext(file_name)
+    try:
+        main_pbar = tqdm(total=total_files,
+                        desc="📁 Elaborazione File",
+                        unit="file",
+                        ncols=100)
+    except Exception as e:
+        print(f"Attenzione: errore nell'inizializzazione della barra di progresso principale: {e}")
+        print("Continuo senza barra di progresso...")
+        main_pbar = None
+    
+    for root, dirs, files in os.walk(podcast_dir):
+        # Salta la directory _temp per evitare di processare i chunk temporanei
+        dirs[:] = [d for d in dirs if d != '_temp']
 
-                # Verifica se il formato è supportato
-                if not is_audio_format_supported(file_path):
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            base_name, ext = os.path.splitext(file_name)
+
+            # Verifica se il formato è supportato
+            if not is_audio_format_supported(file_path):
+                continue
+
+            output_file_name = base_name + '.txt'
+            output_path = os.path.join(root, output_file_name)
+
+            # Verifica se la trascrizione esiste già e contiene dati significativi
+            if os.path.exists(output_path):
+                txt_size = os.path.getsize(output_path)
+                print(f"  DEBUG: File .txt esistente: {output_path} ({txt_size} bytes)")
+                if txt_size > 10:  # Più di 10 byte = probabilmente contiene trascrizione
+                    print(f"  ⏭️  Trascrizione già esistente per: {file_name} ({txt_size} bytes)")
+                    if main_pbar:
+                        main_pbar.update(1)
                     continue
+                else:
+                    print(f"  ⚠️  File .txt esistente ma vuoto o quasi ({txt_size} bytes) - rielaboro")
+            else:
+                print(f"  DEBUG: Nessun file .txt esistente per {file_name}")
 
-                output_file_name = base_name + '.txt'
-                output_path = os.path.join(root, output_file_name)
-
-                # Verifica se la trascrizione esiste già o se è già stata elaborata in questa sessione
-                if os.path.exists(output_path) and os.path.getsize(output_path) > 1:
-                    print(f"  ⏭️  Trascrizione già esistente per: {file_name}")
+            # Verifica se il file è già stato elaborato in questa sessione
+            if file_path in processed_file_list:
+                print(f"  ⏭️  File già elaborato in questa sessione: {file_name}")
+                if main_pbar:
                     main_pbar.update(1)
-                    continue
+                continue
 
-                # Verifica se il file è già stato elaborato in questa sessione
-                if file_path in processed_file_list:
-                    print(f"  ⏭️  File già elaborato in questa sessione: {file_name}")
+            print(f"  📝  Elaborazione file: {file_name}")
+            print(f"  DEBUG: File path: {file_path}")
+            print(f"  DEBUG: File esiste: {os.path.exists(file_path)}")
+            if os.path.exists(file_path):
+                file_size = os.path.getsize(file_path)
+                print(f"  DEBUG: File size: {file_size} bytes")
+                if file_size < 1000:  # Meno di 1KB è probabilmente non valido
+                    print(f"  ❌ ERRORE: File troppo piccolo ({file_size} bytes), probabilmente non è un file audio valido")
+                    if main_pbar:
+                        main_pbar.update(1)
+                    continue
+            else:
+                print(f"  ❌ ERRORE: File non esiste: {file_path}")
+                if main_pbar:
                     main_pbar.update(1)
-                    continue
+                continue
 
-                # File WAV da utilizzare per la trascrizione (originale o convertito)
-                wav_file_path = None
-                converted_file_path = None
+            # File WAV da utilizzare per la trascrizione (originale o convertito)
+            wav_file_path = None
+            converted_file_path = None
 
-                try:
-                    file_start_time = time.time()
+            try:
+                file_start_time = time.time()
 
-                    # Aggiorna la descrizione con il file corrente
+                # Aggiorna la descrizione con il file corrente
+                if main_pbar:
                     main_pbar.set_description(f"Elaborando: {file_name[:30]}...")
 
-                    # Se non è WAV, convertilo
-                    if ext.lower() != '.wav':
-                        print(f"  Conversione da {ext.upper()[1:]} a WAV richiesta...")
-                        converted_file_path = os.path.join(root, base_name + '_converted.wav')
-                        if convert_audio_to_wav(file_path, converted_file_path):
-                            wav_file_path = converted_file_path
-                            print(f"  Conversione completata: {file_name}")
-                        else:
-                            print(f"  Impossibile convertire {file_name}, salto...")
+                # Se non è WAV, convertilo
+                if ext.lower() != '.wav':
+                    print(f"  DEBUG: Conversione richiesta per {file_name}")
+                    converted_file_path = os.path.join(root, base_name + '_converted.wav')
+                    print(f"  DEBUG: Converted file path: {converted_file_path}")
+                    if convert_audio_to_wav(file_path, converted_file_path):
+                        wav_file_path = converted_file_path
+                        print(f"  Conversione completata: {file_name}")
+                    else:
+                        print(f"  ❌ Impossibile convertire {file_name}, salto...")
+                        if main_pbar:
                             main_pbar.update(1)
-                            continue
-                    else:
-                        # È già WAV, usa il file originale
-                        wav_file_path = file_path
+                        continue
+                else:
+                    # È già WAV, usa il file originale
+                    print(f"  DEBUG: File già WAV, uso originale")
+                    wav_file_path = file_path
 
-                    # Procedi con la trascrizione
-                    transcription = transcribe_podcast_with_progress(wav_file_path, model_name, language, parallel)
-                    save_transcription(transcription, output_path)
+                print(f"  DEBUG: wav_file_path impostato: {wav_file_path}")
 
-                    # Aggiungi il file alla lista dei processati
-                    processed_file_list.append(file_path)
-                    processed_files += 1
-                    elapsed_total = time.time() - start_time
-                    file_elapsed = time.time() - file_start_time
+                # Procedi con la trascrizione
+                print(f"  DEBUG: Inizio trascrizione per {os.path.basename(wav_file_path)}")
+                transcription = transcribe_podcast_with_progress(wav_file_path, model, language, parallel)
+                print(f"  DEBUG: Trascrizione completata, lunghezza: {len(transcription)} caratteri")
+                print(f"  DEBUG: Salvataggio trascrizione in {output_path}")
+                save_transcription(transcription, output_path)
 
-                    # Calcola ETA
-                    if processed_files > 0:
-                        avg_time_per_file = elapsed_total / processed_files
-                        remaining_files = total_files - processed_files
-                        eta_seconds = avg_time_per_file * remaining_files
-                        eta_formatted = format_time(eta_seconds)
-                    else:
-                        eta_formatted = "Calcolando..."
+                # Aggiungi il file alla lista dei processati
+                processed_file_list.append(file_path)
+                processed_files += 1
+                elapsed_total = time.time() - start_time
+                file_elapsed = time.time() - file_start_time
 
-                    # Aggiorna la barra di progresso
+                # Calcola ETA
+                if processed_files > 0:
+                    avg_time_per_file = elapsed_total / processed_files
+                    remaining_files = total_files - processed_files
+                    eta_seconds = avg_time_per_file * remaining_files
+                    eta_formatted = format_time(eta_seconds)
+                else:
+                    eta_formatted = "Calcolando..."
+
+                # Aggiorna la barra di progresso
+                if main_pbar:
                     main_pbar.update(1)
-                    main_pbar.set_postfix({
-                        "Tempo/file": f"{file_elapsed:.1f}s",
-                        "ETA": eta_formatted,
-                        "Totale": format_time(elapsed_total)
-                    })
+                    main_pbar.set_postfix_str(f"Tempo/file: {file_elapsed:.1f}s, ETA: {eta_formatted}, Totale: {format_time(elapsed_total)}")
 
-                    print(f"\n✅ Completato: {file_name}")
-                    print(f"💾 Salvato in: {output_path}")
-                    print(f"⏱️  Tempo impiegato: {file_elapsed:.1f} secondi")
+                print(f"\n✅ Completato: {file_name}")
+                print(f"💾 Salvato in: {output_path}")
+                print(f"⏱️  Tempo impiegato: {file_elapsed:.1f} secondi")
 
-                except Exception as e:
-                    print(f"\n❌ Errore durante la trascrizione di {file_name}: {e}")
+            except Exception as e:
+                print(f"\n❌ Errore durante la trascrizione di {file_name}: {e}")
+                if main_pbar:
                     main_pbar.update(1)
-                finally:
-                    # Pulisce il file WAV convertito se è stato creato
-                    if converted_file_path and os.path.exists(converted_file_path):
-                        try:
-                            os.remove(converted_file_path)
-                            print("  File WAV convertito rimosso")
-                        except Exception as e:
-                            print(f"  Attenzione: impossibile rimuovere il file convertito: {e}")
+            finally:
+                # Pulisce il file WAV convertito se è stato creato
+                if converted_file_path and os.path.exists(converted_file_path):
+                    try:
+                        os.remove(converted_file_path)
+                        print("  File WAV convertito rimosso")
+                    except Exception as e:
+                        print(f"  Attenzione: impossibile rimuovere il file convertito: {e}")
     
     total_elapsed = time.time() - start_time
     # Conta file saltati
@@ -668,10 +770,10 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
         print(f"📈 Tempo medio per file: {total_elapsed/processed_files:.1f} secondi")
 
 if __name__ == "__main__":
-    # Verifica che Python 3.10 sia utilizzato
-    ensure_python_3_10()
-    
-    # Aggiorna pip e installa correttamente whisper e tqdm
+    # Verifica che sia utilizzata una versione compatibile di Python
+    ensure_python_version()
+
+    # Aggiorna pip e installa correttamente whisper e tqdm (solo una volta)
     upgrade_pip_and_install_packages()
     
     while True:
