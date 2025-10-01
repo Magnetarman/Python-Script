@@ -21,7 +21,7 @@ Utile per:
 - **Supporto Python 3.10**: Verifica e forza l'esecuzione con Python 3.10 se necessario.
 - **Installazione automatica di Whisper**: Aggiorna pip e installa (o reinstalla) openai-whisper se non presente.
 - **Conversione automatica formati**: Converte automaticamente MP3, FLAC, OGG, M4A, AAC, WMA, Opus, AIFF, WebM, MP4 in WAV utilizzando FFmpeg.
-- **Accelerazione audio 2x**: Opzionalmente accelera l'audio a 2x velocità utilizzando FFmpeg per velocizzare la trascrizione.
+- **Processamento parallelo**: Opzionalmente divide l'audio in chunk e li elabora in parallelo per velocizzare la trascrizione mantenendo la qualità.
 - **Trascrizione automatica**: Analizza tutti i file audio supportati presenti nella cartella specificata.
 - **Skip file già trascritti**: Salta i file che hanno già una trascrizione esistente.
 - **Salvataggio sicuro**: Le trascrizioni vengono salvate come file .txt nella stessa cartella dell'audio.
@@ -63,37 +63,51 @@ Trascrizione completata per podcast.mp3, salvata in podcast.txt
 
 ---
 
-### Esempio Input con Conversione e Accelerazione 2x
+### Esempio Input con Conversione e Processamento Parallelo
 
 ```plaintext
 Inserisci il percorso della cartella contenente i podcast: C:\Users\User\Podcasts
-Vuoi accelerare l'audio a 2x velocità per velocizzare la trascrizione? (s/n): s
-Modalità velocità 2x attivata
+Vuoi utilizzare il processamento parallelo per velocizzare la trascrizione? (s/n): s
+Modalità processamento parallelo attivata
 Conversione da MP3 a WAV richiesta...
 Conversione in corso: episodio1.mp3 → WAV
 Conversione completata: episodio1_converted.wav
-Accelerazione audio 2x in corso...
-Audio accelerato 2x: episodio1_converted.wav
-Audio accelerato con successo
-Trascrizione in corso per episodio1.mp3...
-File temporaneo rimosso
+Avvio trascrizione parallela...
+Divisione audio in 2 chunk da ~600.0s cadauno
+Creazione chunk 1...
+Creazione chunk 2...
+Chunk creati con successo
+Trascrizione parallela di 2 chunk...
+Elaborazione chunk in corso...
+Trascrizione parallela completata in 450.2 secondi
+Chunk episodio1_chunk1.wav rimosso
+Chunk episodio1_chunk2.wav rimosso
 File WAV convertito rimosso
 Trascrizione completata per episodio1.mp3, salvata in C:\Users\User\Podcasts\episodio1.txt
 ```
 
 ---
 
-### Accelerazione Audio 2x ⚡
+### Processamento Parallelo ⚡
 
-La nuova funzionalità di accelerazione audio permette di velocizzare significativamente il processo di trascrizione:
+La nuova funzionalità di processamento parallelo permette di velocizzare significativamente il processo di trascrizione mantenendo la qualità originale:
 
-- **Come funziona**: Utilizza FFmpeg per accelerare l'audio a 2x velocità mantenendo il pitch originale
-- **Vantaggi**: Riduce i tempi di elaborazione di circa il 50% mantenendo la qualità della trascrizione
-- **Requisiti**: Richiede FFmpeg installato nel sistema
-- **Processo automatico**: Crea file temporanei accelerati, li trascrive e li elimina automaticamente
-- **Fallback sicuro**: Se l'accelerazione fallisce, utilizza il file originale
+- **Come funziona**: Divide l'audio in chunk consecutivi e li elabora simultaneamente utilizzando thread separati
+- **Vantaggi**: Riduce i tempi di elaborazione fino al 40% mantenendo la qualità della trascrizione originale
+- **Architettura intelligente**: Utilizza concurrent.futures per sfruttare tutti i core della CPU disponibili
+- **Processo automatico**: Crea chunk temporanei, li trascrive in parallelo e li elimina automaticamente
+- **Fallback sicuro**: Se il processamento parallelo fallisce, utilizza automaticamente la trascrizione singola tradizionale
+- **Audio ottimale**: Funziona meglio con file audio più lunghi (>10 minuti) per massimizzare i benefici del parallelismo
 
-**Nota**: L'accelerazione audio è opzionale e può essere abilitata/disabilitata ad ogni esecuzione.
+**Caratteristiche tecniche:**
+
+- **Divisione intelligente**: Chunk di durata simile per bilanciare il carico di lavoro
+- **Thread separati**: Ogni chunk viene elaborato da un thread dedicato
+- **Riunificazione automatica**: I risultati vengono uniti nell'ordine corretto
+- **Gestione errori**: Timeout e fallback per garantire affidabilità
+- **Pulizia automatica**: Rimozione di tutti i file temporanei creati
+
+**Nota**: Il processamento parallelo è opzionale e può essere abilitato/disabilitato ad ogni esecuzione. È più efficace su CPU multi-core.
 
 ---
 
@@ -130,4 +144,4 @@ Oggi parleremo di tecnologia e innovazione...
 - **Compatibilità**: Assicurarsi di avere Python 3.10 installato.
 - **Output non distruttivo**: Lo script non modifica i file audio originali.
 - **Installazione automatica**: Pip e Whisper vengono aggiornati/installati automaticamente se necessario.
-- **FFmpeg richiesto**: Per la conversione formati e accelerazione 2x, installa FFmpeg nel sistema.
+- **FFmpeg richiesto**: Per la conversione formati e processamento parallelo, installa FFmpeg nel sistema.
