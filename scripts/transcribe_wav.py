@@ -282,13 +282,17 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
         print("Esecuzione trascrizione singola (audio corto o indivisibile)")
         return transcribe_podcast_with_progress(file_path, model_name, language, parallel=False)
 
-    print(f"Trascrizione parallela di {len(chunks)} chunk...")
+    print(f"⚡ Divisione audio in {len(chunks)} chunk per elaborazione parallela...")
 
     start_time = time.time()
 
     try:
         # Crea barra di progresso per la trascrizione parallela
-        with tqdm(total=100, desc="Progresso parallelo", unit="%", ncols=80) as pbar:
+        with tqdm(total=100,
+                 desc="🚀 Elaborazione Parallela",
+                 unit="%",
+                 ncols=100,
+                 bar_format='{l_bar}{bar}| {n:.1f}/{total:.1f}% [{elapsed}<{remaining}, {rate:.2f}%/s]') as pbar:
 
             # Avvia trascrizione parallela dei chunk
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -307,10 +311,15 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
                         estimated_progress = min(95, (elapsed / (audio_duration * processing_ratio / 2)) * 100)
 
                         if estimated_progress >= pbar.n:
+                            # Calcola velocità e tempo rimanente stimato
+                            speed = estimated_progress / elapsed if elapsed > 0 else 0
+                            remaining = (100 - estimated_progress) / speed if speed > 0 else 0
+
                             pbar.update(estimated_progress - pbar.n)
                             pbar.set_postfix({
-                                "Elaborazione": f"{estimated_progress:.1f}%",
-                                "Durata": f"{audio_duration:.1f}s"
+                                "Audio": f"{audio_duration:.0f}s",
+                                "Velocità": f"{speed:.1f}%/s",
+                                "ETA": f"{remaining:.0f}s"
                             })
 
                         time.sleep(0.5)  # Aggiorna ogni 0.5 secondi
@@ -327,7 +336,7 @@ def transcribe_audio_parallel(file_path, model_name='medium', language='it'):
         full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
 
         elapsed = time.time() - start_time
-        print(f"Trascrizione parallela completata in {elapsed:.1f} secondi")
+        print(f"✅ Trascrizione parallela completata in {elapsed:.1f} secondi")
 
         # Pulisce i chunk se sono stati creati
         for chunk in chunks:
@@ -435,8 +444,12 @@ def transcribe_podcast_with_progress(file_path, model_name='medium', language='i
     # Altrimenti, trascrizione singola tradizionale
     start_time = time.time()
 
-    # Barra di progresso basata su chunk completati
-    with tqdm(total=100, desc="Progresso", unit="%", ncols=80) as pbar:
+    # Barra di progresso per la trascrizione singola
+    with tqdm(total=100,
+             desc="🎵 Trascrizione Audio",
+             unit="%",
+             ncols=100,
+             bar_format='{l_bar}{bar}| {n:.1f}/{total:.1f}% [{elapsed}<{remaining}, {rate:.2f}%/s]') as pbar:
         # Avvia la trascrizione con soppressione del warning FP16
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
@@ -455,10 +468,15 @@ def transcribe_podcast_with_progress(file_path, model_name='medium', language='i
                     estimated_progress = min(95, (elapsed / (audio_duration * processing_ratio)) * 100)
 
                     if estimated_progress >= pbar.n:
+                        # Calcola velocità e tempo rimanente stimato
+                        speed = estimated_progress / elapsed if elapsed > 0 else 0
+                        remaining = (100 - estimated_progress) / speed if speed > 0 else 0
+
                         pbar.update(estimated_progress - pbar.n)
                         pbar.set_postfix({
-                            "Elaborazione": f"{estimated_progress:.1f}%",
-                            "Durata": f"{audio_duration:.1f}s"
+                            "Audio": f"{audio_duration:.0f}s",
+                            "Velocità": f"{speed:.1f}%/s",
+                            "ETA": f"{remaining:.0f}s"
                         })
 
                     time.sleep(0.5)  # Aggiorna ogni 0.5 secondi
@@ -536,7 +554,11 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
     start_time = time.time()
     
     # Barra di progresso principale per tutti i file
-    with tqdm(total=total_files, desc="File elaborati", unit="file", ncols=100) as main_pbar:
+    with tqdm(total=total_files,
+             desc="📁 Elaborazione File",
+             unit="file",
+             ncols=100,
+             bar_format='{l_bar}{bar}| {n:.0f}/{total:.0f} [{elapsed}<{remaining}, {rate:.2f}file/s]') as main_pbar:
         for root, dirs, files in os.walk(podcast_dir):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
@@ -598,17 +620,17 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
                     # Aggiorna la barra di progresso
                     main_pbar.update(1)
                     main_pbar.set_postfix({
-                        "File": f"{file_elapsed:.1f}s",
+                        "Tempo/file": f"{file_elapsed:.1f}s",
                         "ETA": eta_formatted,
                         "Totale": format_time(elapsed_total)
                     })
 
-                    print(f"\n✓ Completato: {file_name}")
-                    print(f"  Salvato in: {output_path}")
-                    print(f"  Tempo impiegato: {file_elapsed:.1f} secondi")
+                    print(f"\n✅ Completato: {file_name}")
+                    print(f"💾 Salvato in: {output_path}")
+                    print(f"⏱️  Tempo impiegato: {file_elapsed:.1f} secondi")
 
                 except Exception as e:
-                    print(f"\n✗ Errore durante la trascrizione di {file_name}: {e}")
+                    print(f"\n❌ Errore durante la trascrizione di {file_name}: {e}")
                     main_pbar.update(1)
                 finally:
                     # Pulisce il file WAV convertito se è stato creato
@@ -621,10 +643,10 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
     
     total_elapsed = time.time() - start_time
     print(f"\n🎉 Trascrizione completata!")
-    print(f"File elaborati: {processed_files}/{total_files}")
-    print(f"Tempo totale: {format_time(total_elapsed)}")
+    print(f"📊 File elaborati: {processed_files}/{total_files}")
+    print(f"⏱️  Tempo totale: {format_time(total_elapsed)}")
     if processed_files > 0:
-        print(f"Tempo medio per file: {total_elapsed/processed_files:.1f} secondi")
+        print(f"📈 Tempo medio per file: {total_elapsed/processed_files:.1f} secondi")
 
 if __name__ == "__main__":
     # Verifica che Python 3.10 sia utilizzato
