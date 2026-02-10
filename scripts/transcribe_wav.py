@@ -9,6 +9,192 @@ import warnings
 import threading
 import math
 from datetime import datetime, timedelta
+import argparse
+import logging
+
+# Configurazione Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
+
+# Lista di stringhe da rimuovere dalla trascrizione
+WRONG_SUBSTRINGS = [
+  "Sottotitoli e revisione a cura di QTSS.",
+  "Sottotitoli e revisione a cura di QTSS",
+  "www.mooji.org",
+  "Ondertitels ingediend door de Amara.org gemeenschap",
+  "Ondertiteld door de Amara.org gemeenschap",
+  "Ondertiteling door de Amara.org gemeenschap",
+  "Untertitelung aufgrund der Amara.org-Community",
+  "Untertitel im Auftrag des ZDF für funk, 2017",
+  "Untertitel von Stephanie Geiges",
+  "Untertitel der Amara.org-Community",
+  "Untertitel im Auftrag des ZDF, 2017",
+  "Untertitel im Auftrag des ZDF, 2020",
+  "Untertitel im Auftrag des ZDF, 2018",
+  "Untertitel im Auftrag des ZDF, 2021",
+  "Untertitelung im Auftrag des ZDF, 2021",
+  "Copyright WDR 2021",
+  "Copyright WDR 2020",
+  "Copyright WDR 2019",
+  "SWR 2021",
+  "SWR 2020",
+  "Sous-titres réalisés para la communauté d'Amara.org",
+  "Sous-titres réalisés par la communauté d'Amara.org",
+  "Sous-titres fait par Sous-titres par Amara.org",
+  "Sous-titres réalisés par les SousTitres d'Amara.org",
+  "Sous-titres par Amara.org",
+  "Sous-titres par la communauté d'Amara.org",
+  "Sous-titres réalisés pour la communauté d'Amara.org",
+  "Sous-titres réalisés par la communauté de l'Amara.org",
+  "Sous-Titres faits par la communauté d'Amara.org",
+  "Sous-titres par l'Amara.org",
+  "Sous-titres fait par la communauté d'Amara.org",
+  "Sous-titrage ST' 501",
+  "Sous-titrage ST'501",
+  "Merci d'avoir regardé cette vidéo.",
+  "Merci d'avoir regardé cette vidéo!",
+  "Merci d'avoir regardé cette vidéo !",
+  "Merci d'avoir regardé la vidéo.",
+  "J'espère que vous avez apprécié la vidéo.",
+  "Je vous remercie de vous abonner",
+  "Cliquez-vous sur les sous-titres et abonnez-vous à la chaîne d'Amara.org",
+  "❤️ par SousTitreur.com",
+  "Sottotitoli creati dalla comunità Amara.org",
+  "Sottotitoli di Sottotitoli di Amara.org",
+  "Sottotitoli e revisione al canale di Amara.org",
+  "Sottotitoli e revisione a cura di Amara.org",
+  "Sottotitoli e revisione a cura di QTSS.",
+  "Sottotitoli e revisione a cura di QTSS",
+  "Sottotitoli a cura di QTSS",
+  "Sottotitoli creati dalla comunità Amara.org per te.",
+  "Subtítulos realizados por la comunidad de Amara.org",
+  "Subtitulado por la comunidad de Amara.org",
+  "Subtítulos por la comunidad de Amara.org",
+  "Subtítulos creados por la comunidad de Amara.org",
+  "Subtítulos en español de Amara.org",
+  "Subtítulos hechos por la comunidad de Amara.org",
+  "Subtitulos por la comunidad de Amara.org",
+  "— Sous-titrage ST'501 —",
+  "Más información www.alimmenta.com",
+  "www.mooji.org",
+  "Subtítulos realizados por la comunidad de Amara.org",
+  "Legendas pela comunidade Amara.org",
+  "Legendas pela comunidade de Amara.org",
+  "Legendas pela comunidade do Amara.org",
+  "Legendas pela comunidade das Amara.org",
+  "Transcrição e Legendas pela comunidade de Amara.org",
+  "Sottotitoli creati dalla comunità Amara.org",
+  "Sous-titres réalisés para la communauté d'Amara.org",
+  "Sous-titres réalisés para la communauté d'Amara.org",
+  "Napisy stworzone przez społeczność Amara.org",
+  "Napisy wykonane przez społeczność Amara.org",
+  "Zdjęcia i napisy stworzone przez społeczność Amara.org",
+  "napisy stworzone przez społeczność Amara.org",
+  "Tłumaczenie i napisy stworzone przez społeczność Amara.org",
+  "Napisy stworzone przez społeczności Amara.org",
+  "Tłumaczenie stworzone przez społeczność Amara.org",
+  "Napisy robione przez społeczność Amara.org",
+  "www.multi-moto.eu",
+  "Редактор субтитров А.Синецкая Корректор А.Егорова",
+  "Yorumlarınızıza abone olmayı unutmayın.",
+  "Sottotitoli creati dalla comunità Amara.org","字幕由Amara.org社区提供",
+  "小編字幕由Amara.org社區提供",
+  "[Music]",
+  "[promo]",
+  "[Promo]",
+  "♪",
+  "(upbeat music)",
+  "(Instrumental)",
+  "[BLANK_AUDIO]",
+  "[ cease fire ]",
+  "gu.se",
+  "(majestic music)",
+  "[Pause]",
+  "(snow crunching)",
+  "[Sounds of wind blowing]",
+  "(gulp)",
+  "Sottotitoli e Tsub atki",
+  "[silenzio]",
+  "[LAUGH]",
+  "[ Background noise ]",
+  "[Clapping]",
+  "[SOUND]",
+  "[Sound of metal being hammered against the floor] ",
+  "Subtitles by the Amara.org community",
+  "Transcripts by the Amara.org community",
+  "*laughing*",
+  "(laughs)",
+  "[laughs]",
+  "[Laughter]",
+  "*laughter*",
+  "(thud)",
+  "*laughs*",
+  "*lacht*",
+  "[BLANK_AUDIO]",
+  "[Chuckle]",
+  "*Chuckle*",
+  "(laughing)",
+  "Subs by www.zeoranger.co.uk",
+  "*thud*",
+  "*sniff*",
+  "[BLANK_AU",
+  "[BLANK",
+  "[Lacht]",
+  "[Silence]",
+  "[]",
+  "(smacking)",
+  "[Chuckling]",
+  "(air whooshing)",
+  "(whooshing)",
+  "(sighs)",
+  "(blows kiss)",
+  "[Musica]",
+  "[MUSIC PLAYING]",
+  "[BREATHING HEAVILY]",
+  "[Whispering]",
+  "[BEEPING]",
+  "(scratching)",
+  "(wind blowing)",
+  "(swooshing)",
+  "(chicken clucking)",
+  "(footsteps crunching)",
+  "(beeping)",
+  "(birds chirping)",
+  "(sniffing)",
+  "(footsteps)",
+  "Transcribed by https://otter.ai",
+  "[SPEAKING ENGLISH]",
+  "[AUDIO EN BLANCO]",
+  "[AUDIO_EN_BLANCO]",
+  "*Crofie*",
+  "org Subtítulos realizados por la comunidad de Amara.",
+  "(Sonido de campanita)",
+  "(Música de suspenso)",
+  "Translation & subtitling by Quentin Dewaghe Traduction &-titrage par Quentin Dewaghe q.",
+  "Transcription by ESO;",
+  "translation by —"
+]
+
+def clean_transcription(text):
+    """
+    Rimuove le stringhe indesiderate dalla trascrizione.
+    """
+    if not text:
+        return ""
+        
+    cleaned_text = text
+    for wrong_string in WRONG_SUBSTRINGS:
+        if wrong_string in cleaned_text:
+            cleaned_text = cleaned_text.replace(wrong_string, "")
+            
+    # Rimuove spazi doppi creati dalla rimozione
+    import re
+    cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+    return cleaned_text
 
 def upgrade_pip_and_install_packages():
     """
@@ -255,7 +441,7 @@ def transcribe_chunk_parallel(chunk_path, model, language='it'):
         model: Modello Whisper già caricato
         language: Lingua del contenuto
     Returns:
-        str: Testo trascritto del chunk
+        str: Testo trascritto del chunk (pulito)
     """
     try:
         print(f"  DEBUG: Inizio trascrizione chunk {os.path.basename(chunk_path)}")
@@ -282,7 +468,7 @@ def transcribe_chunk_parallel(chunk_path, model, language='it'):
         try:
             result = model.transcribe(chunk_path, language=language)
             print(f"  DEBUG: Trascrizione completata per {os.path.basename(chunk_path)}")
-            return result['text']
+            return clean_transcription(result['text'])
         except (AttributeError, KeyError) as e:
             if "Linear" in str(e) or any(x in str(e) for x in ["KeyError", "transcribe", "decoder", "encoder"]):
                 print(f"  ❌ ERRORE CRITICO: Modello Whisper danneggiato durante la trascrizione")
@@ -602,7 +788,7 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
         except:
             pass
 
-    return result['text']
+    return clean_transcription(result['text'])
 
 def save_transcription(transcription, output_path):
     """
@@ -860,44 +1046,74 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
     if processed_files > 0:
         print(f"📈 Tempo medio per file: {total_elapsed/processed_files:.1f} secondi")
 
+def parse_arguments():
+    """
+    Analizza gli argomenti da riga di comando.
+    """
+    parser = argparse.ArgumentParser(description="Trascrizione automatica file audio con Whisper.")
+    parser.add_argument("--dir", type=str, help="Directory contenente i file audio")
+    parser.add_argument("--model", type=str, default="medium", help="Modello Whisper da utilizzare (tiny, base, small, medium, large)")
+    parser.add_argument("--lang", type=str, default="it", help="Lingua dell'audio (es. it, en)")
+    parser.add_argument("--parallel", action="store_true", help="Abilita trascrizione parallela")
+    parser.add_argument("--no-parallel", action="store_false", dest="parallel", help="Disabilita trascrizione parallela")
+    parser.set_defaults(parallel=False)
+    
+    return parser.parse_args()
+
 if __name__ == "__main__":
     # Verifica che sia utilizzata una versione compatibile di Python
     ensure_python_version()
 
     # Aggiorna pip e installa correttamente whisper e tqdm (solo una volta)
-    upgrade_pip_and_install_packages()
+    try:
+        upgrade_pip_and_install_packages()
+    except Exception as e:
+        print(f"Errore durante l'aggiornamento dei pacchetti: {e}")
+
+    args = parse_arguments()
     
-    while True:
-        podcast_dir = input("\nInserisci il percorso della cartella contenente i podcast: ").strip()
-        
-        if os.path.isdir(podcast_dir):
-            print(f"\nIniziando l'elaborazione della cartella: {podcast_dir}")
-
-            # Chiedi se utilizzare il processamento parallelo
-            while True:
-                parallel_choice = input("Vuoi utilizzare il processamento parallelo per velocizzare la trascrizione? (s/n): ").strip().lower()
-                if parallel_choice in ['s', 'si', 'yes', 'y']:
-                    parallel = True
-                    print("Modalità processamento parallelo attivata")
-                    break
-                elif parallel_choice in ['n', 'no', 'nope']:
-                    parallel = False
-                    print("Modalità normale attivata")
-                    break
-                else:
-                    print("Rispondi 's' per sì o 'n' per no.")
-
-            main(podcast_dir, model_name='medium', language='it', parallel=parallel)
+    # Se viene passato un argomento directory, esegui in modalità non interattiva
+    if args.dir:
+        if os.path.isdir(args.dir):
+            print(f"\nIniziando l'elaborazione della cartella: {args.dir}")
+            print(f"Modello: {args.model}, Lingua: {args.lang}, Parallelo: {args.parallel}")
+            main(args.dir, model_name=args.model, language=args.lang, parallel=args.parallel)
         else:
-            print("Il percorso inserito non è valido. Per favore riprova.")
-            continue
-        
+            print(f"❌ Errore: La directory {args.dir} non esiste.")
+            sys.exit(1)
+    else:
+        # Modalità interattiva
         while True:
-            scelta = input("\n🔄 Utilizzare di nuovo lo script con una nuova cartella? (1=sì, 0=no): ").strip()
-            if scelta == '1':
-                break
-            elif scelta == '0':
-                print("👋 Arrivederci!")
-                sys.exit(0)
+            podcast_dir = input("\nInserisci il percorso della cartella contenente i podcast: ").strip()
+            
+            if os.path.isdir(podcast_dir):
+                print(f"\nIniziando l'elaborazione della cartella: {podcast_dir}")
+
+                # Chiedi se utilizzare il processamento parallelo
+                while True:
+                    parallel_choice = input("Vuoi utilizzare il processamento parallelo per velocizzare la trascrizione? (s/n): ").strip().lower()
+                    if parallel_choice in ['s', 'si', 'yes', 'y']:
+                        parallel = True
+                        print("Modalità processamento parallelo attivata")
+                        break
+                    elif parallel_choice in ['n', 'no', 'nope']:
+                        parallel = False
+                        print("Modalità normale attivata")
+                        break
+                    else:
+                        print("Rispondi 's' per sì o 'n' per no.")
+
+                main(podcast_dir, model_name='medium', language='it', parallel=parallel)
             else:
-                print("❌ Scelta non valida. Inserire 1 o 0.")
+                print("Il percorso inserito non è valido. Per favori riprova.")
+                continue
+            
+            while True:
+                scelta = input("\n🔄 Utilizzare di nuovo lo script con una nuova cartella? (1=sì, 0=no): ").strip()
+                if scelta == '1':
+                    break
+                elif scelta == '0':
+                    print("👋 Arrivederci!")
+                    sys.exit(0)
+                else:
+                    print("❌ Scelta non valida. Inserire 1 o 0.")
