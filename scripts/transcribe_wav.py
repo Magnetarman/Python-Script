@@ -4,6 +4,12 @@ import os
 import subprocess
 import sys
 import importlib
+try:
+    from rich.console import Console
+    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn, TimeElapsedColumn, MofNCompleteColumn
+    console = Console()
+except ImportError:
+    console = None
 import time
 import warnings
 import threading
@@ -20,13 +26,47 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+class ModelCorruptionError(Exception):
+    """Eccezione personalizzata per indicare un modello Whisper danneggiato."""
+    pass
+
 def safe_print(message):
-    """Stampa un messaggio in modo sicuro, interferendo il meno possibile con tqdm."""
-    try:
-        from tqdm import tqdm
-        tqdm.write(message)
-    except:
+    """Stampa un messaggio in modo sicuro, interferendo il meno possibile con la barra di progresso."""
+    if console:
+        console.print(message)
+    else:
         print(message)
+
+def repair_model_installation():
+    """
+    Forza la reinstallazione di Whisper e delle dipendenze correlate per riparare un'installazione corrotta.
+    """
+    python_path = sys.executable
+    use_user = not is_venv()
+    user_flag = ["--user"] if use_user else []
+
+    safe_print("\n🔧 AVVIO RIPARAZIONE AUTOMATICA...")
+    safe_print("Rimozione e reinstallazione forzata di openai-whisper e torch...")
+    
+    packages = ["openai-whisper", "torch", "torchvision", "torchaudio"]
+    
+    try:
+        # Reinstalla forzatamente
+        cmd = [python_path, "-m", "pip", "install", "--force-reinstall", "-U"] + packages + user_flag
+        subprocess.check_call(cmd)
+        importlib.invalidate_caches()
+        safe_print("✅ Riparazione completata con successo.")
+        return True
+    except Exception as e:
+        safe_print("\n" + "!" * 60)
+        safe_print(f"❌ Errore critico durante la riparazione: {e}")
+        if os.name == 'nt' and "Accesso negato" in str(e):
+            safe_print("Sintomo: FILE IN USO o PERMESSI INSUFFICIENTI")
+            safe_print("Soluzione: Chiudi tutto e riprova in un terminale AMMINISTRATORE.")
+        safe_print("!" * 60 + "\n")
+        return False
+
+
 
 # Lista di stringhe da rimuovere dalla trascrizione
 WRONG_SUBSTRINGS = [
@@ -204,27 +244,45 @@ def clean_transcription(text):
     cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
     return cleaned_text
 
+def is_venv():
+    """Verifica se lo script è in esecuzione in un virtual environment."""
+    return sys.prefix != sys.base_prefix or hasattr(sys, 'real_prefix')
+
 def upgrade_pip_and_install_packages():
     """
-    Aggiorna pip e installa o reinstalla correttamente whisper e tqdm.
-    Utilizza il Python corrente invece di forzare Python 3.10.
+    Aggiorna pip e installa o reinstalla correttamente whisper, tqdm e rich.
     """
     python_path = sys.executable
+    use_user = not is_venv()
+    user_flag = ["--user"] if use_user else []
 
-    print(f"Utilizzo Python: {python_path}")
-    print("Aggiornamento di pip in corso...")
+    safe_print(f"Utilizzo Python: {python_path}")
+    if use_user:
+        safe_print("Rilevato ambiente globale: utilizzo flag --user per i permessi.")
+    
+    safe_print("Aggiornamento di pip in corso...")
     try:
-        subprocess.check_call([python_path, "-m", "pip", "install", "--upgrade", "pip"])
+        subprocess.check_call([python_path, "-m", "pip", "install", "--upgrade", "pip"] + user_flag)
     except subprocess.CalledProcessError as e:
-        print(f"Errore durante l'aggiornamento di pip: {e}")
-        print("Continuo con l'installazione...")
+        safe_print(f"⚠️ Nota: Impossibile aggiornare pip (potrebbe non essere critico): {e}")
 
-    print("Installazione di openai-whisper e tqdm...")
+    safe_print("Installazione di openai-whisper, tqdm e rich...")
     try:
-        subprocess.check_call([python_path, "-m", "pip", "install", "-U", "openai-whisper", "tqdm"])
+        subprocess.check_call([python_path, "-m", "pip", "install", "-U", "openai-whisper", "tqdm", "rich"] + user_flag)
+        importlib.invalidate_caches()
     except subprocess.CalledProcessError as e:
-        print(f"Errore durante l'installazione: {e}")
-        print("Prova a installare manualmente: pip install openai-whisper tqdm")
+        safe_print("\n" + "!" * 60)
+        safe_print("❌ ERRORE CRITICO DURANTE L'INSTALLAZIONE")
+        safe_print(f"Dettaglio errore: {e}")
+        if os.name == 'nt' and "Accesso negato" in str(e):
+            safe_print("\nSintomo: ACCESSO NEGATO (WinError 5)")
+            safe_print("Soluzione consigliata:")
+            safe_print("1. CHIUDI tutti i programmi che usano Python o Whisper.")
+            safe_print("2. Apri il terminale (PowerShell o CMD) come AMMINISTRATORE.")
+            safe_print(f"3. Esegui manualmente: {python_path} -m pip install -U openai-whisper tqdm rich")
+        else:
+            safe_print(f"\nProva a installare manualmente: pip install -U openai-whisper tqdm rich")
+        safe_print("!" * 60 + "\n")
         sys.exit(1)
 
 def ensure_python_version():
@@ -239,28 +297,6 @@ def ensure_python_version():
 
     print(f"Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} - OK")
 
-def import_required_modules():
-    """
-    Importa i moduli necessari in modo sicuro.
-    """
-    try:
-        import whisper
-        from tqdm import tqdm
-        print(f"Moduli importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, tqdm OK")
-        return whisper, tqdm
-    except ImportError as e:
-        print(f"Moduli non trovati: {e}. Installazione in corso...")
-        upgrade_pip_and_install_packages()
-
-        try:
-            import whisper
-            from tqdm import tqdm
-            print(f"Moduli installati e importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, tqdm OK")
-            return whisper, tqdm
-        except ImportError as e:
-            print(f"Impossibile importare i moduli anche dopo l'installazione: {e}")
-            print("Prova a installare manualmente i moduli: pip install openai-whisper tqdm")
-            sys.exit(1)
 
 def get_supported_audio_formats():
     """
@@ -472,21 +508,22 @@ def transcribe_chunk_parallel(chunk_path, model, language='it'):
             safe_print(f"  DEBUG: Trascrizione completata per {os.path.basename(chunk_path)}")
             return clean_transcription(result['text'])
         except (AttributeError, KeyError) as e:
-            if "Linear" in str(e) or any(x in str(e) for x in ["KeyError", "transcribe", "decoder", "encoder"]):
-                safe_print(f"  ❌ ERRORE CRITICO: Modello Whisper danneggiato durante la trascrizione")
-                safe_print(f"  DEBUG: Errore modello: {e}")
-                safe_print("  🔧 RISOLUZIONE AUTOMATICA: Reinstallazione forzata di Whisper in corso...")
-                try:
-                    # Forza la reinstallazione di Whisper
-                    subprocess.check_call([sys.executable, "-m", "pip", "install", "--force-reinstall", "openai-whisper"])
-                    safe_print("  ✅ Whisper reinstallato. Riavvia lo script per utilizzare il modello riparato.")
-                except subprocess.CalledProcessError:
-                    safe_print("  ❌ Impossibile reinstallare automaticamente. Esegui manualmente:")
-                    safe_print("  pip install --force-reinstall openai-whisper")
-                return ""
+            err_msg = str(e)
+            # Solo se l'errore sembra indicare una struttura mancante nel modello
+            if any(x in err_msg for x in ["Linear", "KeyError", "decoder", "encoder"]) and \
+               any(x in err_msg for x in ["NoneType", "attribute", "forward", "object has no"]):
+                raise ModelCorruptionError(err_msg)
             else:
                 raise e
+        except RuntimeError as e:
+            if "cannot reshape tensor of 0 elements" in str(e):
+                safe_print(f"  ⚠️ ATTENZIONE: Chunk {os.path.basename(chunk_path)} sembra vuoto o silenzioso (RuntimeError tensor 0). Salto.")
+                return ""
+            raise e
 
+    except ModelCorruptionError as e:
+        # Rilancia l'eccezione del modello per il recupero in main
+        raise e
     except Exception as e:
         safe_print(f"  ❌ ERRORE nella trascrizione del chunk {os.path.basename(chunk_path)}: {e}")
         safe_print(f"  DEBUG: Tipo errore: {type(e).__name__}")
@@ -506,7 +543,6 @@ def transcribe_audio_parallel(file_path, model, language='it'):
     """
     import concurrent.futures
     import time
-    from tqdm import tqdm
     import threading
 
     safe_print("Avvio trascrizione parallela...")
@@ -531,51 +567,56 @@ def transcribe_audio_parallel(file_path, model, language='it'):
     transcription_done = False
 
     try:
-        # Crea barra di progresso per la trascrizione parallela
-        try:
-            pbar = tqdm(total=100,
-                       desc="🚀 Elaborazione Parallela",
-                       unit="%",
-                       ncols=100)
-        except Exception as e:
-            safe_print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
-            safe_print("Continuo senza barra di progresso...")
-            pbar = None
+        # Crea barra di progresso per la trascrizione parallela usando rich
+        progress = None
+        task_id = None
+        
+        if console:
+            progress = Progress(
+                SpinnerColumn(),
+                TextColumn("[bold blue]{task.description}"),
+                BarColumn(bar_width=None),
+                TaskProgressColumn(),
+                TextColumn("•"),
+                TimeRemainingColumn(),
+                TextColumn("•"),
+                TextColumn("[cyan]{task.fields[info]}"),
+                console=console,
+                transient=True
+            )
+            progress.start()
+            task_id = progress.add_task("🚀 Elaborazione Parallela", total=100, info="")
 
         # Funzione per aggiornare la barra di progresso durante l'attesa
         def update_progress():
             """Aggiorna la barra di progresso durante l'elaborazione parallela"""
-            nonlocal transcription_done, pbar, start_time, audio_duration
+            nonlocal transcription_done, progress, task_id, start_time, audio_duration
             while not transcription_done:
-                if pbar is None:
+                if progress is None or task_id is None:
                     time.sleep(0.5)
                     continue
+                
                 elapsed = time.time() - start_time
-                # Evita divisione per zero
                 if elapsed > 0:
                     # Tempo totale stimato per l'elaborazione parallela: (durata * rapporto_di_elaborazione) / 2
-                    estimated_total_time = (audio_duration * 0.15) / 2  # processing_ratio = 0.15
+                    estimated_total_time = (audio_duration * 0.15) / 2
                     if estimated_total_time > 0:
-                        estimated_progress = (elapsed / estimated_total_time) * 100
+                        estimated_progress = min(99.0, (elapsed / estimated_total_time) * 100)
                     else:
                         estimated_progress = 0
                 else:
                     estimated_progress = 0
 
-                # Aggiorna la barra di progresso solo se il progresso stimato è aumentato
-                if estimated_progress >= pbar.n:
-                    # Aggiorna la barra
-                    pbar.update(estimated_progress - pbar.n)
-                    # Calcola velocità e tempo rimanente stimato
-                    speed = estimated_progress / elapsed if elapsed > 0 else 0
-                    remaining = (100 - estimated_progress) / speed if speed > 0 else 0
-                    pbar.set_postfix_str(f"Audio: {audio_duration:.0f}s, Velocità: {speed:.1f}%/s, ETA: {remaining:.0f}s")
-                time.sleep(1)  # Aggiorna ogni 1 secondo
+                # Calcola velocità
+                speed = estimated_progress / elapsed if elapsed > 0 else 0
+                
+                # Aggiorna la barra
+                progress.update(task_id, completed=estimated_progress, info=f"Audio: {audio_duration:.0f}s | Speed: {speed:.1f}%/s")
+                time.sleep(0.5)
 
-        # Avvia il thread per l'aggiornamento del progresso solo se pbar è stato creato
-        if pbar is not None:
-            progress_thread = threading.Thread(target=update_progress)
-            progress_thread.start()
+        # Avvia il thread per l'aggiornamento del progresso
+        progress_thread = threading.Thread(target=update_progress, daemon=True)
+        progress_thread.start()
 
         # Avvia trascrizione parallela dei chunk
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -583,9 +624,10 @@ def transcribe_audio_parallel(file_path, model, language='it'):
             future1 = executor.submit(transcribe_chunk_parallel, chunks[0], model, language)
             future2 = executor.submit(transcribe_chunk_parallel, chunks[1], model, language)
 
+        try:
             # Attende i risultati con barra di progresso
             # Timeout aumentato per audio lunghi: 20 minuti per chunk
-            chunk_timeout = max(1200, audio_duration // 2 + 300)  # Minimo 20 minuti o metà durata + 5 minuti
+            chunk_timeout = int(max(1200, audio_duration // 2 + 300))  # Minimo 20 minuti o metà durata + 5 minuti
 
             try:
                 chunk1_text = future1.result(timeout=chunk_timeout)
@@ -595,24 +637,39 @@ def transcribe_audio_parallel(file_path, model, language='it'):
                 transcription_done = True  # Signal the progress thread to stop
                 if progress_thread is not None:
                     progress_thread.join(timeout=2.0)  # Wait for the progress thread to finish
+                if progress: progress.stop()
                 return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
+            except ModelCorruptionError as e:
+                transcription_done = True
+                if progress: progress.stop()
+                raise e
+            except Exception as e:
+                transcription_done = True
+                if progress: progress.stop()
+                raise e
 
-        # Unisce i risultati
-        full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
+            # Unisce i risultati
+            full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
 
-        elapsed = time.time() - start_time
-        safe_print(f"✅ Trascrizione parallela completata in {elapsed:.1f} secondi")
+            elapsed = time.time() - start_time
+            safe_print(f"✅ Trascrizione parallela completata in {elapsed:.1f} secondi")
 
-        # Segnala al thread di progresso di fermarsi
-        transcription_done = True
-        if progress_thread is not None:
-            # Attende la fine del thread di progresso
-            progress_thread.join(timeout=2.0)
+        finally:
+            # Segnala al thread di progresso di fermarsi
+            transcription_done = True
+            if progress_thread is not None:
+                # Attende la fine del thread di progresso
+                progress_thread.join(timeout=1.0)
+                
             # Aggiorna la barra al 100% e chiudila
-            if pbar is not None and pbar.n < 100:
-                pbar.update(100 - pbar.n)
-            if pbar is not None:
-                pbar.close()
+            if progress and task_id is not None:
+                try:
+                    progress.update(task_id, completed=100, info="Completato!")
+                except:
+                    pass
+                progress.stop()
+
+        return full_transcription
 
         # Pulisce i chunk se sono stati creati
         for chunk in chunks:
@@ -636,11 +693,19 @@ def transcribe_audio_parallel(file_path, model, language='it'):
 
         return full_transcription
 
+    except ModelCorruptionError as e:
+        # Rilancia l'eccezione del modello per il recupero in main
+        transcription_done = True
+        if progress_thread is not None:
+            progress_thread.join(timeout=1.0)
+        raise e
     except Exception as e:
         safe_print(f"Errore nella trascrizione parallela: {e}, fallback a trascrizione singola")
         transcription_done = True  # Signal the progress thread to stop
         if progress_thread is not None:
-            progress_thread.join(timeout=2.0)
+            progress_thread.join(timeout=1.0)
+        if progress:
+            progress.stop()
         return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
 
 
@@ -726,17 +791,24 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
     # Altrimenti, trascrizione singola tradizionale
     start_time = time.time()
 
-    # Barra di progresso per la trascrizione singola
-    try:
-        from tqdm import tqdm as tqdm_class
-        pbar = tqdm_class(total=100,
-                   desc="🎵 Trascrizione Audio",
-                   unit="%",
-                   ncols=100)
-    except Exception as e:
-        safe_print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
-        safe_print("Continuo senza barra di progresso...")
-        pbar = None
+    # Barra di progresso per la trascrizione singola usando rich
+    progress = None
+    task_id = None
+    if console:
+        progress = Progress(
+            SpinnerColumn(),
+            TextColumn("[bold green]{task.description}"),
+            BarColumn(bar_width=None),
+            TaskProgressColumn(),
+            TextColumn("•"),
+            TimeRemainingColumn(),
+            TextColumn("•"),
+            TextColumn("[yellow]{task.fields[info]}"),
+            console=console,
+            transient=True
+        )
+        progress.start()
+        task_id = progress.add_task("🎵 Trascrizione Audio", total=100, info="")
     
     # Avvia la trascrizione con soppressione del warning FP16
     with warnings.catch_warnings():
@@ -744,32 +816,27 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
 
         def update_progress():
             """Aggiorna la barra di progresso basata su stime temporali"""
-            import time
+            nonlocal transcription_done, progress, task_id, start_time, audio_duration
 
-            if pbar is None:
+            if progress is None or task_id is None:
                 return
 
-            # Simula il progresso basato sulla durata stimata
-            # Whisper processa circa 1 secondo di audio ogni 0.1-0.2 secondi su CPU
             processing_ratio = 0.15  # secondi di processing per secondo di audio
 
-            while not pbar.disable:
+            while not transcription_done:
                 elapsed = time.time() - start_time
-                # Calcola il progresso basato sul tempo trascorso vs tempo stimato
-                estimated_progress = min(98, (elapsed / (audio_duration * processing_ratio)) * 100)
+                estimated_progress = min(99.0, (elapsed / (audio_duration * processing_ratio)) * 100)
 
-                if estimated_progress >= pbar.n:
-                    # Calcola velocità e tempo rimanente stimato
-                    speed = estimated_progress / elapsed if elapsed > 0 else 0
-                    remaining = (100 - estimated_progress) / speed if speed > 0 else 0
+                # Calcola velocità
+                speed = estimated_progress / elapsed if elapsed > 0 else 0
+                
+                # Aggiorna la barra
+                progress.update(task_id, completed=estimated_progress, info=f"Audio: {audio_duration:.0f}s | Speed: {speed:.1f}%/s")
 
-                    pbar.update(estimated_progress - pbar.n)
-                    pbar.set_postfix_str(f"Audio: {audio_duration:.0f}s, Velocità: {speed:.1f}%/s, ETA: {remaining:.0f}s")
-
-                time.sleep(0.5)  # Aggiorna ogni 0.5 secondi
+                time.sleep(0.5)
 
         # Avvia il thread per l'aggiornamento del progresso
-        if pbar:
+        if progress:
             progress_thread = threading.Thread(target=update_progress, daemon=True)
             progress_thread.start()
 
@@ -784,30 +851,23 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
             result = model.transcribe(file_path, language=language)
             safe_print(f"  DEBUG: Trascrizione completata con successo")
         except (AttributeError, KeyError) as e:
-            if "Linear" in str(e) or any(x in str(e) for x in ["KeyError", "transcribe", "decoder", "encoder"]):
-                safe_print(f"  ❌ ERRORE CRITICO: Modello Whisper danneggiato durante la trascrizione")
-                safe_print(f"  DEBUG: Errore modello: {e}")
-                safe_print("  🔧 RISOLUZIONE AUTOMATICA: Reinstallazione forzata di Whisper in corso...")
-                try:
-                    # Forza la reinstallazione di Whisper
-                    subprocess.check_call([sys.executable, "-m", "pip", "install", "--force-reinstall", "openai-whisper"])
-                    safe_print("  ✅ Whisper reinstallato. Riavvia lo script per utilizzare il modello riparato.")
-                except subprocess.CalledProcessError:
-                    safe_print("  ❌ Impossibile reinstallare automaticamente. Esegui manualmente:")
-                    safe_print("  pip install --force-reinstall openai-whisper")
-                return ""
+            err_msg = str(e)
+            # Solo se l'errore sembra indicare una struttura mancante nel modello
+            if any(x in err_msg for x in ["Linear", "KeyError", "decoder", "encoder"]) and \
+               any(x in err_msg for x in ["NoneType", "attribute", "forward", "object has no"]):
+                raise ModelCorruptionError(err_msg)
             else:
                 raise e
 
     # Completa la barra di progresso
+    transcription_done = True
+    if progress_thread is not None:
+        progress_thread.join(timeout=1.0)
+        
     elapsed = time.time() - start_time
-    if pbar:
-        pbar.update(100 - pbar.n)  # Completa fino al 100%
-        pbar.set_postfix_str(f"Tempo: {elapsed:.1f}s, Durata: {audio_duration:.1f}s")
-        try:
-            pbar.close()
-        except:
-            pass
+    if progress and task_id is not None:
+        progress.update(task_id, completed=100, info=f"Fine: {elapsed:.1f}s")
+        progress.stop()
 
     return clean_transcription(result['text'])
 
@@ -850,237 +910,259 @@ def format_time(seconds):
     """
     return str(timedelta(seconds=int(seconds)))
 
-def main(podcast_dir, model_name='medium', language='it', parallel=False):
+def main(podcast_dir, model_name='medium', language='it', parallel=False, force_reprocess=False):
     """
-    Funzione principale con barra di progresso e ETA.
-    Args:
-        podcast_dir: Directory contenente i file audio
-        model_name: Nome del modello Whisper da utilizzare
-        language: Lingua del contenuto audio
-        parallel: Se True, utilizza processamento parallelo per velocizzare
+    Funzione principale con barra di progresso, ETA e gestione recupero errori.
     """
-    # Importa i moduli necessari
-    try:
-        import whisper
-        from tqdm import tqdm
-        print(f"Moduli importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, tqdm OK")
-    except ImportError as e:
-        print(f"Moduli non trovati: {e}. Installazione in corso...")
-        upgrade_pip_and_install_packages()
+    retry_count = 0
+    max_retries = 1
+    current_force_reprocess = force_reprocess
 
+    while retry_count <= max_retries:
         try:
-            import whisper
-            from tqdm import tqdm
-            print(f"Moduli installati e importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, tqdm OK")
-        except ImportError as e:
-            print(f"Impossibile importare i moduli anche dopo l'installazione: {e}")
-            print("Prova a installare manualmente i moduli: pip install openai-whisper tqdm")
-            sys.exit(1)
-
-    # Carica il modello Whisper con fallback automatico
-    print(f"Caricamento del modello {model_name}...")
-
-    # Lista di modelli da provare in ordine di preferenza
-    model_names = [model_name, 'base', 'small', 'tiny']
-
-    model = None
-    for attempt_model in model_names:
-        try:
-            print(f"  DEBUG: Tentativo con modello {attempt_model}")
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
-                model = whisper.load_model(attempt_model)
-
-            # Verifica che il modello sia valido
-            if hasattr(model, 'transcribe'):
-                print(f"✅ SUCCESSO: Modello {attempt_model} caricato correttamente")
-                if attempt_model != model_name:
-                    print(f"⚠️  ATTENZIONE: Usato modello {attempt_model} invece di {model_name}")
-                break
-            else:
-                print(f"❌ ERRORE: Modello {attempt_model} caricato ma non valido")
-                model = None
-
-        except Exception as e:
-            print(f"❌ ERRORE: Impossibile caricare il modello {attempt_model}: {e}")
-            model = None
-            continue
-
-    if model is None:
-        print(f"❌ ERRORE CRITICO: Impossibile caricare alcun modello Whisper valido")
-        print("Verifica l'installazione di Whisper e PyTorch")
-        print("Se il problema persiste, prova a reinstallare:")
-        print("  pip uninstall openai-whisper torch torchvision torchaudio")
-        print("  pip install openai-whisper")
-        return
-
-    print(f"DEBUG: Modello verificato, pronto per la trascrizione")
-
-    # Conta i file da elaborare
-    total_files = count_supported_audio_files(podcast_dir)
-    
-    if total_files == 0:
-        print("Nessun file audio supportato da elaborare trovato.")
-        print("Formati supportati: WAV, MP3, FLAC, OGG, M4A, AAC, WMA, Opus, AIFF, WebM, MP4")
-        return
-    
-    print(f"\nTrovati {total_files} file da trascrivere.")
-    
-    processed_files = 0
-    start_time = time.time()
-    processed_file_list = []  # Lista per tracciare file già elaborati
-    
-    # Barra di progresso principale per tutti i file
-    try:
-        main_pbar = tqdm(total=total_files,
-                        desc="📁 Elaborazione File",
-                        unit="file",
-                        ncols=100)
-    except Exception as e:
-        print(f"Attenzione: errore nell'inizializzazione della barra di progresso principale: {e}")
-        print("Continuo senza barra di progresso...")
-        main_pbar = None
-    
-    for root, dirs, files in os.walk(podcast_dir):
-        # Salta la directory _temp per evitare di processare i chunk temporanei
-        dirs[:] = [d for d in dirs if d != '_temp']
-
-        for file_name in files:
-            file_path = os.path.join(root, file_name)
-            base_name, ext = os.path.splitext(file_name)
-
-            # Verifica se il formato è supportato
-            if not is_audio_format_supported(file_path):
-                continue
-
-            output_file_name = base_name + '.txt'
-            output_path = os.path.join(root, output_file_name)
-
-            # Verifica se la trascrizione esiste già e contiene dati significativi
-            if os.path.exists(output_path):
-                txt_size = os.path.getsize(output_path)
-                print(f"  DEBUG: File .txt esistente: {output_path} ({txt_size} bytes)")
-                if txt_size > 10:  # Più di 10 byte = probabilmente contiene trascrizione
-                    print(f"  ⏭️  Trascrizione già esistente per: {file_name} ({txt_size} bytes)")
-                    if main_pbar:
-                        main_pbar.update(1)
-                    continue
-                else:
-                    print(f"  ⚠️  File .txt esistente ma vuoto o quasi ({txt_size} bytes) - rielaboro")
-            else:
-                print(f"  DEBUG: Nessun file .txt esistente per {file_name}")
-
-            # Verifica se il file è già stato elaborato in questa sessione
-            if file_path in processed_file_list:
-                print(f"  ⏭️  File già elaborato in questa sessione: {file_name}")
-                if main_pbar:
-                    main_pbar.update(1)
-                continue
-
-            print(f"  📝  Elaborazione file: {file_name}")
-            print(f"  DEBUG: File path: {file_path}")
-            print(f"  DEBUG: File esiste: {os.path.exists(file_path)}")
-            if os.path.exists(file_path):
-                file_size = os.path.getsize(file_path)
-                print(f"  DEBUG: File size: {file_size} bytes")
-                if file_size < 1000:  # Meno di 1KB è probabilmente non valido
-                    print(f"  ❌ ERRORE: File troppo piccolo ({file_size} bytes), probabilmente non è un file audio valido")
-                    if main_pbar:
-                        main_pbar.update(1)
-                    continue
-            else:
-                print(f"  ❌ ERRORE: File non esiste: {file_path}")
-                if main_pbar:
-                    main_pbar.update(1)
-                continue
-
-            # File WAV da utilizzare per la trascrizione (originale o convertito)
-            wav_file_path = None
-            converted_file_path = None
-
+            # Importa i moduli necessari
             try:
-                file_start_time = time.time()
+                import whisper
+                from rich.progress import Progress
+                safe_print(f"Moduli importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, rich OK")
+            except ImportError as e:
+                safe_print(f"Moduli non trovati: {e}. Installazione in corso...")
+                upgrade_pip_and_install_packages()
 
-                # Aggiorna la descrizione con il file corrente
-                if main_pbar:
-                    main_pbar.set_description(f"Elaborando: {file_name[:30]}...")
+                try:
+                    import whisper
+                    from rich.progress import Progress
+                    safe_print(f"Moduli installati e importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, rich OK")
+                except ImportError as e:
+                    safe_print(f"Impossibile importare i moduli anche dopo l'installazione: {e}")
+                    safe_print("Prova a installare manualmente i moduli: pip install openai-whisper tqdm rich")
+                    sys.exit(1)
 
-                # Se non è WAV, convertilo
-                if ext.lower() != '.wav':
-                    print(f"  DEBUG: Conversione richiesta per {file_name}")
-                    converted_file_path = os.path.join(root, base_name + '_converted.wav')
-                    print(f"  DEBUG: Converted file path: {converted_file_path}")
-                    if convert_audio_to_wav(file_path, converted_file_path):
-                        wav_file_path = converted_file_path
-                        print(f"  Conversione completata: {file_name}")
+            # Carica il modello Whisper con fallback automatico
+            safe_print(f"Caricamento del modello {model_name}...")
+
+            # Lista di modelli da provare in ordine di preferenza
+            model_names = [model_name, 'base', 'small', 'tiny']
+
+            model = None
+            for attempt_model in model_names:
+                try:
+                    safe_print(f"  DEBUG: Tentativo con modello {attempt_model}")
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
+                        model = whisper.load_model(attempt_model)
+
+                    # Verifica che il modello sia valido
+                    if hasattr(model, 'transcribe'):
+                        safe_print(f"✅ SUCCESSO: Modello {attempt_model} caricato correttamente")
+                        if attempt_model != model_name:
+                            safe_print(f"⚠️  ATTENZIONE: Usato modello {attempt_model} invece di {model_name}")
+                        break
                     else:
-                        print(f"  ❌ Impossibile convertire {file_name}, salto...")
-                        if main_pbar:
-                            main_pbar.update(1)
+                        safe_print(f"❌ ERRORE: Modello {attempt_model} caricato ma non valido")
+                        model = None
+
+                except Exception as e:
+                    safe_print(f"❌ ERRORE: Impossibile caricare il modello {attempt_model}: {e}")
+                    model = None
+                    continue
+
+            if model is None:
+                safe_print(f"❌ ERRORE CRITICO: Impossibile caricare alcun modello Whisper valido")
+                safe_print("Verifica l'installazione di Whisper e PyTorch")
+                safe_print("Se il problema persiste, prova a reinstallare:")
+                safe_print("  pip uninstall openai-whisper torch torchvision torchaudio")
+                safe_print("  pip install openai-whisper")
+                return
+
+            safe_print(f"DEBUG: Modello verificato, pronto per la trascrizione")
+
+            # Conta i file da elaborare
+            total_files = count_supported_audio_files(podcast_dir)
+            
+            if total_files == 0:
+                safe_print("Nessun file audio supportato da elaborare trovato.")
+                safe_print("Formati supportati: WAV, MP3, FLAC, OGG, M4A, AAC, WMA, Opus, AIFF, WebM, MP4")
+                return
+            
+            safe_print(f"\nTrovati {total_files} file da trascrivere.")
+            
+            processed_files = 0
+            start_time = time.time()
+            processed_file_list = []  # Lista per tracciare file già elaborati
+            
+            # Barra di progresso principale per tutti i file usando rich
+            main_progress = None
+            main_task_id = None
+            if console:
+                main_progress = Progress(
+                    SpinnerColumn(),
+                    TextColumn("[bold magenta]📁 Elaborazione File[/bold magenta]"),
+                    BarColumn(style="magenta"),
+                    MofNCompleteColumn(),
+                    TextColumn("•"),
+                    TimeElapsedColumn(),
+                    TextColumn("•"),
+                    TextColumn("[italic cyan]{task.fields[status]}"),
+                    console=console
+                )
+                main_progress.start()
+                main_task_id = main_progress.add_task("Main", total=total_files, status="Avvio...")
+            
+            for root, dirs, files in os.walk(podcast_dir):
+                # Salta la directory _temp per evitare di processare i chunk temporanei
+                dirs[:] = [d for d in dirs if d != '_temp']
+
+                for file_name in files:
+                    file_path = os.path.join(root, file_name)
+                    base_name, ext = os.path.splitext(file_name)
+
+                    # Verifica se il formato è supportato
+                    if not is_audio_format_supported(file_path):
                         continue
-                else:
-                    # È già WAV, usa il file originale
-                    print(f"  DEBUG: File già WAV, uso originale")
-                    wav_file_path = file_path
 
-                print(f"  DEBUG: wav_file_path impostato: {wav_file_path}")
+                    output_file_name = base_name + '.txt'
+                    output_path = os.path.join(root, output_file_name)
 
-                # Procedi con la trascrizione
-                print(f"  DEBUG: Inizio trascrizione per {os.path.basename(wav_file_path)}")
-                transcription = transcribe_podcast_with_progress(wav_file_path, model, language, parallel)
-                print(f"  DEBUG: Trascrizione completata, lunghezza: {len(transcription)} caratteri")
-                print(f"  DEBUG: Salvataggio trascrizione in {output_path}")
-                save_transcription(transcription, output_path)
+                    # Verifica se la trascrizione esiste già e contiene dati significativi
+                    if os.path.exists(output_path) and not current_force_reprocess:
+                        txt_size = os.path.getsize(output_path)
+                        safe_print(f"  DEBUG: File .txt esistente: {output_path} ({txt_size} bytes)")
+                        if txt_size > 10:  # Più di 10 byte = probabilmente contiene trascrizione
+                            safe_print(f"  ⏭️  Trascrizione già esistente per: {file_name} ({txt_size} bytes)")
+                            if main_progress and main_task_id is not None:
+                                main_progress.update(main_task_id, advance=1, status=f"Saltato: {file_name[:20]}")
+                            continue
+                        else:
+                            safe_print(f"  ⚠️  File .txt esistente ma vuoto o quasi ({txt_size} bytes) - rielaboro")
+                    else:
+                        safe_print(f"  DEBUG: Nessun file .txt esistente per {file_name}")
 
-                # Aggiungi il file alla lista dei processati
-                processed_file_list.append(file_path)
-                processed_files += 1
-                elapsed_total = time.time() - start_time
-                file_elapsed = time.time() - file_start_time
+                    # Verifica se il file è già stato elaborato in questa sessione
+                    if file_path in processed_file_list:
+                        safe_print(f"  ⏭️  File già elaborato in questa sessione: {file_name}")
+                        if main_progress and main_task_id is not None:
+                            main_progress.update(main_task_id, advance=1, status=f"Già fatto: {file_name[:20]}")
+                        continue
 
-                # Calcola ETA
-                if processed_files > 0:
-                    avg_time_per_file = elapsed_total / processed_files
-                    remaining_files = total_files - processed_files
-                    eta_seconds = avg_time_per_file * remaining_files
-                    eta_formatted = format_time(eta_seconds)
-                else:
-                    eta_formatted = "Calcolando..."
+                    safe_print(f"  📝  Elaborazione file: {file_name}")
+                    if os.path.exists(file_path):
+                        file_size = os.path.getsize(file_path)
+                        if file_size < 1000:  # Meno di 1KB è probabilmente non valido
+                            safe_print(f"  ❌ ERRORE: File troppo piccolo ({file_size} bytes), probabilmente non è un file audio valido")
+                            if main_progress and main_task_id is not None:
+                                main_progress.update(main_task_id, advance=1, status=f"ERRORE: {file_name[:20]}")
+                            continue
+                    else:
+                        safe_print(f"  ❌ ERRORE: File non esiste: {file_path}")
+                        if main_progress and main_task_id is not None:
+                            main_progress.update(main_task_id, advance=1, status=f"Non trovato: {file_name[:20]}")
+                        continue
 
-                # Aggiorna la barra di progresso
-                if main_pbar:
-                    main_pbar.update(1)
-                    main_pbar.set_postfix_str(f"Tempo/file: {file_elapsed:.1f}s, ETA: {eta_formatted}, Totale: {format_time(elapsed_total)}")
+                    # File WAV da utilizzare per la trascrizione (originale o convertito)
+                    wav_file_path = None
+                    converted_file_path = None
 
-                print(f"\n✅ Completato: {file_name}")
-                print(f"💾 Salvato in: {output_path}")
-                print(f"⏱️  Tempo impiegato: {file_elapsed:.1f} secondi")
-
-            except Exception as e:
-                print(f"\n❌ Errore durante la trascrizione di {file_name}: {e}")
-                if main_pbar:
-                    main_pbar.update(1)
-            finally:
-                # Pulisce il file WAV convertito se è stato creato
-                if converted_file_path and os.path.exists(converted_file_path):
                     try:
-                        os.remove(converted_file_path)
-                        print("  File WAV convertito rimosso")
-                    except Exception as e:
-                        print(f"  Attenzione: impossibile rimuovere il file convertito: {e}")
-    
-    total_elapsed = time.time() - start_time
-    # Conta file saltati
-    skipped_files = total_files - processed_files
+                        file_start_time = time.time()
 
-    print(f"\n🎉 Trascrizione completata!")
-    print(f"📊 File elaborati: {processed_files}")
-    if skipped_files > 0:
-        print(f"⏭️  File saltati (già esistenti): {skipped_files}")
-    print(f"📁 Totale file trovati: {total_files}")
-    print(f"⏱️  Tempo totale: {format_time(total_elapsed)}")
-    if processed_files > 0:
-        print(f"📈 Tempo medio per file: {total_elapsed/processed_files:.1f} secondi")
+                        # Aggiorna la descrizione con il file corrente
+                        if main_progress and main_task_id is not None:
+                            main_progress.update(main_task_id, status=f"Lavorando: {file_name[:30]}...")
+
+                        # Se non è WAV, convertilo
+                        if ext.lower() != '.wav':
+                            converted_file_path = os.path.join(root, base_name + '_converted.wav')
+                            if convert_audio_to_wav(file_path, converted_file_path):
+                                wav_file_path = converted_file_path
+                                safe_print(f"  Conversione completata: {file_name}")
+                            else:
+                                safe_print(f"  ❌ Impossibile convertire {file_name}, salto...")
+                                if main_progress and main_task_id is not None:
+                                    main_progress.update(main_task_id, advance=1, status=f"Fallito: {file_name[:20]}")
+                                continue
+                        else:
+                            wav_file_path = file_path
+
+                        # Procedi con la trascrizione
+                        transcription = transcribe_podcast_with_progress(wav_file_path, model, language, parallel)
+                        save_transcription(transcription, output_path)
+
+                        # Aggiungi il file alla lista dei processati
+                        processed_file_list.append(file_path)
+                        processed_files += 1
+                        elapsed_total = time.time() - start_time
+                        file_elapsed = time.time() - file_start_time
+
+                        # Calcola ETA
+                        if processed_files > 0:
+                            avg_time_per_file = elapsed_total / processed_files
+                            remaining_files = total_files - processed_files
+                            eta_seconds = avg_time_per_file * remaining_files
+                            eta_formatted = format_time(eta_seconds)
+                        else:
+                            eta_formatted = "Calcolando..."
+
+                        # Aggiorna la barra di progresso
+                        if main_progress and main_task_id is not None:
+                            main_progress.update(main_task_id, advance=1, status=f"Completato: {file_name[:20]}")
+
+                        safe_print(f"\n✅ Completato: {file_name}")
+                        safe_print(f"💾 Salvato in: {output_path}")
+                        safe_print(f"⏱️  Tempo impiegato: {file_elapsed:.1f} secondi")
+
+                    except ModelCorruptionError as e:
+                        # Rilancia l'eccezione per essere catturata dal loop esterno
+                        raise e
+                    except Exception as e:
+                        safe_print(f"\n❌ Errore durante la trascrizione di {file_name}: {e}")
+                        if main_progress and main_task_id is not None:
+                            main_progress.update(main_task_id, advance=1, status=f"ERRORE: {file_name[:20]}")
+                    finally:
+                        # Pulisce il file WAV convertito se è stato creato
+                        if converted_file_path and os.path.exists(converted_file_path):
+                            try:
+                                os.remove(converted_file_path)
+                            except Exception as e:
+                                safe_print(f"  Attenzione: impossibile rimuovere il file convertito: {e}")
+            
+            total_elapsed = time.time() - start_time
+            # Conta file saltati
+            skipped_files = total_files - processed_files
+
+            safe_print(f"\n🎉 Trascrizione completata!")
+            safe_print(f"📊 File elaborati: {processed_files}")
+            if skipped_files > 0:
+                safe_print(f"⏭️  File saltati (già esistenti): {skipped_files}")
+            safe_print(f"📁 Totale file trovati: {total_files}")
+            safe_print(f"⏱️  Tempo totale: {format_time(total_elapsed)}")
+            if processed_files > 0:
+                safe_print(f"📈 Tempo medio per file: {total_elapsed/processed_files:.1f} secondi")
+            
+            break # Successo, esce dal loop retry
+
+        except ModelCorruptionError as e:
+            retry_count += 1
+            # Ferma la barra di progresso prima della riparazione per pulizia UI
+            if main_progress:
+                main_progress.stop()
+            
+            safe_print(f"\n⚠️ ERRORE MODELLO RILEVATO: {e}")
+            if retry_count <= max_retries:
+                if repair_model_installation():
+                    safe_print("Riavvio della trascrizione da zero (tutti i file)...\n")
+                    current_force_reprocess = True # Forza rielaborazione totale
+                    # Ricarica moduli per sicurezza
+                    import whisper
+                    importlib.reload(whisper)
+                    continue
+            safe_print("❌ Impossibile riparare il modello dopo tentativi.")
+            return
+        except Exception as e:
+            safe_print(f"❌ Errore inaspettato: {e}")
+            raise e
+
+
 
 def parse_arguments():
     """
