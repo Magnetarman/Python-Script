@@ -295,19 +295,19 @@ def convert_audio_to_wav(input_path, output_path):
         bool: True se la conversione è riuscita, False altrimenti
     """
     try:
-        print(f"  DEBUG: Verifica FFmpeg...")
+        safe_print(f"  DEBUG: Verifica FFmpeg...")
         # Verifica se FFmpeg è disponibile
         ffmpeg_check = subprocess.run(['ffmpeg', '-version'], capture_output=True, text=True, timeout=10)
         if ffmpeg_check.returncode != 0:
-            print(f"  ❌ ERRORE: FFmpeg non trovato o non funzionante")
-            print(f"  Dettagli: {ffmpeg_check.stderr}")
+            safe_print(f"  ❌ ERRORE: FFmpeg non trovato o non funzionante")
+            safe_print(f"  Dettagli: {ffmpeg_check.stderr}")
             return False
 
-        print(f"  DEBUG: FFprobe check...")
+        safe_print(f"  DEBUG: FFprobe check...")
         # Verifica se FFprobe è disponibile
         ffprobe_check = subprocess.run(['ffprobe', '-version'], capture_output=True, text=True, timeout=10)
         if ffprobe_check.returncode != 0:
-            print(f"  ❌ ERRORE: FFprobe non trovato o non funzionante")
+            safe_print(f"  ❌ ERRORE: FFprobe non trovato o non funzionante")
             return False
 
         # Comando FFmpeg per convertire in WAV mantenendo la qualità originale
@@ -319,29 +319,29 @@ def convert_audio_to_wav(input_path, output_path):
             output_path
         ]
 
-        print(f"  DEBUG: Input path: {input_path}")
-        print(f"  DEBUG: Output path: {output_path}")
-        print(f"  DEBUG: File input esiste: {os.path.exists(input_path)}")
-        print(f"  Conversione in corso: {os.path.basename(input_path)} → WAV")
+        safe_print(f"  DEBUG: Input path: {input_path}")
+        safe_print(f"  DEBUG: Output path: {output_path}")
+        safe_print(f"  DEBUG: File input esiste: {os.path.exists(input_path)}")
+        safe_print(f"  Conversione in corso: {os.path.basename(input_path)} → WAV")
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
 
         if result.returncode == 0:
-            print(f"  DEBUG: Conversione completata, file size: {os.path.getsize(output_path)} bytes")
-            print(f"  Conversione completata: {os.path.basename(output_path)}")
+            safe_print(f"  DEBUG: Conversione completata, file size: {os.path.getsize(output_path)} bytes")
+            safe_print(f"  Conversione completata: {os.path.basename(output_path)}")
             return True
         else:
-            print(f"  ❌ ERRORE nella conversione: {result.stderr}")
-            print(f"  DEBUG: Return code: {result.returncode}")
+            safe_print(f"  ❌ ERRORE nella conversione: {result.stderr}")
+            safe_print(f"  DEBUG: Return code: {result.returncode}")
             return False
 
     except subprocess.TimeoutExpired:
-        print("  Timeout nella conversione audio")
+        safe_print("  Timeout nella conversione audio")
         return False
     except FileNotFoundError:
-        print("  FFmpeg non trovato. Installa FFmpeg per la conversione audio")
+        safe_print("  FFmpeg non trovato. Installa FFmpeg per la conversione audio")
         return False
     except Exception as e:
-        print(f"  Errore durante la conversione: {e}")
+        safe_print(f"  Errore durante la conversione: {e}")
         return False
 
 def split_audio_into_chunks(input_path, chunk_duration=300):
@@ -354,22 +354,22 @@ def split_audio_into_chunks(input_path, chunk_duration=300):
         list: Lista dei percorsi dei chunk creati, o None se fallisce
     """
     try:
-        print(f"  DEBUG: split_audio_into_chunks chiamato per {input_path}")
-        print(f"  DEBUG: File esiste: {os.path.exists(input_path)}")
-        print(f"  DEBUG: File size: {os.path.getsize(input_path) if os.path.exists(input_path) else 'N/A'}")
+        safe_print(f"  DEBUG: split_audio_into_chunks chiamato per {input_path}")
+        safe_print(f"  DEBUG: File esiste: {os.path.exists(input_path)}")
+        safe_print(f"  DEBUG: File size: {os.path.getsize(input_path) if os.path.exists(input_path) else 'N/A'}")
 
         # Crea directory temporanea per i chunk nella sottocartella _temp
         temp_dir = os.path.join(os.path.dirname(input_path), "_temp")
-        print(f"  DEBUG: Temp dir: {temp_dir}")
+        safe_print(f"  DEBUG: Temp dir: {temp_dir}")
         os.makedirs(temp_dir, exist_ok=True)  # Crea la directory se non esiste
-        print(f"  DEBUG: Temp dir creata/verificata")
+        safe_print(f"  DEBUG: Temp dir creata/verificata")
         base_name = os.path.splitext(os.path.basename(input_path))[0]
 
         # Crea i percorsi per i due chunk nella sottocartella _temp
         chunk1_path = os.path.join(temp_dir, f"{base_name}_chunk1.wav")
         chunk2_path = os.path.join(temp_dir, f"{base_name}_chunk2.wav")
-        print(f"  DEBUG: Chunk1 path: {chunk1_path}")
-        print(f"  DEBUG: Chunk2 path: {chunk2_path}")
+        safe_print(f"  DEBUG: Chunk1 path: {chunk1_path}")
+        safe_print(f"  DEBUG: Chunk2 path: {chunk2_path}")
 
         # Usa FFprobe per ottenere la durata totale
         ffprobe_cmd = [
@@ -379,20 +379,20 @@ def split_audio_into_chunks(input_path, chunk_duration=300):
 
         result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=10)
         if result.returncode != 0:
-            print("  Impossibile ottenere durata audio")
+            safe_print("  Impossibile ottenere durata audio")
             return None
 
         total_duration = float(result.stdout.strip())
 
         # Se l'audio è più corto di chunk_duration * 1.5, elabora come singolo chunk
         if total_duration < chunk_duration * 1.5:
-            print(f"  Audio corto ({total_duration:.1f}s), elaborazione singola")
+            safe_print(f"  Audio corto ({total_duration:.1f}s), elaborazione singola")
             return [input_path]
 
         # Calcola punto di divisione (metà circa)
         split_point = total_duration / 2
 
-        print(f"  Divisione audio in 2 chunk da ~{split_point:.1f}s cadauno")
+        safe_print(f"  Divisione audio in 2 chunk da ~{split_point:.1f}s cadauno")
 
         # Crea primo chunk (da 0 a split_point)
         cmd1 = [
@@ -405,34 +405,34 @@ def split_audio_into_chunks(input_path, chunk_duration=300):
         # Crea secondo chunk (da split_point a fine)
         cmd2 = [
             'ffmpeg', '-y', '-i', input_path,
-            '-ss', str(split_point),
+            '-ss', str(max(0, split_point - 2)),
             '-acodec', 'pcm_s16le', '-ar', '44100',
             chunk2_path
         ]
 
         # Crea i chunk in sequenza
-        print("  Creazione chunk 1...")
+        safe_print("  Creazione chunk 1...")
         result1 = subprocess.run(cmd1, capture_output=True, text=True, timeout=60)
 
         if result1.returncode != 0:
-            print("  Errore creazione chunk 1")
+            safe_print("  Errore creazione chunk 1")
             return None
 
-        print("  Creazione chunk 2...")
+        safe_print("  Creazione chunk 2...")
         result2 = subprocess.run(cmd2, capture_output=True, text=True, timeout=60)
 
         if result2.returncode != 0:
-            print("  Errore creazione chunk 2")
+            safe_print("  Errore creazione chunk 2")
             # Pulisce chunk 1 se chunk 2 fallisce
             if os.path.exists(chunk1_path):
                 os.remove(chunk1_path)
             return None
 
-        print("  Chunk creati con successo")
+        safe_print("  Chunk creati con successo")
         return [chunk1_path, chunk2_path]
 
     except Exception as e:
-        print(f"  Errore durante la divisione audio: {e}")
+        safe_print(f"  Errore durante la divisione audio: {e}")
         return None
 
 def transcribe_chunk_parallel(chunk_path, model, language='it'):
@@ -446,52 +446,52 @@ def transcribe_chunk_parallel(chunk_path, model, language='it'):
         str: Testo trascritto del chunk (pulito)
     """
     try:
-        print(f"  DEBUG: Inizio trascrizione chunk {os.path.basename(chunk_path)}")
+        safe_print(f"  DEBUG: Inizio trascrizione chunk {os.path.basename(chunk_path)}")
 
         # Verifica che il chunk esista e sia valido
         if not os.path.exists(chunk_path):
-            print(f"  ❌ ERRORE: Chunk non trovato: {chunk_path}")
+            safe_print(f"  ❌ ERRORE: Chunk non trovato: {chunk_path}")
             return ""
 
         chunk_size = os.path.getsize(chunk_path)
-        print(f"  DEBUG: Chunk size: {chunk_size} bytes")
+        safe_print(f"  DEBUG: Chunk size: {chunk_size} bytes")
 
         if chunk_size < 1000:
-            print(f"  ❌ ERRORE: Chunk troppo piccolo: {chunk_size} bytes")
+            safe_print(f"  ❌ ERRORE: Chunk troppo piccolo: {chunk_size} bytes")
             return ""
 
         # Verifica che il modello sia valido
         if not hasattr(model, 'transcribe'):
-            print(f"  ❌ ERRORE: Modello non valido, manca metodo transcribe")
+            safe_print(f"  ❌ ERRORE: Modello non valido, manca metodo transcribe")
             return ""
 
         # Trascrive il chunk usando il modello già caricato
-        print(f"  DEBUG: Avvio trascrizione con modello {type(model)}")
+        safe_print(f"  DEBUG: Avvio trascrizione con modello {type(model)}")
         try:
             result = model.transcribe(chunk_path, language=language)
-            print(f"  DEBUG: Trascrizione completata per {os.path.basename(chunk_path)}")
+            safe_print(f"  DEBUG: Trascrizione completata per {os.path.basename(chunk_path)}")
             return clean_transcription(result['text'])
         except (AttributeError, KeyError) as e:
             if "Linear" in str(e) or any(x in str(e) for x in ["KeyError", "transcribe", "decoder", "encoder"]):
-                print(f"  ❌ ERRORE CRITICO: Modello Whisper danneggiato durante la trascrizione")
-                print(f"  DEBUG: Errore modello: {e}")
-                print("  🔧 RISOLUZIONE AUTOMATICA: Reinstallazione forzata di Whisper in corso...")
+                safe_print(f"  ❌ ERRORE CRITICO: Modello Whisper danneggiato durante la trascrizione")
+                safe_print(f"  DEBUG: Errore modello: {e}")
+                safe_print("  🔧 RISOLUZIONE AUTOMATICA: Reinstallazione forzata di Whisper in corso...")
                 try:
                     # Forza la reinstallazione di Whisper
                     subprocess.check_call([sys.executable, "-m", "pip", "install", "--force-reinstall", "openai-whisper"])
-                    print("  ✅ Whisper reinstallato. Riavvia lo script per utilizzare il modello riparato.")
+                    safe_print("  ✅ Whisper reinstallato. Riavvia lo script per utilizzare il modello riparato.")
                 except subprocess.CalledProcessError:
-                    print("  ❌ Impossibile reinstallare automaticamente. Esegui manualmente:")
-                    print("  pip install --force-reinstall openai-whisper")
+                    safe_print("  ❌ Impossibile reinstallare automaticamente. Esegui manualmente:")
+                    safe_print("  pip install --force-reinstall openai-whisper")
                 return ""
             else:
                 raise e
 
     except Exception as e:
-        print(f"  ❌ ERRORE nella trascrizione del chunk {os.path.basename(chunk_path)}: {e}")
-        print(f"  DEBUG: Tipo errore: {type(e).__name__}")
+        safe_print(f"  ❌ ERRORE nella trascrizione del chunk {os.path.basename(chunk_path)}: {e}")
+        safe_print(f"  DEBUG: Tipo errore: {type(e).__name__}")
         import traceback
-        print(f"  DEBUG: Traceback: {traceback.format_exc()}")
+        safe_print(f"  DEBUG: Traceback: {traceback.format_exc()}")
         return ""
 
 def transcribe_audio_parallel(file_path, model, language='it'):
@@ -509,7 +509,7 @@ def transcribe_audio_parallel(file_path, model, language='it'):
     from tqdm import tqdm
     import threading
 
-    print("Avvio trascrizione parallela...")
+    safe_print("Avvio trascrizione parallela...")
 
     # Ottieni la durata per la barra di progresso
     audio_duration = get_audio_duration(file_path)
@@ -519,10 +519,10 @@ def transcribe_audio_parallel(file_path, model, language='it'):
 
     if not chunks or len(chunks) == 1:
         # Se non è stato possibile dividere o audio troppo corto, trascrizione singola
-        print("Esecuzione trascrizione singola (audio corto o indivisibile)")
+        safe_print("Esecuzione trascrizione singola (audio corto o indivisibile)")
         return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
 
-    print(f"⚡ Divisione audio in {len(chunks)} chunk per elaborazione parallela...")
+    safe_print(f"⚡ Divisione audio in {len(chunks)} chunk per elaborazione parallela...")
 
     start_time = time.time()
     # Initialize variables that might be used in except block
@@ -538,8 +538,8 @@ def transcribe_audio_parallel(file_path, model, language='it'):
                        unit="%",
                        ncols=100)
         except Exception as e:
-            print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
-            print("Continuo senza barra di progresso...")
+            safe_print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
+            safe_print("Continuo senza barra di progresso...")
             pbar = None
 
         # Funzione per aggiornare la barra di progresso durante l'attesa
@@ -591,7 +591,7 @@ def transcribe_audio_parallel(file_path, model, language='it'):
                 chunk1_text = future1.result(timeout=chunk_timeout)
                 chunk2_text = future2.result(timeout=chunk_timeout)
             except concurrent.futures.TimeoutError:
-                print("Timeout nella trascrizione parallela, fallback a trascrizione singola")
+                safe_print("Timeout nella trascrizione parallela, fallback a trascrizione singola")
                 transcription_done = True  # Signal the progress thread to stop
                 if progress_thread is not None:
                     progress_thread.join(timeout=2.0)  # Wait for the progress thread to finish
@@ -601,7 +601,7 @@ def transcribe_audio_parallel(file_path, model, language='it'):
         full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
 
         elapsed = time.time() - start_time
-        print(f"✅ Trascrizione parallela completata in {elapsed:.1f} secondi")
+        safe_print(f"✅ Trascrizione parallela completata in {elapsed:.1f} secondi")
 
         # Segnala al thread di progresso di fermarsi
         transcription_done = True
@@ -619,9 +619,9 @@ def transcribe_audio_parallel(file_path, model, language='it'):
             if chunk != file_path and os.path.exists(chunk):
                 try:
                     os.remove(chunk)
-                    print(f"  Chunk {os.path.basename(chunk)} rimosso")
+                    safe_print(f"  Chunk {os.path.basename(chunk)} rimosso")
                 except Exception as e:
-                    print(f"  Attenzione: impossibile rimuovere {chunk}: {e}")
+                    safe_print(f"  Attenzione: impossibile rimuovere {chunk}: {e}")
 
         # Rimuovi la directory _temp se vuota
         temp_dir = os.path.join(os.path.dirname(file_path), "_temp")
@@ -630,9 +630,9 @@ def transcribe_audio_parallel(file_path, model, language='it'):
                 # Verifica se la directory è vuota
                 if not os.listdir(temp_dir):
                     os.rmdir(temp_dir)
-                    print(f"  Directory temporanea {os.path.basename(temp_dir)} rimossa")
+                    safe_print(f"  Directory temporanea {os.path.basename(temp_dir)} rimossa")
             except Exception as e:
-                print(f"  Attenzione: impossibile rimuovere la directory temporanea: {e}")
+                safe_print(f"  Attenzione: impossibile rimuovere la directory temporanea: {e}")
 
         return full_transcription
 
@@ -705,19 +705,19 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
         language: Lingua del contenuto audio
         parallel: Se True, utilizza processamento parallelo per velocizzare
     """
-    print(f"  DEBUG: transcribe_podcast_with_progress chiamato per {os.path.basename(file_path)}")
+    safe_print(f"  DEBUG: transcribe_podcast_with_progress chiamato per {os.path.basename(file_path)}")
 
     # Ottieni la durata effettiva del file audio
-    print("Analisi del file audio...")
+    safe_print("Analisi del file audio...")
     audio_duration = get_audio_duration(file_path)
-    print(f"Durata audio rilevata: {audio_duration:.1f} secondi")
+    safe_print(f"Durata audio rilevata: {audio_duration:.1f} secondi")
 
     # Calcola i chunk da 30 secondi
     chunk_duration = 30.0  # secondi
     total_chunks = math.ceil(audio_duration / chunk_duration)
-    print(f"Divisione in {total_chunks} chunk da {chunk_duration} secondi cadauno")
+    safe_print(f"Divisione in {total_chunks} chunk da {chunk_duration} secondi cadauno")
 
-    print("Trascrizione in corso...")
+    safe_print("Trascrizione in corso...")
 
     # Utilizza processamento parallelo se richiesto
     if parallel:
@@ -734,8 +734,8 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
                    unit="%",
                    ncols=100)
     except Exception as e:
-        print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
-        print("Continuo senza barra di progresso...")
+        safe_print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
+        safe_print("Continuo senza barra di progresso...")
         pbar = None
     
     # Avvia la trascrizione con soppressione del warning FP16
@@ -756,7 +756,7 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
             while not pbar.disable:
                 elapsed = time.time() - start_time
                 # Calcola il progresso basato sul tempo trascorso vs tempo stimato
-                estimated_progress = min(95, (elapsed / (audio_duration * processing_ratio)) * 100)
+                estimated_progress = min(98, (elapsed / (audio_duration * processing_ratio)) * 100)
 
                 if estimated_progress >= pbar.n:
                     # Calcola velocità e tempo rimanente stimato
@@ -775,26 +775,26 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
 
         # Verifica che il file esista prima della trascrizione
         if not os.path.exists(file_path):
-            print(f"  ❌ ERRORE: File non trovato per trascrizione: {file_path}")
+            safe_print(f"  ❌ ERRORE: File non trovato per trascrizione: {file_path}")
             return ""
 
         # Esegue la trascrizione
-        print(f"  DEBUG: Esecuzione trascrizione per {os.path.basename(file_path)}")
+        safe_print(f"  DEBUG: Esecuzione trascrizione per {os.path.basename(file_path)}")
         try:
             result = model.transcribe(file_path, language=language)
-            print(f"  DEBUG: Trascrizione completata con successo")
+            safe_print(f"  DEBUG: Trascrizione completata con successo")
         except (AttributeError, KeyError) as e:
             if "Linear" in str(e) or any(x in str(e) for x in ["KeyError", "transcribe", "decoder", "encoder"]):
-                print(f"  ❌ ERRORE CRITICO: Modello Whisper danneggiato durante la trascrizione")
-                print(f"  DEBUG: Errore modello: {e}")
-                print("  🔧 RISOLUZIONE AUTOMATICA: Reinstallazione forzata di Whisper in corso...")
+                safe_print(f"  ❌ ERRORE CRITICO: Modello Whisper danneggiato durante la trascrizione")
+                safe_print(f"  DEBUG: Errore modello: {e}")
+                safe_print("  🔧 RISOLUZIONE AUTOMATICA: Reinstallazione forzata di Whisper in corso...")
                 try:
                     # Forza la reinstallazione di Whisper
                     subprocess.check_call([sys.executable, "-m", "pip", "install", "--force-reinstall", "openai-whisper"])
-                    print("  ✅ Whisper reinstallato. Riavvia lo script per utilizzare il modello riparato.")
+                    safe_print("  ✅ Whisper reinstallato. Riavvia lo script per utilizzare il modello riparato.")
                 except subprocess.CalledProcessError:
-                    print("  ❌ Impossibile reinstallare automaticamente. Esegui manualmente:")
-                    print("  pip install --force-reinstall openai-whisper")
+                    safe_print("  ❌ Impossibile reinstallare automaticamente. Esegui manualmente:")
+                    safe_print("  pip install --force-reinstall openai-whisper")
                 return ""
             else:
                 raise e
