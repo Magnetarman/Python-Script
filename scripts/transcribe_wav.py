@@ -26,6 +26,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+whisper_lock = threading.Lock()
+
 class ModelCorruptionError(Exception):
     """Eccezione personalizzata per indicare un modello Whisper danneggiato."""
     pass
@@ -37,36 +39,31 @@ def safe_print(message):
     else:
         print(message)
 
-def repair_model_installation():
+def setup_file_logging(podcast_dir):
     """
-    Forza la reinstallazione di Whisper e delle dipendenze correlate per riparare un'installazione corrotta.
+    Configura il logging su file nella directory dei podcast.
     """
-    python_path = sys.executable
-    use_user = not is_venv()
-    user_flag = ["--user"] if use_user else []
-
-    safe_print("\n🔧 AVVIO RIPARAZIONE AUTOMATICA...")
-    safe_print("Rimozione e reinstallazione forzata di openai-whisper e torch...")
-    
-    packages = ["openai-whisper", "torch", "torchvision", "torchaudio"]
-    
     try:
-        # Reinstalla forzatamente
-        cmd = [python_path, "-m", "pip", "install", "--force-reinstall", "-U"] + packages + user_flag
-        subprocess.check_call(cmd)
-        importlib.invalidate_caches()
-        safe_print("✅ Riparazione completata con successo.")
+        log_file = os.path.join(podcast_dir, "transcription_debug.log")
+        # Rimuovi eventuali handler esistenti per evitare duplicati
+        for handler in list(logger.handlers):
+            if isinstance(handler, logging.FileHandler):
+                logger.removeHandler(handler)
+        
+        file_handler = logging.FileHandler(log_file, encoding='utf-8', mode='a')
+        file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(threadName)s] - %(message)s')
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
+        logger.setLevel(logging.DEBUG)
+        
+        logger.info("-" * 50)
+        logger.info(f"AVVIO SESSIONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"Directory: {podcast_dir}")
+        logger.info("-" * 50)
         return True
     except Exception as e:
-        safe_print("\n" + "!" * 60)
-        safe_print(f"❌ Errore critico durante la riparazione: {e}")
-        if os.name == 'nt' and "Accesso negato" in str(e):
-            safe_print("Sintomo: FILE IN USO o PERMESSI INSUFFICIENTI")
-            safe_print("Soluzione: Chiudi tutto e riprova in un terminale AMMINISTRATORE.")
-        safe_print("!" * 60 + "\n")
+        safe_print(f"⚠️ Impossibile configurare il logging su file: {e}")
         return False
-
-
 
 # Lista di stringhe da rimuovere dalla trascrizione
 WRONG_SUBSTRINGS = [
@@ -350,8 +347,8 @@ def convert_audio_to_wav(input_path, output_path):
         cmd = [
             'ffmpeg', '-y', '-i', input_path,
             '-acodec', 'pcm_s16le',  # Codec WAV standard
-            '-ar', '44100',          # Sample rate 44.1kHz
-            '-ac', '2',              # Canali stereo
+            '-ar', '16000',          # Sample rate 16kHz
+            '-ac', '1',              # Canali mono
             output_path
         ]
 
@@ -380,106 +377,59 @@ def convert_audio_to_wav(input_path, output_path):
         safe_print(f"  Errore durante la conversione: {e}")
         return False
 
-def split_audio_into_chunks(input_path, chunk_duration=300):
+def split_audio_into_chunks(input_path, num_chunks=3):
     """
     Divide un file audio in chunk consecutivi per il processamento parallelo.
-    Args:
-        input_path: Percorso del file audio da dividere
-        chunk_duration: Durata di ogni chunk in secondi (default: 5 minuti)
-    Returns:
-        list: Lista dei percorsi dei chunk creati, o None se fallisce
     """
     try:
-        safe_print(f"  DEBUG: split_audio_into_chunks chiamato per {input_path}")
-        safe_print(f"  DEBUG: File esiste: {os.path.exists(input_path)}")
-        safe_print(f"  DEBUG: File size: {os.path.getsize(input_path) if os.path.exists(input_path) else 'N/A'}")
-
-        # Crea directory temporanea per i chunk nella sottocartella _temp
+        # Crea directory temporanea
         temp_dir = os.path.join(os.path.dirname(input_path), "_temp")
-        safe_print(f"  DEBUG: Temp dir: {temp_dir}")
-        os.makedirs(temp_dir, exist_ok=True)  # Crea la directory se non esiste
-        safe_print(f"  DEBUG: Temp dir creata/verificata")
+        os.makedirs(temp_dir, exist_ok=True)
         base_name = os.path.splitext(os.path.basename(input_path))[0]
 
-        # Crea i percorsi per i due chunk nella sottocartella _temp
-        chunk1_path = os.path.join(temp_dir, f"{base_name}_chunk1.wav")
-        chunk2_path = os.path.join(temp_dir, f"{base_name}_chunk2.wav")
-        safe_print(f"  DEBUG: Chunk1 path: {chunk1_path}")
-        safe_print(f"  DEBUG: Chunk2 path: {chunk2_path}")
-
-        # Usa FFprobe per ottenere la durata totale
-        ffprobe_cmd = [
-            'ffprobe', '-v', 'quiet', '-show_entries',
-            'format=duration', '-of', 'csv=p=0', input_path
-        ]
-
+        # Ottieni durata totale
+        ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-show_entries', 'format=duration', '-of', 'csv=p=0', input_path]
         result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=10)
-        if result.returncode != 0:
-            safe_print("  Impossibile ottenere durata audio")
-            return None
-
+        if result.returncode != 0: return None
         total_duration = float(result.stdout.strip())
 
-        # Se l'audio è più corto di chunk_duration * 1.5, elabora come singolo chunk
-        if total_duration < chunk_duration * 1.5:
-            safe_print(f"  Audio corto ({total_duration:.1f}s), elaborazione singola")
-            return [input_path]
+        # Se l'audio è troppo corto (meno di 45s), elaborazione singola
+        if total_duration < 45: return [input_path]
 
-        # Calcola punto di divisione (metà circa)
-        split_point = total_duration / 2
-
-        safe_print(f"  Divisione audio in 2 chunk da ~{split_point:.1f}s cadauno")
-
-        # Crea primo chunk (da 0 a split_point)
-        cmd1 = [
-            'ffmpeg', '-y', '-i', input_path,
-            '-t', str(split_point),
-            '-acodec', 'pcm_s16le', '-ar', '44100',
-            chunk1_path
-        ]
-
-        # Crea secondo chunk (da split_point a fine)
-        cmd2 = [
-            'ffmpeg', '-y', '-i', input_path,
-            '-ss', str(max(0, split_point - 2)),
-            '-acodec', 'pcm_s16le', '-ar', '44100',
-            chunk2_path
-        ]
-
-        # Crea i chunk in sequenza
-        safe_print("  Creazione chunk 1...")
-        result1 = subprocess.run(cmd1, capture_output=True, text=True, timeout=60)
-
-        if result1.returncode != 0:
-            safe_print("  Errore creazione chunk 1")
-            return None
-
-        safe_print("  Creazione chunk 2...")
-        result2 = subprocess.run(cmd2, capture_output=True, text=True, timeout=60)
-
-        if result2.returncode != 0:
-            safe_print("  Errore creazione chunk 2")
-            # Pulisce chunk 1 se chunk 2 fallisce
-            if os.path.exists(chunk1_path):
-                os.remove(chunk1_path)
-            return None
-
-        safe_print("  Chunk creati con successo")
-        return [chunk1_path, chunk2_path]
-
+        actual_chunks = num_chunks
+        # Se l'audio è corto per 3 chunk, prova con 2
+        if total_duration < 90 and num_chunks > 2: actual_chunks = 2
+        
+        segment_duration = total_duration / actual_chunks
+        safe_print(f"  ⚡ Divisione audio in {actual_chunks} chunk per elaborazione parallela...")
+        
+        chunks = []
+        for i in range(actual_chunks):
+            chunk_path = os.path.join(temp_dir, f"{base_name}_chunk{i+1}.wav")
+            start_time = i * segment_duration
+            
+            # Aggiunge un piccolo overlap di 1s tra i chunk per non perdere sillabe
+            # tranne che per il primo chunk
+            ss_time = max(0, start_time - 1) if i > 0 else 0
+            # Durata: se non è l'ultimo chunk, aggiungiamo l'overlap
+            t_duration = segment_duration + (1 if i > 0 else 0) if i < actual_chunks - 1 else None
+            
+            cmd = ['ffmpeg', '-y', '-i', input_path, '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1']
+            if ss_time > 0: cmd.extend(['-ss', str(ss_time)])
+            if t_duration: cmd.extend(['-t', str(t_duration)])
+            cmd.append(chunk_path)
+            
+            subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            chunks.append(chunk_path)
+            
+        return chunks
     except Exception as e:
-        safe_print(f"  Errore durante la divisione audio: {e}")
+        safe_print(f"  ❌ Errore split: {e}")
         return None
 
 def transcribe_chunk_parallel(chunk_path, model, language='it'):
     """
     Trascrive un singolo chunk audio utilizzando Whisper.
-    Args:
-        chunk_path: Percorso del chunk da trascrivere
-        model: Modello Whisper già caricato
-        language: Lingua del contenuto
-    Returns:
-        str: Testo trascritto del chunk (pulito)
     """
     try:
         safe_print(f"  DEBUG: Inizio trascrizione chunk {os.path.basename(chunk_path)}")
@@ -502,16 +452,22 @@ def transcribe_chunk_parallel(chunk_path, model, language='it'):
             return ""
 
         # Trascrive il chunk usando il modello già caricato
+        logger.debug(f"Avvio model.transcribe per {os.path.basename(chunk_path)}")
         safe_print(f"  DEBUG: Avvio trascrizione con modello {type(model)}")
         try:
-            result = model.transcribe(chunk_path, language=language)
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
+                with whisper_lock:
+                    result = model.transcribe(chunk_path, language=language)
+            logger.debug(f"Trascrizione completata per {os.path.basename(chunk_path)}")
             safe_print(f"  DEBUG: Trascrizione completata per {os.path.basename(chunk_path)}")
             return clean_transcription(result['text'])
         except (AttributeError, KeyError) as e:
             err_msg = str(e)
-            # Solo se l'errore sembra indicare una struttura mancante nel modello
-            if any(x in err_msg for x in ["Linear", "KeyError", "decoder", "encoder"]) and \
-               any(x in err_msg for x in ["NoneType", "attribute", "forward", "object has no"]):
+            is_model_error = any(x in err_msg for x in ["Linear", "KeyError", "decoder", "encoder"])
+            is_corruption_symptom = any(x in err_msg for x in ["NoneType", "attribute", "forward", "object has no"])
+            
+            if is_model_error and (is_corruption_symptom or "KeyError" in type(e).__name__ or "Linear" in err_msg):
                 raise ModelCorruptionError(err_msg)
             else:
                 raise e
@@ -522,55 +478,44 @@ def transcribe_chunk_parallel(chunk_path, model, language='it'):
             raise e
 
     except ModelCorruptionError as e:
-        # Rilancia l'eccezione del modello per il recupero in main
         raise e
     except Exception as e:
+        logger.exception(f"❌ ERRORE nella trascrizione del chunk {os.path.basename(chunk_path)}")
         safe_print(f"  ❌ ERRORE nella trascrizione del chunk {os.path.basename(chunk_path)}: {e}")
-        safe_print(f"  DEBUG: Tipo errore: {type(e).__name__}")
-        import traceback
-        safe_print(f"  DEBUG: Traceback: {traceback.format_exc()}")
         return ""
 
 def transcribe_audio_parallel(file_path, model, language='it'):
     """
     Trascrive un file audio dividendo in chunk e processando in parallelo.
-    Args:
-        file_path: Percorso del file audio da trascrivere
-        model: Modello Whisper già caricato
-        language: Lingua del contenuto
-    Returns:
-        str: Testo trascritto completo
     """
     import concurrent.futures
     import time
     import threading
 
+    logger.info(f"Inizio trascrizione parallela per: {file_path}")
     safe_print("Avvio trascrizione parallela...")
 
     # Ottieni la durata per la barra di progresso
     audio_duration = get_audio_duration(file_path)
 
-    # Dividi l'audio in chunk
-    chunks = split_audio_into_chunks(file_path)
+    # Dividi l'audio in chunk (3 segmenti per default)
+    chunks = split_audio_into_chunks(file_path, num_chunks=3)
 
-    if not chunks or len(chunks) == 1:
-        # Se non è stato possibile dividere o audio troppo corto, trascrizione singola
-        safe_print("Esecuzione trascrizione singola (audio corto o indivisibile)")
+    if not chunks or len(chunks) <= 1:
+        safe_print("Esecuzione trascrizione singola (audio troppo corto o indivisibile)")
         return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
 
-    safe_print(f"⚡ Divisione audio in {len(chunks)} chunk per elaborazione parallela...")
+    actual_chunks = len(chunks)
+    logger.info(f"Audio diviso in {actual_chunks} chunk")
+    safe_print(f"⚡ Elaborazione di {actual_chunks} chunk in parallelo...")
 
     start_time = time.time()
-    # Initialize variables that might be used in except block
-    pbar = None
     progress_thread = None
     transcription_done = False
+    progress = None
+    task_id = None
 
     try:
-        # Crea barra di progresso per la trascrizione parallela usando rich
-        progress = None
-        task_id = None
-        
         if console:
             progress = Progress(
                 SpinnerColumn(),
@@ -581,16 +526,13 @@ def transcribe_audio_parallel(file_path, model, language='it'):
                 TimeRemainingColumn(),
                 TextColumn("•"),
                 TextColumn("[cyan]{task.fields[info]}"),
-                console=console,
-                transient=True
+                console=console
             )
             progress.start()
             task_id = progress.add_task("🚀 Elaborazione Parallela", total=100, info="")
 
-        # Funzione per aggiornare la barra di progresso durante l'attesa
         def update_progress():
-            """Aggiorna la barra di progresso durante l'elaborazione parallela"""
-            nonlocal transcription_done, progress, task_id, start_time, audio_duration
+            nonlocal transcription_done, progress, task_id, start_time, audio_duration, actual_chunks
             while not transcription_done:
                 if progress is None or task_id is None:
                     time.sleep(0.5)
@@ -598,45 +540,30 @@ def transcribe_audio_parallel(file_path, model, language='it'):
                 
                 elapsed = time.time() - start_time
                 if elapsed > 0:
-                    # Tempo totale stimato per l'elaborazione parallela: (durata * rapporto_di_elaborazione) / 2
-                    estimated_total_time = (audio_duration * 0.15) / 2
-                    if estimated_total_time > 0:
-                        estimated_progress = min(99.0, (elapsed / estimated_total_time) * 100)
-                    else:
-                        estimated_progress = 0
+                    estimated_total_time = (audio_duration * 0.15) / (actual_chunks * 0.75)
+                    estimated_progress = min(99.0, (elapsed / estimated_total_time) * 100) if estimated_total_time > 0 else 0
                 else:
                     estimated_progress = 0
 
-                # Calcola velocità
                 speed = estimated_progress / elapsed if elapsed > 0 else 0
-                
-                # Aggiorna la barra
                 progress.update(task_id, completed=estimated_progress, info=f"Audio: {audio_duration:.0f}s | Speed: {speed:.1f}%/s")
                 time.sleep(0.5)
 
-        # Avvia il thread per l'aggiornamento del progresso
         progress_thread = threading.Thread(target=update_progress, daemon=True)
         progress_thread.start()
 
-        # Avvia trascrizione parallela dei chunk
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            # Invia i job per i due chunk
-            future1 = executor.submit(transcribe_chunk_parallel, chunks[0], model, language)
-            future2 = executor.submit(transcribe_chunk_parallel, chunks[1], model, language)
-
-        try:
-            # Attende i risultati con barra di progresso
-            # Timeout aumentato per audio lunghi: 20 minuti per chunk
-            chunk_timeout = int(max(1200, audio_duration // 2 + 300))  # Minimo 20 minuti o metà durata + 5 minuti
+        with concurrent.futures.ThreadPoolExecutor(max_workers=actual_chunks, thread_name_prefix="WhisperWorker") as executor:
+            logger.debug(f"Invio job a ThreadPoolExecutor con {actual_chunks} worker")
+            futures = [executor.submit(transcribe_chunk_parallel, chunk, model, language) for chunk in chunks]
 
             try:
-                chunk1_text = future1.result(timeout=chunk_timeout)
-                chunk2_text = future2.result(timeout=chunk_timeout)
+                chunk_timeout = int(max(1500, audio_duration // actual_chunks + 600))
+                results_text = [future.result(timeout=chunk_timeout) for future in futures]
+
             except concurrent.futures.TimeoutError:
+                logger.error(f"Timeout nella trascrizione parallela per {file_path}")
                 safe_print("Timeout nella trascrizione parallela, fallback a trascrizione singola")
-                transcription_done = True  # Signal the progress thread to stop
-                if progress_thread is not None:
-                    progress_thread.join(timeout=2.0)  # Wait for the progress thread to finish
+                transcription_done = True
                 if progress: progress.stop()
                 return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
             except ModelCorruptionError as e:
@@ -648,65 +575,34 @@ def transcribe_audio_parallel(file_path, model, language='it'):
                 if progress: progress.stop()
                 raise e
 
-            # Unisce i risultati
-            full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
-
+            full_transcription = " ".join([t.strip() for t in results_text if t])
             elapsed = time.time() - start_time
-            safe_print(f"✅ Trascrizione parallela completata in {elapsed:.1f} secondi")
-
-        finally:
-            # Segnala al thread di progresso di fermarsi
-            transcription_done = True
-            if progress_thread is not None:
-                # Attende la fine del thread di progresso
-                progress_thread.join(timeout=1.0)
-                
-            # Aggiorna la barra al 100% e chiudila
-            if progress and task_id is not None:
-                try:
-                    progress.update(task_id, completed=100, info="Completato!")
-                except:
-                    pass
-                progress.stop()
+            safe_print(f"✅ Trascrizione parallela ({actual_chunks} chunk) completata in {elapsed:.1f} secondi")
 
         return full_transcription
 
-        # Pulisce i chunk se sono stati creati
-        for chunk in chunks:
-            if chunk != file_path and os.path.exists(chunk):
-                try:
-                    os.remove(chunk)
-                    safe_print(f"  Chunk {os.path.basename(chunk)} rimosso")
-                except Exception as e:
-                    safe_print(f"  Attenzione: impossibile rimuovere {chunk}: {e}")
-
-        # Rimuovi la directory _temp se vuota
-        temp_dir = os.path.join(os.path.dirname(file_path), "_temp")
-        if os.path.exists(temp_dir):
-            try:
-                # Verifica se la directory è vuota
-                if not os.listdir(temp_dir):
-                    os.rmdir(temp_dir)
-                    safe_print(f"  Directory temporanea {os.path.basename(temp_dir)} rimossa")
-            except Exception as e:
-                safe_print(f"  Attenzione: impossibile rimuovere la directory temporanea: {e}")
-
-        return full_transcription
-
-    except ModelCorruptionError as e:
-        # Rilancia l'eccezione del modello per il recupero in main
+    finally:
         transcription_done = True
         if progress_thread is not None:
-            progress_thread.join(timeout=1.0)
-        raise e
-    except Exception as e:
-        safe_print(f"Errore nella trascrizione parallela: {e}, fallback a trascrizione singola")
-        transcription_done = True  # Signal the progress thread to stop
-        if progress_thread is not None:
-            progress_thread.join(timeout=1.0)
-        if progress:
-            progress.stop()
-        return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
+            try: progress_thread.join(timeout=1.0)
+            except: pass
+                
+        if progress and task_id is not None:
+            try: progress.update(task_id, completed=100, info="Completato!")
+            except: pass
+            try: progress.stop()
+            except: pass
+
+        try:
+            for chunk in chunks:
+                if chunk != file_path and os.path.exists(chunk):
+                    try: os.remove(chunk)
+                    except: pass
+            
+            temp_dir = os.path.join(os.path.dirname(file_path), "_temp")
+            if os.path.exists(temp_dir) and not os.listdir(temp_dir):
+                os.rmdir(temp_dir)
+        except: pass
 
 
 def get_audio_duration(file_path):
@@ -790,6 +686,8 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
 
     # Altrimenti, trascrizione singola tradizionale
     start_time = time.time()
+    transcription_done = False
+    progress_thread = None
 
     # Barra di progresso per la trascrizione singola usando rich
     progress = None
@@ -804,8 +702,7 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
             TimeRemainingColumn(),
             TextColumn("•"),
             TextColumn("[yellow]{task.fields[info]}"),
-            console=console,
-            transient=True
+            console=console
         )
         progress.start()
         task_id = progress.add_task("🎵 Trascrizione Audio", total=100, info="")
@@ -852,9 +749,10 @@ def transcribe_podcast_with_progress(file_path, model, language='it', parallel=F
             safe_print(f"  DEBUG: Trascrizione completata con successo")
         except (AttributeError, KeyError) as e:
             err_msg = str(e)
-            # Solo se l'errore sembra indicare una struttura mancante nel modello
-            if any(x in err_msg for x in ["Linear", "KeyError", "decoder", "encoder"]) and \
-               any(x in err_msg for x in ["NoneType", "attribute", "forward", "object has no"]):
+            is_model_error = any(x in err_msg for x in ["Linear", "KeyError", "decoder", "encoder"])
+            is_corruption_symptom = any(x in err_msg for x in ["NoneType", "attribute", "forward", "object has no"])
+            
+            if is_model_error and (is_corruption_symptom or "KeyError" in type(e).__name__ or "Linear" in err_msg):
                 raise ModelCorruptionError(err_msg)
             else:
                 raise e
@@ -892,6 +790,8 @@ def count_supported_audio_files(podcast_dir):
         dirs[:] = [d for d in dirs if d != '_temp']
 
         for file_name in files:
+            if file_name.endswith('_converted.wav'):
+                continue
             file_ext = os.path.splitext(file_name)[1][1:].lower()
             if file_ext in supported_formats:
                 base_name = os.path.splitext(file_name)[0]
@@ -914,6 +814,9 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False, force_
     """
     Funzione principale con barra di progresso, ETA e gestione recupero errori.
     """
+    setup_file_logging(podcast_dir)
+    logger.info(f"Inizio main loop - Model: {model_name}, Lang: {language}, Parallel: {parallel}")
+    
     retry_count = 0
     max_retries = 1
     current_force_reprocess = force_reprocess
@@ -1014,6 +917,8 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False, force_
                 dirs[:] = [d for d in dirs if d != '_temp']
 
                 for file_name in files:
+                    if file_name.endswith('_converted.wav'):
+                        continue
                     file_path = os.path.join(root, file_name)
                     base_name, ext = os.path.splitext(file_name)
 
@@ -1110,6 +1015,7 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False, force_
                         safe_print(f"\n✅ Completato: {file_name}")
                         safe_print(f"💾 Salvato in: {output_path}")
                         safe_print(f"⏱️  Tempo impiegato: {file_elapsed:.1f} secondi")
+                        logger.info(f"File completato: {file_name} in {file_elapsed:.1f}s")
 
                     except ModelCorruptionError as e:
                         # Rilancia l'eccezione per essere catturata dal loop esterno
@@ -1139,6 +1045,7 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False, force_
             if processed_files > 0:
                 safe_print(f"📈 Tempo medio per file: {total_elapsed/processed_files:.1f} secondi")
             
+            logger.info(f"Sessione completata con successo. Processati {processed_files}/{total_files} file.")
             break # Successo, esce dal loop retry
 
         except ModelCorruptionError as e:
@@ -1147,18 +1054,19 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False, force_
             if main_progress:
                 main_progress.stop()
             
+            logger.warning(f"RILEVATO ModelCorruptionError: {e}")
             safe_print(f"\n⚠️ ERRORE MODELLO RILEVATO: {e}")
             if retry_count <= max_retries:
-                if repair_model_installation():
-                    safe_print("Riavvio della trascrizione da zero (tutti i file)...\n")
-                    current_force_reprocess = True # Forza rielaborazione totale
-                    # Ricarica moduli per sicurezza
-                    import whisper
-                    importlib.reload(whisper)
-                    continue
-            safe_print("❌ Impossibile riparare il modello dopo tentativi.")
+                safe_print("Riavvio della trascrizione da zero (tutti i file)...\n")
+                current_force_reprocess = True # Forza rielaborazione totale
+                # Ricarica moduli per sicurezza
+                import whisper
+                importlib.reload(whisper)
+                continue
+            safe_print("❌ Impossibile recuperare il modello dopo tentativi.")
             return
         except Exception as e:
+            logger.exception("ERRORE INASPETTATO NEL MAIN LOOP")
             safe_print(f"❌ Errore inaspettato: {e}")
             raise e
 
