@@ -20,6 +20,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def safe_print(message):
+    """Stampa un messaggio in modo sicuro, interferendo il meno possibile con tqdm."""
+    try:
+        from tqdm import tqdm
+        tqdm.write(message)
+    except:
+        print(message)
+
 # Lista di stringhe da rimuovere dalla trascrizione
 WRONG_SUBSTRINGS = [
   "Sottotitoli e revisione a cura di QTSS.",
@@ -629,115 +637,12 @@ def transcribe_audio_parallel(file_path, model, language='it'):
         return full_transcription
 
     except Exception as e:
-        print(f"Errore nella trascrizione parallela: {e}, fallback a trascrizione singola")
+        safe_print(f"Errore nella trascrizione parallela: {e}, fallback a trascrizione singola")
         transcription_done = True  # Signal the progress thread to stop
         if progress_thread is not None:
             progress_thread.join(timeout=2.0)
         return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
 
-    print(f"⚡ Divisione audio in {len(chunks)} chunk per elaborazione parallela...")
-
-    start_time = time.time()
-
-    try:
-        # Crea barra di progresso per la trascrizione parallela
-        try:
-            pbar = tqdm(total=100,
-                       desc="🚀 Elaborazione Parallela",
-                       unit="%",
-                       ncols=100)
-        except Exception as e:
-            print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
-            print("Continuo senza barra di progresso...")
-            pbar = None
-
-        # Avvia trascrizione parallela dei chunk
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            # Invia i job per i due chunk
-            future1 = executor.submit(transcribe_chunk_parallel, chunks[0], model, language)
-            future2 = executor.submit(transcribe_chunk_parallel, chunks[1], model, language)
-
-            # Funzione per aggiornare la barra di progresso durante l'attesa
-            def update_progress():
-                """Aggiorna la barra di progresso durante l'elaborazione parallela"""
-                if pbar is None:
-                    return
-                while not pbar.disable:
-                    elapsed = time.time() - start_time
-                    # Calcola il progresso basato sul tempo trascorso vs tempo stimato
-                    # I chunk paralleli dovrebbero essere circa 2x più veloci
-                    processing_ratio = 0.15  # secondi di processing per secondo di audio
-                    estimated_progress = min(95, (elapsed / (audio_duration * processing_ratio / 2)) * 100)
-
-                    if estimated_progress >= pbar.n:
-                        # Calcola velocità e tempo rimanente stimato
-                        speed = estimated_progress / elapsed if elapsed > 0 else 0
-                        remaining = (100 - estimated_progress) / speed if speed > 0 else 0
-
-                        pbar.update(estimated_progress - pbar.n)
-                        pbar.set_postfix_str(f"Audio: {audio_duration:.0f}s, Velocità: {speed:.1f}%/s, ETA: {remaining:.0f}s")
-
-                    time.sleep(0.5)  # Aggiorna ogni 0.5 secondi
-
-            # Avvia il thread per l'aggiornamento del progresso
-            if pbar:
-                progress_thread = threading.Thread(target=update_progress, daemon=True)
-                progress_thread.start()
-
-            # Attende i risultati con barra di progresso
-            # Timeout aumentato per audio lunghi: 20 minuti per chunk
-            chunk_timeout = max(1200, audio_duration // 2 + 300)  # Minimo 20 minuti o metà durata + 5 minuti
-
-            if pbar:
-                chunk1_text = future1.result(timeout=chunk_timeout)
-                chunk2_text = future2.result(timeout=chunk_timeout)
-            else:
-                print("Attesa completamento trascrizione chunk 1...")
-                chunk1_text = future1.result(timeout=chunk_timeout)
-                print("Chunk 1 completato, attesa chunk 2...")
-                chunk2_text = future2.result(timeout=chunk_timeout)
-
-        # Unisce i risultati
-        full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
-
-        elapsed = time.time() - start_time
-        print(f"✅ Trascrizione parallela completata in {elapsed:.1f} secondi")
-
-        # Chiude la barra di progresso se esiste
-        if pbar:
-            try:
-                pbar.close()
-            except:
-                pass
-
-        # Pulisce i chunk se sono stati creati
-        for chunk in chunks:
-            if chunk != file_path and os.path.exists(chunk):
-                try:
-                    os.remove(chunk)
-                    print(f"  Chunk {os.path.basename(chunk)} rimosso")
-                except Exception as e:
-                    print(f"  Attenzione: impossibile rimuovere {chunk}: {e}")
-
-        # Rimuovi la directory _temp se vuota
-        temp_dir = os.path.join(os.path.dirname(file_path), "_temp")
-        if os.path.exists(temp_dir):
-            try:
-                # Verifica se la directory è vuota
-                if not os.listdir(temp_dir):
-                    os.rmdir(temp_dir)
-                    print(f"  Directory temporanea {os.path.basename(temp_dir)} rimossa")
-            except Exception as e:
-                print(f"  Attenzione: impossibile rimuovere la directory temporanea: {e}")
-
-        return full_transcription
-
-    except concurrent.futures.TimeoutError:
-        print("Timeout nella trascrizione parallela, fallback a trascrizione singola")
-        return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
-    except Exception as e:
-        print(f"Errore nella trascrizione parallela: {e}, fallback a trascrizione singola")
-        return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
 
 def get_audio_duration(file_path):
     """
@@ -1195,12 +1100,7 @@ if __name__ == "__main__":
     # Verifica che sia utilizzata una versione compatibile di Python
     ensure_python_version()
 
-    # Aggiorna pip e installa correttamente whisper e tqdm (solo una volta)
-    try:
-        upgrade_pip_and_install_packages()
-    except Exception as e:
-        print(f"Errore durante l'aggiornamento dei pacchetti: {e}")
-
+    # La versione aggiornata di whisper e tqdm viene controllata solo se manca l'import
     args = parse_arguments()
     
     # Se viene passato un argomento directory, esegui in modalità non interattiva
