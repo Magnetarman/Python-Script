@@ -211,12 +211,6 @@ def upgrade_pip_and_install_packages():
         print(f"Errore durante l'aggiornamento di pip: {e}")
         print("Continuo con l'installazione...")
 
-    print("Disinstallazione di vecchie versioni di whisper...")
-    try:
-        subprocess.check_call([python_path, "-m", "pip", "uninstall", "whisper", "-y"])
-    except subprocess.CalledProcessError:
-        pass
-
     print("Installazione di openai-whisper e tqdm...")
     try:
         subprocess.check_call([python_path, "-m", "pip", "install", "-U", "openai-whisper", "tqdm"])
@@ -505,6 +499,7 @@ def transcribe_audio_parallel(file_path, model, language='it'):
     import concurrent.futures
     import time
     from tqdm import tqdm
+    import threading
 
     print("Avvio trascrizione parallela...")
 
@@ -517,6 +512,127 @@ def transcribe_audio_parallel(file_path, model, language='it'):
     if not chunks or len(chunks) == 1:
         # Se non è stato possibile dividere o audio troppo corto, trascrizione singola
         print("Esecuzione trascrizione singola (audio corto o indivisibile)")
+        return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
+
+    print(f"⚡ Divisione audio in {len(chunks)} chunk per elaborazione parallela...")
+
+    start_time = time.time()
+    # Initialize variables that might be used in except block
+    pbar = None
+    progress_thread = None
+    transcription_done = False
+
+    try:
+        # Crea barra di progresso per la trascrizione parallela
+        try:
+            pbar = tqdm(total=100,
+                       desc="🚀 Elaborazione Parallela",
+                       unit="%",
+                       ncols=100)
+        except Exception as e:
+            print(f"Attenzione: errore nell'inizializzazione della barra di progresso: {e}")
+            print("Continuo senza barra di progresso...")
+            pbar = None
+
+        # Funzione per aggiornare la barra di progresso durante l'attesa
+        def update_progress():
+            """Aggiorna la barra di progresso durante l'elaborazione parallela"""
+            nonlocal transcription_done, pbar, start_time, audio_duration
+            while not transcription_done:
+                if pbar is None:
+                    time.sleep(0.5)
+                    continue
+                elapsed = time.time() - start_time
+                # Evita divisione per zero
+                if elapsed > 0:
+                    # Tempo totale stimato per l'elaborazione parallela: (durata * rapporto_di_elaborazione) / 2
+                    estimated_total_time = (audio_duration * 0.15) / 2  # processing_ratio = 0.15
+                    if estimated_total_time > 0:
+                        estimated_progress = (elapsed / estimated_total_time) * 100
+                    else:
+                        estimated_progress = 0
+                else:
+                    estimated_progress = 0
+
+                # Aggiorna la barra di progresso solo se il progresso stimato è aumentato
+                if estimated_progress >= pbar.n:
+                    # Aggiorna la barra
+                    pbar.update(estimated_progress - pbar.n)
+                    # Calcola velocità e tempo rimanente stimato
+                    speed = estimated_progress / elapsed if elapsed > 0 else 0
+                    remaining = (100 - estimated_progress) / speed if speed > 0 else 0
+                    pbar.set_postfix_str(f"Audio: {audio_duration:.0f}s, Velocità: {speed:.1f}%/s, ETA: {remaining:.0f}s")
+                time.sleep(1)  # Aggiorna ogni 1 secondo
+
+        # Avvia il thread per l'aggiornamento del progresso solo se pbar è stato creato
+        if pbar is not None:
+            progress_thread = threading.Thread(target=update_progress)
+            progress_thread.start()
+
+        # Avvia trascrizione parallela dei chunk
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            # Invia i job per i due chunk
+            future1 = executor.submit(transcribe_chunk_parallel, chunks[0], model, language)
+            future2 = executor.submit(transcribe_chunk_parallel, chunks[1], model, language)
+
+            # Attende i risultati con barra di progresso
+            # Timeout aumentato per audio lunghi: 20 minuti per chunk
+            chunk_timeout = max(1200, audio_duration // 2 + 300)  # Minimo 20 minuti o metà durata + 5 minuti
+
+            try:
+                chunk1_text = future1.result(timeout=chunk_timeout)
+                chunk2_text = future2.result(timeout=chunk_timeout)
+            except concurrent.futures.TimeoutError:
+                print("Timeout nella trascrizione parallela, fallback a trascrizione singola")
+                transcription_done = True  # Signal the progress thread to stop
+                if progress_thread is not None:
+                    progress_thread.join(timeout=2.0)  # Wait for the progress thread to finish
+                return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
+
+        # Unisce i risultati
+        full_transcription = chunk1_text.strip() + " " + chunk2_text.strip()
+
+        elapsed = time.time() - start_time
+        print(f"✅ Trascrizione parallela completata in {elapsed:.1f} secondi")
+
+        # Segnala al thread di progresso di fermarsi
+        transcription_done = True
+        if progress_thread is not None:
+            # Attende la fine del thread di progresso
+            progress_thread.join(timeout=2.0)
+            # Aggiorna la barra al 100% e chiudila
+            if pbar is not None and pbar.n < 100:
+                pbar.update(100 - pbar.n)
+            if pbar is not None:
+                pbar.close()
+
+        # Pulisce i chunk se sono stati creati
+        for chunk in chunks:
+            if chunk != file_path and os.path.exists(chunk):
+                try:
+                    os.remove(chunk)
+                    print(f"  Chunk {os.path.basename(chunk)} rimosso")
+                except Exception as e:
+                    print(f"  Attenzione: impossibile rimuovere {chunk}: {e}")
+
+        # Rimuovi la directory _temp se vuota
+        temp_dir = os.path.join(os.path.dirname(file_path), "_temp")
+        if os.path.exists(temp_dir):
+            try:
+                # Verifica se la directory è vuota
+                if not os.listdir(temp_dir):
+                    os.rmdir(temp_dir)
+                    print(f"  Directory temporanea {os.path.basename(temp_dir)} rimossa")
+            except Exception as e:
+                print(f"  Attenzione: impossibile rimuovere la directory temporanea: {e}")
+
+        return full_transcription
+
+    except Exception as e:
+        print(f"Errore nella trascrizione parallela: {e}, fallback a trascrizione singola")
+        transcription_done = True  # Signal the progress thread to stop
+        if progress_thread is not None:
+            progress_thread.join(timeout=2.0)
         return transcribe_podcast_with_progress(file_path, model, language, parallel=False)
 
     print(f"⚡ Divisione audio in {len(chunks)} chunk per elaborazione parallela...")
@@ -839,7 +955,22 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False):
         parallel: Se True, utilizza processamento parallelo per velocizzare
     """
     # Importa i moduli necessari
-    whisper, tqdm = import_required_modules()
+    try:
+        import whisper
+        from tqdm import tqdm
+        print(f"Moduli importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, tqdm OK")
+    except ImportError as e:
+        print(f"Moduli non trovati: {e}. Installazione in corso...")
+        upgrade_pip_and_install_packages()
+
+        try:
+            import whisper
+            from tqdm import tqdm
+            print(f"Moduli installati e importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, tqdm OK")
+        except ImportError as e:
+            print(f"Impossibile importare i moduli anche dopo l'installazione: {e}")
+            print("Prova a installare manualmente i moduli: pip install openai-whisper tqdm")
+            sys.exit(1)
 
     # Carica il modello Whisper con fallback automatico
     print(f"Caricamento del modello {model_name}...")
