@@ -21,9 +21,11 @@ def get_min_bitrate(files):
     min_k = int(min(bitrates) / 1000)
     return f"{min_k}k"
 
-def process_audio_optimized():
+def process_audio_optimized(directory='.'):
     output_filename = "risultato_ottimizzato.mp3"
-    files = sorted([f for f in os.listdir('.') if f.endswith('.mp3') and f != output_filename])
+    output_path = os.path.join(directory, output_filename)
+    files = sorted([f for f in os.listdir(directory) if f.endswith('.mp3') and f != output_filename])
+    files = [os.path.join(directory, f) for f in files]
 
     if not files:
         print("Nessun file MP3 trovato!")
@@ -54,7 +56,7 @@ def process_audio_optimized():
     # 3. Esportazione finale
     print(f"Esportazione in corso ({target_bitrate}, CBR)...")
     combined.export(
-        output_filename, 
+        output_path, 
         format="mp3", 
         bitrate=target_bitrate, 
         parameters=["-write_xing", "0"] # Forza CBR puro per compatibilità timer
@@ -62,10 +64,25 @@ def process_audio_optimized():
 
     print("-" * 30)
     print(f"COMPLETATO!")
-    print(f"File: {output_filename}")
+    print(f"File: {output_path}")
     print(f"Peso ottimizzato con bitrate: {target_bitrate}")
     print(f"Durata totale: {len(combined) / 1000} secondi.")
     print("-" * 30)
 
 if __name__ == "__main__":
-    process_audio_optimized()
+    import sys
+    if len(sys.argv) > 1:
+        dir_path = sys.argv[1]
+        if not os.path.isdir(dir_path):
+            print(f"Errore: '{dir_path}' non è una directory valida")
+            sys.exit(1)
+        process_audio_optimized(dir_path)
+    else:
+        print("Inserisci il percorso della cartella con i file MP3:")
+        dir_path = input("> ").strip()
+        if not dir_path:
+            dir_path = '.'
+        if not os.path.isdir(dir_path):
+            print(f"Errore: '{dir_path}' non è una directory valida")
+            sys.exit(1)
+        process_audio_optimized(dir_path)
