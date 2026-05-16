@@ -265,6 +265,10 @@ def upgrade_pip_and_install_packages():
 
     safe_print("Installazione di openai-whisper, tqdm e rich...")
     try:
+        # Disinstalla preventivamente il modulo 'whisper' che crea conflitti
+        safe_print("Rimozione eventuali conflitti...")
+        subprocess.run([python_path, "-m", "pip", "uninstall", "-y", "whisper"], capture_output=True)
+        
         subprocess.check_call([python_path, "-m", "pip", "install", "-U", "openai-whisper", "tqdm", "rich"] + user_flag)
         importlib.invalidate_caches()
     except subprocess.CalledProcessError as e:
@@ -825,7 +829,19 @@ def main(podcast_dir, model_name='medium', language='it', parallel=False, force_
         try:
             # Importa i moduli necessari
             try:
+                # Forza la precedenza dei pacchetti installati dall'utente per evitare conflitti con pacchetti di sistema
+                import site
+                user_site = site.getusersitepackages()
+                if user_site and user_site not in sys.path:
+                    sys.path.insert(0, user_site)
+                
                 import whisper
+                
+                # Verifica se è il modulo whisper corretto (OpenAI) o quello sbagliato (Graphite)
+                if not hasattr(whisper, 'load_model'):
+                    safe_print("⚠️ Rilevato modulo 'whisper' errato (conflitto installazione).")
+                    raise ImportError("Wrong whisper module")
+                    
                 from rich.progress import Progress
                 safe_print(f"Moduli importati correttamente: whisper {whisper.__version__ if hasattr(whisper, '__version__') else 'OK'}, rich OK")
             except ImportError as e:
